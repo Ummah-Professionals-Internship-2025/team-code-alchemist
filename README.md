@@ -21,8 +21,13 @@ User portal for mentees and mentors
 ## Team
 
 Omar: Project manager
+
 Amina: UI/UX Designer
+
 Ryan: Backend developer
+
 Maruf: Backend developer
+
 Noor: Frontend developer
+
 Yassir: Frontend developer
