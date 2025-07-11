@@ -7,21 +7,15 @@ This project is a web app that connects mentors to mentees in a 1:1 fashion to p
 ## Tech Stack
 
 Web development: JavaScript, React, HTML, CSS
-
 Databases: Monday.com
-
 Editor: Visual Studio
 
 ## Features
 
 Mentee application form
-
 Mentor application form
-
 Calendar and shedular
-
 Admin portal
-
 User portal for mentees and mentors
 
 ## Team
