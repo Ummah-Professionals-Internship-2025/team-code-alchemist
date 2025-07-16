@@ -1,0 +1,48 @@
+/*body {
+  margin: 0;
+  font-family: Kollektif, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+} */
+
+/* Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process - USE THIS AS A TEMPORARY PASS 
+RUN cd up-admin RIGHT AFTER THEN npm start*/
+
+html,
+body,
+#root,
+.app,
+.content {
+  height: 100%;
+  width: 100%;
+  font-family: Kollektif, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+.app {
+  display: flex;
+  position: relative;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #e0e0e0;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on Hover */
+::-webkit-scrollbar-track:hover {
+  background: #555;
+}
+
+/* code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+} */
