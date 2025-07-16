@@ -1,0 +1,60 @@
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"AutoImportSettings\">\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\n  </component>\n  <component name=\"ChangeListManager\">\n    <list default=\"true\" id=\"b5b82aa5-182e-4f06-931b-d40f27a960f3\" name=\"Changes\" comment=\"\" />\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\n  </component>\n  <component name=\"Git.Settings\">\n    <option name=\"RECENT_BRANCH_BY_REPOSITORY\">\n      <map>\n        <entry key=\"$PROJECT_DIR$\" value=\"main\" />\n      </map>\n    </option>\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\n  </component>\n  <component name=\"GitHubPullRequestSearchHistory\"><![CDATA[{\n  \"lastFilter\": {\n    \"state\": \"OPEN\",\n    \"assignee\": \"M3ruf\"\n  }\n}]]></component>\n  <component name=\"GithubPullRequestsUISettings\"><![CDATA[{\n  \"selectedUrlAndAccountId\": {\n    \"url\": \"https://github.com/Ummah-Professionals-Internship-2025/team-code-alchemist.git\",\n    \"accountId\": \"be734909-e9bd-41a2-b853-50774dc243d4\"\n  }\n}]]></component>\n  <component name=\"ProjectColorInfo\"><![CDATA[{\n  \"associatedIndex\": 2\n}]]></component>\n  <component name=\"ProjectId\" id=\"2zhyFGloBtbCp7wGqBkOwJE50SU\" />\n  <component name=\"ProjectViewState\">\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\n    <option name=\"showLibraryContents\" value=\"true\" />\n  </component>\n  <component name=\"PropertiesComponent\"><![CDATA[{\n  \"keyToString\": {\n    \"Node.js.page.js.executor\": \"Run\",\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\",\n    \"RunOnceActivity.git.unshallow\": \"true\",\n    \"git-widget-placeholder\": \"feature-mentor-signup\",\n    \"node.js.detected.package.eslint\": \"true\",\n    \"node.js.detected.package.tslint\": \"true\",\n    \"node.js.selected.package.eslint\": \"(autodetect)\",\n    \"node.js.selected.package.tslint\": \"(autodetect)\",\n    \"nodejs_interpreter_path\": \"node\",\n    \"nodejs_package_manager_path\": \"npm\",\n    \"vue.rearranger.settings.migration\": \"true\"\n  }\n}]]></component>\n  <component name=\"SharedIndexes\">\n    <attachedChunks>\n      <set>\n        <option value=\"bundled-jdk-9823dce3aa75-fbdcb00ec9e3-intellij.indexing.shared.core-IU-251.26927.53\" />\n        <option value=\"bundled-js-predefined-d6986cc7102b-09060db00ec0-JavaScript-IU-251.26927.53\" />\n      </set>\n    </attachedChunks>\n  </component>\n  <component name=\"SwiftWorkspaceSettings\">\n    <option name=\"detectedToolchain\" value=\"true\" />\n  </component>\n  <component name=\"TaskManager\">\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\n      <changelist id=\"b5b82aa5-182e-4f06-931b-d40f27a960f3\" name=\"Changes\" comment=\"\" />\n      <created>1752197494106</created>\n      <option name=\"number\" value=\"Default\" />\n      <option name=\"presentableId\" value=\"Default\" />\n      <updated>1752197494106</updated>\n      <workItem from=\"1752197495321\" duration=\"1091000\" />\n    </task>\n    <servers />\n  </component>\n  <component name=\"TypeScriptGeneratedFilesManager\">\n    <option name=\"version\" value=\"3\" />\n  </component>\n  <component name=\"Vcs.Log.Tabs.Properties\">\n    <option name=\"TAB_STATES\">\n      <map>\n        <entry key=\"MAIN\">\n          <value>\n            <State>\n              <option name=\"FILTERS\">\n                <map>\n                  <entry key=\"branch\">\n                    <value>\n                      <list>\n                        <option value=\"origin/feature-mentor-signup\" />\n                      </list>\n                    </value>\n                  </entry>\n                </map>\n              </option>\n            </State>\n          </value>\n        </entry>\n      </map>\n    </option>\n  </component>\n</project>
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 2a4402218361a7c18e03fa0a8eaec483792fa580)
++++ b/.idea/workspace.xml	(date 1752296979203)
+@@ -4,7 +4,7 @@
+     <option name="autoReloadType" value="SELECTIVE" />
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="b5b82aa5-182e-4f06-931b-d40f27a960f3" name="Changes" comment="" />
++    <list default="true" id="b5b82aa5-182e-4f06-931b-d40f27a960f3" name="Changes" comment="updating" />
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+@@ -18,21 +18,21 @@
+     </option>
+     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+   </component>
+-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+-  "lastFilter": {
+-    "state": "OPEN",
+-    "assignee": "M3ruf"
++  <component name="GitHubPullRequestSearchHistory">{
++  &quot;lastFilter&quot;: {
++    &quot;state&quot;: &quot;OPEN&quot;,
++    &quot;assignee&quot;: &quot;M3ruf&quot;
+   }
+-}]]></component>
+-  <component name="GithubPullRequestsUISettings"><![CDATA[{
+-  "selectedUrlAndAccountId": {
+-    "url": "https://github.com/Ummah-Professionals-Internship-2025/team-code-alchemist.git",
+-    "accountId": "be734909-e9bd-41a2-b853-50774dc243d4"
++}</component>
++  <component name="GithubPullRequestsUISettings">{
++  &quot;selectedUrlAndAccountId&quot;: {
++    &quot;url&quot;: &quot;https://github.com/Ummah-Professionals-Internship-2025/team-code-alchemist.git&quot;,
++    &quot;accountId&quot;: &quot;be734909-e9bd-41a2-b853-50774dc243d4&quot;
+   }
+-}]]></component>
+-  <component name="ProjectColorInfo"><![CDATA[{
+-  "associatedIndex": 2
+-}]]></component>
++}</component>
++  <component name="ProjectColorInfo">{
++  &quot;associatedIndex&quot;: 2
++}</component>
+   <component name="ProjectId" id="2zhyFGloBtbCp7wGqBkOwJE50SU" />
+   <component name="ProjectViewState">
+     <option name="hideEmptyMiddlePackages" value="true" />
+@@ -43,7 +43,6 @@
+     "Node.js.page.js.executor": "Run",
+     "RunOnceActivity.ShowReadmeOnStart": "true",
+     "RunOnceActivity.git.unshallow": "true",
+-    "git-widget-placeholder": "feature-mentor-signup",
+     "node.js.detected.package.eslint": "true",
+     "node.js.detected.package.tslint": "true",
+     "node.js.selected.package.eslint": "(autodetect)",
