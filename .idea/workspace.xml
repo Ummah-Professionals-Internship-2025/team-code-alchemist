@@ -4,13 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aab61048-d151-40cd-8286-96549c2c641a" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/frontend/src/mentor-signup-form/MentorSignupForm.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/mentor-signup-form/MentorSignupStyle.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/mentor-signup-form/moreStyle.scss" afterDir="false" />
+    <list default="true" id="aab61048-d151-40cd-8286-96549c2c641a" name="Changes" comment="implement">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/mentor-signup-form/MentorSignupForm.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/mentor-signup-form/MentorSignupForm.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/mentor-signup-form/MentorSignupStyle.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/mentor-signup-form/MentorSignupStyle.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/mentor-signup-form/moreStyle.scss" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,7 +84,7 @@
     "project.structure.proportion": "0.0",
     "project.structure.side.proportion": "0.0",
     "rearrange.code.on.save": "true",
-    "settings.editor.selected.configurable": "vcs.Git",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
   },
   "keyToStringList": {
@@ -136,6 +137,7 @@
       <workItem from="1752519376697" duration="1515000" />
       <workItem from="1752624574230" duration="165000" />
       <workItem from="1752625384936" duration="153000" />
+      <workItem from="1752708508760" duration="12066000" />
     </task>
     <task id="LOCAL-00001" summary="changes">
       <option name="closed" value="true" />
