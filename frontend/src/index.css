@@ -1,3 +1,36 @@
+/* Regular weight */
+@font-face {
+  font-family: 'UmmahProf';
+  src: url("../public/kollektif/Kollektif.ttf") format("truetype"),
+  url("../public/kollektif/Kollektif.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Bold weight */
+@font-face {
+  font-family: 'UmmahProf-bold';
+  src: url("../public/kollektif/Kollektif-Bold.ttf") format("truetype"),
+  url("../public/kollektif/Kollektif-Bold.otf") format("opentype");
+  font-weight: bold;
+  font-style: normal;
+}
+
+/* Italic weight */
+@font-face {
+  font-family: 'UmmahProf-italic';
+  src: url("../public/kollektif/Kollektif-Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+}
+
+/* Bold Italic weight */
+@font-face {
+  font-family: 'UmmahProf-bold-italic';
+  src: url("../public/kollektif/Kollektif-BoldItalic.ttf") format("truetype");
+  font-weight: bold;
+  font-style: italic;
+}
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',

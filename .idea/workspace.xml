@@ -4,14 +4,115 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aab61048-d151-40cd-8286-96549c2c641a" name="Changes" comment="implement">
+    <list default="true" id="aab61048-d151-40cd-8286-96549c2c641a" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/frontend/public/kollektif/Kollektif-Bold.eot" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/public/kollektif/Kollektif-Bold.otf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/public/kollektif/Kollektif-Bold.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/public/kollektif/Kollektif-BoldItalic.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/public/kollektif/Kollektif-Italic.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/public/kollektif/Kollektif.otf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/public/kollektif/Kollektif.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/.package-lock.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/bulma.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/css/bulma.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/css/bulma.css.map" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/css/bulma.min.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/css/versions/bulma-no-dark-mode.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/css/versions/bulma-no-dark-mode.css.map" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/css/versions/bulma-no-dark-mode.min.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/css/versions/bulma-no-helpers-prefixed.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/css/versions/bulma-no-helpers-prefixed.css.map" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/css/versions/bulma-no-helpers-prefixed.min.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/css/versions/bulma-no-helpers.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/css/versions/bulma-no-helpers.css.map" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/css/versions/bulma-no-helpers.min.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/css/versions/bulma-prefixed.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/css/versions/bulma-prefixed.css.map" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/css/versions/bulma-prefixed.min.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/package.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/_index.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/base/_index.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/base/animations.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/base/generic.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/base/minireset.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/base/skeleton.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/components/_index.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/components/breadcrumb.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/components/card.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/components/dropdown.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/components/menu.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/components/message.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/components/modal.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/components/navbar.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/components/pagination.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/components/panel.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/components/tabs.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/elements/_index.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/elements/block.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/elements/box.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/elements/button.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/elements/content.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/elements/delete.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/elements/icon.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/elements/image.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/elements/loader.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/elements/notification.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/elements/progress.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/elements/table.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/elements/tag.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/elements/title.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/form/_index.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/form/checkbox-radio.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/form/file.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/form/input-textarea.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/form/select.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/form/shared.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/form/tools.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/grid/_index.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/grid/columns.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/grid/grid.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/helpers/_index.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/helpers/aspect-ratio.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/helpers/border.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/helpers/color.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/helpers/flexbox.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/helpers/float.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/helpers/gap.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/helpers/other.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/helpers/overflow.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/helpers/position.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/helpers/spacing.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/helpers/typography.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/helpers/visibility.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/layout/_index.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/layout/container.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/layout/footer.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/layout/hero.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/layout/level.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/layout/media.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/layout/section.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/themes/_index.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/themes/dark.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/themes/light.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/themes/setup.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/utilities/_index.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/utilities/controls.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/utilities/css-variables.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/utilities/derived-variables.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/utilities/extends.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/utilities/functions.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/utilities/initial-variables.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/sass/utilities/mixins.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/versions/bulma-no-dark-mode.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/versions/bulma-no-helpers-prefixed.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/versions/bulma-no-helpers.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node_modules/bulma/versions/bulma-prefixed.scss" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/index.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/mentor-signup-form/MentorSignupForm.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/mentor-signup-form/MentorSignupForm.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/mentor-signup-form/MentorSignupStyle.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/mentor-signup-form/MentorSignupStyle.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/mentor-signup-form/moreStyle.scss" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,6 +156,9 @@
   <component name="MaliciousPackageCheckinHandlerState">
     <option name="packageCheck" value="true" />
   </component>
+  <component name="OptimizeOnSaveOptions">
+    <option name="myRunOnSave" value="true" />
+  </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
   </component>
@@ -84,7 +188,7 @@
     "project.structure.proportion": "0.0",
     "project.structure.side.proportion": "0.0",
     "rearrange.code.on.save": "true",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "settings.editor.selected.configurable": "settings.javascript.prettier",
     "vue.rearranger.settings.migration": "true"
   },
   "keyToStringList": {
@@ -137,7 +241,7 @@
       <workItem from="1752519376697" duration="1515000" />
       <workItem from="1752624574230" duration="165000" />
       <workItem from="1752625384936" duration="153000" />
-      <workItem from="1752708508760" duration="12066000" />
+      <workItem from="1752708508760" duration="19292000" />
     </task>
     <task id="LOCAL-00001" summary="changes">
       <option name="closed" value="true" />
@@ -155,7 +259,15 @@
       <option name="project" value="LOCAL" />
       <updated>1752624647243</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="used Ryan's skeleton to improve mentor signup. Added styling and font fam">
+      <option name="closed" value="true" />
+      <created>1752729439369</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1752729439370</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -180,7 +292,10 @@
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="changes" />
     <MESSAGE value="Setup backend" />
-    <option name="LAST_COMMIT_MESSAGE" value="Setup backend" />
+    <MESSAGE value="implement" />
+    <MESSAGE value="used Ryan's skeleton to improve mentor signup" />
+    <MESSAGE value="used Ryan's skeleton to improve mentor signup. Added styling and font fam" />
+    <option name="LAST_COMMIT_MESSAGE" value="used Ryan's skeleton to improve mentor signup. Added styling and font fam" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />

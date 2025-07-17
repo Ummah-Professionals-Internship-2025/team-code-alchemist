@@ -135,11 +135,12 @@ function MentorSignupForm() {
 
                     <label>Do you want to put your Google/Outlook calendar?</label>
                     <div className="select">
-                    <select name="calendar" value={form.calendar} onChange={handleChange} required>
-                        <option value="">Select</option>
-                        <option value="yes">Yes</option>
-                        <option value="no">No</option>
-                    </select>
+                        <select className="form-select" aria-label="Default select example" name="calendar"
+                                value={form.calendar} onChange={handleChange} required>
+                            <option value="">Select</option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
                     </div>
 
                     <label>Time zone</label>
@@ -152,7 +153,7 @@ function MentorSignupForm() {
 
                     <label>Would you be alright with teaching the opposite gender, given a shortage?</label>
                     <div className="select">
-                        <select className="form-select" aria-label="Default select example" name="wouldYouMind" value={form.wouldYouMind} onChange={handleChange}
+                        <select name="wouldYouMind" value={form.wouldYouMind} onChange={handleChange}
                                 required>
                             <option value="">Select</option>
                             <option value="yes">Yes</option>
@@ -161,50 +162,50 @@ function MentorSignupForm() {
                         </select>
                     </div>
 
-                        <label>General availability</label>
-                        <div style={{marginBottom: '24px'}}>
-                            {daysOfWeek.map(day => (
-                                <div key={day} style={{marginBottom: '10px'}}>
-                                    <label style={{fontWeight: 500, fontSize: '1.1rem'}}>
-                                        <input
-                                            type="checkbox"
-                                            checked={availability[day] !== undefined}
-                                            onChange={() => handleDayToggle(day)}
-                                            style={{marginRight: '8px', transform: 'scale(1.3)'}}
-                                        />
-                                        {day}
-                                    </label>
-                                    {availability[day] !== undefined && (
-                                        <input
-                                            type="text"
-                                            placeholder="Enter available times (e.g. 6-8pm)"
-                                            value={availability[day]}
-                                            onChange={e => handleTimeChange(day, e.target.value)}
-                                            style={{marginLeft: '16px', width: '60%'}}
-                                        />
-                                    )}
-                                </div>
-                            ))}
-                        </div>
+                    <label>General availability</label>
+                    <div className="checkboxes" style={{marginBottom: '24px'}}>
+                        {daysOfWeek.map(day => (
+                            <div key={day} style={{marginBottom: '10px'}}>
+                                <label style={{fontWeight: 500, fontSize: '1.1rem'}}>
+                                    <input
+                                        type="checkbox"
+                                        checked={availability[day] !== undefined}
+                                        onChange={() => handleDayToggle(day)}
+                                        style={{marginRight: '8px', transform: 'scale(1.3)'}}
+                                    />
+                                    {day}
+                                </label>
+                                {availability[day] !== undefined && (
+                                    <input
+                                        type="text"
+                                        placeholder="Enter available times (e.g. 6-8pm)"
+                                        value={availability[day]}
+                                        onChange={e => handleTimeChange(day, e.target.value)}
+                                        style={{marginLeft: '16px', width: '60%'}}
+                                    />
+                                )}
+                            </div>
+                        ))}
+                    </div>
 
 
-                        <label>Phone number</label>
-                        <input className="input" type="text" placeholder="" name="phone" value={form.phone}
-                               onChange={handleChange} required/>
+                    <label>Phone number</label>
+                    <input className="input" type="text" placeholder="" name="phone" value={form.phone}
+                           onChange={handleChange} required/>
 
-                        <label>Year of graduation</label>
-                        <input className="input" type="text" placeholder="" name="yearOfGraduation"
-                               value={form.yearOfGraduation} onChange={handleChange} required/>
+                    <label>Year of graduation</label>
+                    <input className="input" type="text" placeholder="" name="yearOfGraduation"
+                           value={form.yearOfGraduation} onChange={handleChange} required/>
 
-                        <label>Age range for mentee pairing</label>
-                        <input className="input" type="text" placeholder="" name="ageRange" value={form.ageRange}
-                               onChange={handleChange} required/>
+                    <label>Age range for mentee pairing</label>
+                    <input className="input" type="text" placeholder="" name="ageRange" value={form.ageRange}
+                           onChange={handleChange} required/>
 
-                        <label>University</label>
-                        <input className="input" type="text" placeholder="" name="university" value={form.university}
-                               onChange={handleChange} required/>
+                    <label>University</label>
+                    <input className="input" type="text" placeholder="" name="university" value={form.university}
+                           onChange={handleChange} required/>
 
-                        <button className="submit-btn" type="submit">Submit</button>
+                    <button className="submit-btn" type="submit">Submit</button>
                 </form>
             </div>
         </div>
