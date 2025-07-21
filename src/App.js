@@ -5,7 +5,6 @@ import Topbar from "./scenes/global/Topbar"
 import Dashboard from "./scenes/dashboard";
 import Sidebar from "./scenes/global/Sidebar";
 import Team from "./scenes/team";
-// import Invoices from "./scenes/invoices";
 import Contacts from "./scenes/contacts";
 import Bar from "./scenes/bar";
 import Form from "./scenes/form";
