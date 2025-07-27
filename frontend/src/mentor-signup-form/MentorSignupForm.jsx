@@ -3,6 +3,7 @@ import "./MentorSignupStyle.css";
 import { useAuth } from "../contexts/AuthContext";
 import { collection, addDoc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import Form from "react-bootstrap/Form";
 
 // profile builder component
 
@@ -213,30 +214,8 @@ function MentorSignupForm() {
           <label>General availability - In the works</label>
           {/* Take care of this after connecting to firebase */}
           <div className="checkboxes">
-            {/* 
-                        {daysOfWeek.map(day => (
-                            <div key={day} style={{marginBottom: '10px'}}>
-                                <label style={{fontWeight: 500, fontSize: '1.1rem'}}>
-                                    <input
-                                        type="checkbox"
-                                        checked={availability[day] !== undefined}
-                                        onChange={() => handleDayToggle(day)}
-                                        style={{marginRight: '8px', transform: 'scale(1.3)'}}
-                                    />
-                                    {day}
-                                </label>
-                                {availability[day] !== undefined && (
-                                    <input
-                                        type="text"
-                                        placeholder="Enter available times (e.g. 6-8pm)"
-                                        value={availability[day]}
-                                        onChange={e => handleTimeChange(day, e.target.value)}
-                                        style={{marginLeft: '16px', width: '60%'}}
-                                    />
-                                )}
-                            </div>
-                        ))}
-                        */}
+            <input type="checkbox" name="avilability" value="monday" />
+            <label for="monday"> Monday</label>
           </div>
 
           <label>Phone number</label>

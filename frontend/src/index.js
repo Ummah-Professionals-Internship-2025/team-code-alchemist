@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import MentorSigninForm from "./mentor-signup-form/MentorSignupForm2";
+import MentorSigninForm from "./mentor-signup-form/MentorSignupForm";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 
