@@ -15,6 +15,8 @@ import PieChartOutlinedIcon from "@mui/icons-material/PieChartOutlined";
 import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+
 
 const Item = ({ title, to, icon, selected, setSelected}) => {
     const theme = useTheme();
@@ -110,6 +112,13 @@ const Sidebar = () => {
                             title="Dashboard"
                             to="/"
                             icon={<HomeOutlinedIcon />}
+                            selected={selected}
+                            setSelected={setSelected}
+                            />
+                            <Item
+                            title="Sign Up"
+                            to="/Signup"
+                            icon={<PersonAddIcon />}
                             selected={selected}
                             setSelected={setSelected}
                             />

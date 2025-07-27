@@ -107,8 +107,8 @@ const Team = () => {
           fontWeight: "bold"
         },
         "& .MuiDataGrid-columnHeaders": {
-          backgroundColor: "#32c9d1 !important",
-          borderBottom: "none !important",
+          backgroundColor: "#32c9d1",
+          borderBottom: "none",
         
         },
         "& .MuiDataGrid-columnHeaderTitle": {
