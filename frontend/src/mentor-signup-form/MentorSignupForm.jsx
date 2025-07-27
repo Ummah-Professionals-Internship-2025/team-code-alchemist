@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./MentorSignupStyle.css";
 import { useAuth } from "../contexts/AuthContext";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
 // profile builder component
@@ -52,6 +52,7 @@ function MentorSignupForm() {
       await addDoc(collection(db, "mentors"), form);
       alert("Data submitted!");
       setForm(initialState);
+      getDoc();
     } catch (error) {
       console.error("Error writing document: ", error);
     }
