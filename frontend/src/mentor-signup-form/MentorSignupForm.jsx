@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./MentorSignupStyle.css";
 import { useAuth } from "../contexts/AuthContext";
 import { collection, addDoc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import Form from "react-bootstrap/Form";
+import AvailabilityForm from "./AvailibilityForm";
 
 // profile builder component
 
@@ -23,17 +24,8 @@ export const initialState = {
   ageRange: "",
   university: "",
   resume: "",
+  availability: [],
 };
-
-const daysOfWeek = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-];
 
 function MentorSignupForm() {
   const [submitted, setSubmitted] = useState(false);
@@ -41,23 +33,36 @@ function MentorSignupForm() {
   const { currentUser, signup } = useAuth();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [availability, setAvailability] = useState(new Set());
+
+
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
+  
+  const handleAvailabilityChange = (selectedSlots) => {
+  setAvailability(selectedSlots);
+};
+
+useEffect(() => {
+  const availabilityArray = Array.from(availability);
+  form.availability = availabilityArray
+}, [availability]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     console.log(form);
     try {
-      await addDoc(collection(db, "mentors"), form);
+      await addDoc(collection(db, "pendingMentors"), form);
       alert("Data submitted!");
       setForm(initialState);
-      getDoc();
     } catch (error) {
       console.error("Error writing document: ", error);
     }
   }
+
+// temporarily making all fields not required
 
   return (
     <div className="form-container">
@@ -107,7 +112,6 @@ function MentorSignupForm() {
             name="yearsOfExperience"
             value={form.yearsOfExperience}
             onChange={handleChange}
-            required
           />
 
           <label>Company and past companies</label>
@@ -118,7 +122,6 @@ function MentorSignupForm() {
             name="companies"
             value={form.companies}
             onChange={handleChange}
-            required
           />
 
           <label>Skills (3-5)</label>
@@ -129,7 +132,7 @@ function MentorSignupForm() {
             name="skills"
             value={form.skills}
             onChange={handleChange}
-            required
+            
           />
 
           <label>What do you want to help in</label>
@@ -140,7 +143,6 @@ function MentorSignupForm() {
             name="helpIn"
             value={form.helpIn}
             onChange={handleChange}
-            required
           />
 
           <label>Do you want to put your Google/Outlook calendar?</label>
@@ -151,7 +153,7 @@ function MentorSignupForm() {
               name="calendar"
               value={form.calendar}
               onChange={handleChange}
-              required
+              
             >
               <option value="">Select</option>
               <option value="yes">Yes</option>
@@ -167,7 +169,7 @@ function MentorSignupForm() {
               name="region"
               value={form.region}
               onChange={handleChange}
-              required
+              
             >
               <option value="">Select</option>
               <option value="NA-East">NA - East </option>
@@ -185,7 +187,7 @@ function MentorSignupForm() {
               name="gender"
               value={form.gender}
               onChange={handleChange}
-              required
+              
             >
               <option value="">Select</option>
               <option value="Male">Male</option>
@@ -203,7 +205,7 @@ function MentorSignupForm() {
               name="wouldYouMind"
               value={form.wouldYouMind}
               onChange={handleChange}
-              required
+              
             >
               <option value="">Select</option>
               <option value="yes - Dont mind">Yes</option>
@@ -212,10 +214,11 @@ function MentorSignupForm() {
           </div>
 
           <label>General availability - In the works</label>
-          {/* Take care of this after connecting to firebase */}
           <div className="checkboxes">
-            <input type="checkbox" name="avilability" value="monday" />
-            <label for="monday"> Monday</label>
+            <AvailabilityForm 
+              selectedSlots={availability}
+              onAvailabilityChange={handleAvailabilityChange}
+            />
           </div>
 
           <label>Phone number</label>
@@ -226,7 +229,7 @@ function MentorSignupForm() {
             name="phone"
             value={form.phone}
             onChange={handleChange}
-            required
+            
           />
 
           <label>Year of graduation</label>
@@ -237,7 +240,7 @@ function MentorSignupForm() {
             name="yearOfGraduation"
             value={form.yearOfGraduation}
             onChange={handleChange}
-            required
+            
           />
 
           <label>Age range for mentee pairing</label>
@@ -248,7 +251,7 @@ function MentorSignupForm() {
             name="ageRange"
             value={form.ageRange}
             onChange={handleChange}
-            required
+            
           />
 
           <label>University</label>
@@ -259,9 +262,9 @@ function MentorSignupForm() {
             name="university"
             value={form.university}
             onChange={handleChange}
-            required
+            
           />
-          <div className="resume-dropbox">
+          {/* <div className="resume-dropbox">
             <input
               type="file"
               accept=".pdf,.doc,.docx"
@@ -279,7 +282,7 @@ function MentorSignupForm() {
               </p>
               <p className="format-text">Supported formats: PDF, DOC, DOCX</p>
             </label>
-          </div>
+          </div> */}
           <button className="submit-btn" type="submit" disabled={loading}>
             Submit
           </button>
