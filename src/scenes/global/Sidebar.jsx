@@ -7,7 +7,6 @@ import { tokens } from "../../theme";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
 import ContactsOutlinedIcon from "@mui/icons-material/ContactsOutlined";
-import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import HelpOutlinedIcon from "@mui/icons-material/HelpOutlined";
 import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
@@ -15,7 +14,6 @@ import PieChartOutlinedIcon from "@mui/icons-material/PieChartOutlined";
 import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 
 const Item = ({ title, to, icon, selected, setSelected}) => {
@@ -116,13 +114,6 @@ const Sidebar = () => {
                             setSelected={setSelected}
                             />
                             <Item
-                            title="Sign Up"
-                            to="/Signup"
-                            icon={<PersonAddIcon />}
-                            selected={selected}
-                            setSelected={setSelected}
-                            />
-                            <Item
                             title="Manage Team"
                             to="/team"
                             icon={<PeopleOutlinedIcon />}
@@ -133,13 +124,6 @@ const Sidebar = () => {
                             title="Contacts Information"
                             to="/contacts"
                             icon={<ContactsOutlinedIcon />}
-                            selected={selected}
-                            setSelected={setSelected}
-                            />
-                            <Item
-                            title="Profile Form"
-                            to="/form"
-                            icon={<PersonOutlinedIcon />}
                             selected={selected}
                             setSelected={setSelected}
                             />

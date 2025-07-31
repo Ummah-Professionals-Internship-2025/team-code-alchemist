@@ -7,13 +7,11 @@ import Sidebar from "./scenes/global/Sidebar";
 import Team from "./scenes/team";
 import Contacts from "./scenes/contacts";
 import Bar from "./scenes/bar";
-import Form from "./scenes/form";
 import Line from "./scenes/line";
 import Pie from "./scenes/pie";
 import FAQ from "./scenes/faq";
 import Geography from "./scenes/geography";
 import Calendar from "./scenes/calendar";
-import Signup from "./scenes/Signup";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -28,10 +26,8 @@ function App() {
           <Topbar />
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/Signup" element ={<Signup />} />
             <Route path="/team" element ={<Team />} />
             <Route path="/contacts" element ={<Contacts />} />
-            <Route path="/form" element ={<Form />} />
             <Route path="/bar" element ={<Bar />} />
             <Route path="/pie" element ={<Pie />} />
             <Route path="/line" element ={<Line />} />
