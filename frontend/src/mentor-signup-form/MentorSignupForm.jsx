@@ -194,7 +194,7 @@ useEffect(() => {
               <option value="Female">Female</option>
             </select>
           </div>
-
+          
           <label>
             Would you be alright with teaching the opposite gender, given a
             shortage?
