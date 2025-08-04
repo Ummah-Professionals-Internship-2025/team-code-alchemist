@@ -2,6 +2,14 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Branch Information
+
+Mentor Application -> Initial Application Mentor submits
+Mentor Create account -> Allows user to sign up using email and password
+Mentor Dashboard -> Empty for now; Will have Dashboard
+Mentor Login -> For mentors who already signed up to access dashboard
+Temp -> Yassir's code for approval so I can test the email process when a mentor is approved
+
 ## Available Scripts
 
 In the project directory, you can run:

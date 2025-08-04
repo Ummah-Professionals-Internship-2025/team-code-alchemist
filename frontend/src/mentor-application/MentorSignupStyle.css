@@ -22,7 +22,7 @@ body {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   max-width: 640px;
   min-width: 50vw;
-  max-height: 100vh;
+  max-height: 75vh;
   align-items: center;
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.2);

@@ -5,13 +5,13 @@ import { getFirestore } from "firebase/firestore";
 // I think this isnt safe but I was running into issues with the apiKey retrieval
 
 const app = initializeApp({
-  apiKey: "AIzaSyCX_TtcyA9zBO9Pw34vZdj2Lux002a22iA",
-  authDomain: "ummahprof-55270.firebaseapp.com",
-  projectId: "ummahprof-55270",
-  storageBucket: "ummahprof-55270.firebasestorage.app",
-  messagingSenderId: "93492888365",
-  appId: "1:93492888365:web:27554532dce28a579cc9a4",
-  measurementId: "G-FXY5K0796S",
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 });
 
 export const auth = getAuth(app);
