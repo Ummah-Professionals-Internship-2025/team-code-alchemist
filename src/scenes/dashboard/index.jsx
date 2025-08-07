@@ -75,6 +75,12 @@ return (
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
             <Typography>Email: {user.email}</Typography>
             <Typography>Name: {user.name}</Typography>
+            <Typography>University: {user.university}</Typography>
+            <Typography>Years of Experience: {user.yearsOfExperience}</Typography>
+            <Typography>Industry: {user.industry}</Typography>            
+            <Typography>Skills: {user.skills}</Typography>
+            <Typography>Availability: {user.availability}</Typography>
+            <Typography>Resume: {user.resume}</Typography>
             <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
               <Button variant="contained" color="success" onClick={() => handleApprove(user)}>Approve</Button>
               <Button variant="outlined" color="error" onClick={() => handleDeny(user)}>Deny</Button>
