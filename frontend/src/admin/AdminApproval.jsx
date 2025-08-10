@@ -4,38 +4,43 @@ import { db } from "../firebase";
 import emailjs from "emailjs-com";
 
 export default function AdminApproval() {
-  const [pending, setPending] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
+  const [pendingMentors, setPendingMentors] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setErr("");
+    const fetchPendingMentors = async () => {
+      setIsLoading(true);
+      setErrorMessage("");
       try {
-
-        const q = query(collection(db, "pendingMentors"), where("status", "==", "pending"));
-        const snap = await getDocs(q);
-        const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        setPending(rows);
-      } catch (e) {
-        console.error(e);
-        setErr(e.message || "Failed to load.");
+        const mentorsQuery = query(
+          collection(db, "pendingMentors"),
+          where("status", "==", "pending")
+        );
+        const snapshot = await getDocs(mentorsQuery);
+        const mentorList = snapshot.docs.map(docSnap => ({
+          id: docSnap.id,
+          ...docSnap.data()
+        }));
+        setPendingMentors(mentorList);
+      } catch (error) {
+        console.error("Error fetching mentors:", error);
+        setErrorMessage(error.message || "Failed to load pending mentors.");
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
-    load();
+    fetchPendingMentors();
   }, []);
 
-  const handleApprove = async (m) => {
+  const handleApprove = async (mentor) => {
     const signupLink = `${window.location.origin}/create-password?email=${encodeURIComponent(
-      m.email || ""
+      mentor.email || ""
     )}`;
 
-    const params = {
-      to_email: m.email,               
-      mentor_name: m.name || "Mentor",
+    const emailParams = {
+      to_email: mentor.email,
+      mentor_name: mentor.name || "Mentor",
       signup_link: signupLink,
     };
 
@@ -43,44 +48,52 @@ export default function AdminApproval() {
       await emailjs.send(
         process.env.REACT_APP_EMAILJS_SERVICE_ID,
         process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
-        params,
+        emailParams,
         process.env.REACT_APP_EMAILJS_PUBLIC_KEY
       );
 
-    
-      await deleteDoc(doc(db, "pendingMentors", m.id));
-      setPending((list) => list.filter((x) => x.id !== m.id));
-      alert(`Approved & sent link to ${m.email}`);
-    } catch (e) {
-      console.error("Email/cleanup failed:", e);
-      alert(`Failed to send: ${e?.text || e?.message || e}`);
+      await deleteDoc(doc(db, "pendingMentors", mentor.id));
+      setPendingMentors(prev => prev.filter(item => item.id !== mentor.id));
+
+      alert(`Approved & sent link to ${mentor.email}`);
+    } catch (error) {
+      console.error("Error approving mentor:", error);
+      alert(`Failed to send email: ${error?.text || error?.message || error}`);
     }
   };
 
-  const handleDeny = async (m) => {
+  const handleDeny = async (mentor) => {
     try {
-      await deleteDoc(doc(db, "pendingMentors", m.id));
-      setPending((list) => list.filter((x) => x.id !== m.id));
-    } catch (e) {
-      console.error(e);
-      alert(e.message || "Failed to deny.");
+      await deleteDoc(doc(db, "pendingMentors", mentor.id));
+      setPendingMentors(prev => prev.filter(item => item.id !== mentor.id));
+    } catch (error) {
+      console.error("Error denying mentor:", error);
+      alert(error.message || "Failed to deny mentor.");
     }
   };
 
   return (
     <div style={{ padding: 16, maxWidth: 720, margin: "0 auto" }}>
       <h2>Pending Mentor Approvals</h2>
-      {loading && <p>Loading…</p>}
-      {err && <p style={{ color: "crimson" }}>{err}</p>}
-      {!loading && !pending.length && <p>No pending mentors.</p>}
+      {isLoading && <p>Loading…</p>}
+      {errorMessage && <p style={{ color: "crimson" }}>{errorMessage}</p>}
+      {!isLoading && !pendingMentors.length && <p>No pending mentors.</p>}
 
-      {pending.map((m) => (
-        <div key={m.id} style={{ border: "1px solid #ddd", padding: 12, borderRadius: 8, marginTop: 12 }}>
-          <div><b>Name:</b> {m.name || "—"}</div>
-          <div><b>Email:</b> {m.email || "—"}</div>
+      {pendingMentors.map((mentor) => (
+        <div
+          key={mentor.id}
+          style={{
+            border: "1px solid #ddd",
+            padding: 12,
+            borderRadius: 8,
+            marginTop: 12
+          }}
+        >
+          <div><b>Name:</b> {mentor.name || "N/A"}</div>
+          <div><b>Email:</b> {mentor.email || "N/A"}</div>
           <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-            <button onClick={() => handleApprove(m)}>Approve + Send Link</button>
-            <button onClick={() => handleDeny(m)}>Deny</button>
+            <button onClick={() => handleApprove(mentor)}>Approve + Send Link</button>
+            <button onClick={() => handleDeny(mentor)}>Deny</button>
           </div>
         </div>
       ))}
