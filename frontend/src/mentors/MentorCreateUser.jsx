@@ -18,9 +18,9 @@ export default function MentorCreateUser() {
     e.preventDefault();
     setError("");
 
-    if (!email) return setError("Missing email in link.");
-    if (password !== confirm) return setError("Passwords do not match.");
-    if (password.length < 8) return setError("Password must be at least 8 characters.");
+    if (!email) return setError("Missing email in link...");
+    if (password !== confirm) return setError("Passwords do not match...");
+    if (password.length < 8) return setError("Password must be at least 8 characters...");
 
     try {
       alert(`(Demo) Password set for ${email}`);
