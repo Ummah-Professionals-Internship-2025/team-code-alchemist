@@ -1,66 +1,36 @@
-import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
 export default function MentorCreateUser() {
-  const location = useLocation();
-  const [email, setEmail] = useState("");
+  const urlParams = new URLSearchParams(window.location.search);
+  const emailFromUrl = urlParams.get("email") || "";
   const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [error, setError] = useState("");
+  const auth = getAuth();
 
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const e = params.get("email") || "";
-    setEmail(e);
-  }, [location.search]);
-
-  const onSubmit = async (e) => {
+  const createAccount = async (e) => {
     e.preventDefault();
-    setError("");
-
-    if (!email) return setError("Missing email in link...");
-    if (password !== confirm) return setError("Passwords do not match...");
-    if (password.length < 8) return setError("Password must be at least 8 characters...");
-
     try {
-      alert(`(Demo) Password set for ${email}`);
-    } catch (err) {
-      console.error(err);
-      setError(err?.message || "Failed to create account.");
+      await createUserWithEmailAndPassword(auth, emailFromUrl, password);
+      alert("Account created successfully.");
+    } catch (error) {
+      console.error(error);
+      alert("Unable to create account.");
     }
   };
 
   return (
-    <div style={{ padding: 24, maxWidth: 420, margin: "40px auto" }}>
-      <h2>Create Your Password</h2>
-      {error && <p style={{ color: "crimson" }}>{error}</p>}
-      <form onSubmit={onSubmit}>
-        <div style={{ marginBottom: 12 }}>
-          <label>Email</label>
-          <input style={{ width: "100%" }} type="email" value={email} readOnly />
-        </div>
-        <div style={{ marginBottom: 12 }}>
-          <label>New password</label>
-          <input
-            style={{ width: "100%" }}
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="At least 8 characters"
-          />
-        </div>
-        <div style={{ marginBottom: 16 }}>
-          <label>Confirm password</label>
-          <input
-            style={{ width: "100%" }}
-            type="password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            placeholder="Re-enter password"
-          />
-        </div>
-        <button type="submit" style={{ width: "100%" }}>Set Password</button>
-      </form>
-    </div>
+    <form onSubmit={createAccount}>
+      <h2>Create Your Mentor Account</h2>
+      <input type="email" value={emailFromUrl} readOnly />
+      <input
+        type="password"
+        placeholder="Create Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
+      <button type="submit">Create Account</button>
+    </form>
   );
 }
+
