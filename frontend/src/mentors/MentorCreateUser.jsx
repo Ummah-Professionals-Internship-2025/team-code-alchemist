@@ -24,7 +24,7 @@ export default function MentorCreateUser() {
       <input type="email" value={emailFromUrl} readOnly />
       <input
         type="password"
-        placeholder="Create Password"
+        placeholder="Create Password..."
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
