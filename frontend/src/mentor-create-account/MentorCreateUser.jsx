@@ -1,28 +1,58 @@
-import React, { useState } from "react";
-import { useAuth } from "../contexts/index";
+import React, { useEffect, useState } from "react";
 import { doCreateUserWithEmailAndPassword } from "../Auth";
-
+import { db } from "../firebase";
+import { deleteDoc, doc } from "firebase/firestore";
+import { getDoc, setDoc } from "firebase/firestore";
 
 export default function MentorCreateUser() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const emailFromUrl = urlParams.get("email") || "";
+  const dbIdFromUrl = urlParams.get("dbId") || "";
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const email = emailFromUrl;
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [mentorData, setMentorData] = useState({});
   // const history = useHistory();
 
+  useEffect(() => {
+    const fetchMentorData = async () => {
+      if (!dbIdFromUrl) {
+        return;
+      }
+      const docRef = doc(db, "pendingMentors", dbIdFromUrl);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setMentorData(docSnap.data());
+        console.log("Document data:", docSnap.data());
+      } else {
+        console.log("No such document!");
+      }
+    };
+    fetchMentorData();
+  }, [dbIdFromUrl]);
   async function handleSubmit(e) {
+    // previous code
+    let uid;
     e.preventDefault();
-
     if (password !== confirmPassword) {
       return setError("Passwords do not match");
     }
 
     try {
-      await doCreateUserWithEmailAndPassword(email, password, name);
+      await doCreateUserWithEmailAndPassword(email, password, name).then(
+        (userCredential) => {
+          const user = userCredential.user;
+          uid = user.uid;
+        }
+      );
+      await setDoc(doc(db, "mentors", uid), mentorData);
+      await deleteDoc(doc(db, "pendingMentors", dbIdFromUrl));
+
       alert("user created");
-      // history.push("/mentor-signin");
     } catch (error) {
+      console.error("Error creating user:", error);
       setError("Failed to create an account");
       if (error.code === "auth/email-already-in-use") {
         alert("Email already in use");
@@ -63,8 +93,8 @@ export default function MentorCreateUser() {
               className="form-input"
               placeholder="example@gmail.com"
               autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={emailFromUrl}
+              readOnly
             />
           </div>
 

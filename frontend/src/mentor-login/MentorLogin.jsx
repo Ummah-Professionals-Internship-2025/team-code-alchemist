@@ -1,17 +1,18 @@
 import React, { useState } from "react";
 import "./MentorLogin.css";
-import { useAuth } from "../contexts/index";
 import { doSignInWithEmailAndPassword } from "../Auth";
+import { useNavigate } from "react-router-dom";
+import { auth } from "../firebase";
 
 function MentorLogin() {
   // const {userLoggedIn} = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
-  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     password: "",
   });
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -25,8 +26,12 @@ function MentorLogin() {
     e.preventDefault();
     if (!isSigningIn) {
       setIsSigningIn(true);
-      await doSignInWithEmailAndPassword(formData.email, formData.password);
-      alert(`Hello ${formData.fullName}`);
+      await doSignInWithEmailAndPassword(
+        formData.email,
+        formData.password
+      ).then(alert("signed in"));
+      navigate("/mentor-dashboard");
+      setIsSigningIn(false);
     }
   };
 
@@ -36,21 +41,6 @@ function MentorLogin() {
         <h1 className="form-title">Mentor Log In</h1>
 
         <div>
-          <div className="form-group">
-            <label className="form-label" htmlFor="fullName">
-              Full Name:
-            </label>
-            <input
-              type="text"
-              id="fullName"
-              name="fullName"
-              className="form-input"
-              placeholder="ex. Ahmed Ali"
-              value={formData.fullName}
-              onChange={handleInputChange}
-            />
-          </div>
-
           <div className="form-group">
             <label className="form-label" htmlFor="email">
               Email:

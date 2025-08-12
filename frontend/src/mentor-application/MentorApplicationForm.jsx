@@ -5,6 +5,7 @@ import "./MentorSignupStyle.css";
 import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import AvailabilityForm from "./AvailibilityForm";
+import axios from "axios";
 
 // profile builder component
 
@@ -25,7 +26,7 @@ export const initialState = {
   yearOfGraduation: "",
   ageRange: "",
   university: "",
-  resume: "",
+  resumeURL: "",
   status: "pending",
   availability: [],
 };
@@ -59,6 +60,18 @@ const companySizeOptions = [
   },
 ];
 
+const helpingOptions = [
+  { value: "resume_review", label: "Resume Review" },
+  { value: "interview_skills", label: "Interview Skills" },
+  { value: "career_fair_prep", label: "Career Fair Prep" },
+  { value: "personal_project_guidance", label: "Personal Project Guidance" },
+  { value: "mock_interviews", label: "Mock Interviews" },
+  { value: "career_path_exploration", label: "Career Path Exploration" },
+  { value: "portfolio_feedback", label: "Portfolio Feedback" },
+  { value: "job_search_strategy", label: "Job Search Strategy" },
+  { value: "tech_industry_insights", label: "Tech Industry Insights" },
+];
+
 function MentorApplicationForm() {
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState(initialState);
@@ -66,6 +79,7 @@ function MentorApplicationForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [availability, setAvailability] = useState(new Set());
+  const [resumeFile, setResumeFile] = useState(null);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -82,6 +96,10 @@ function MentorApplicationForm() {
     setAvailability(selectedSlots);
   };
 
+  const handleResumeChange = (e) => {
+    setResumeFile(e.target.files[0]);
+  };
+
   useEffect(() => {
     const availabilityArray = Array.from(availability);
     form.availability = availabilityArray;
@@ -89,11 +107,26 @@ function MentorApplicationForm() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+
+    if (!resumeFile) {
+      return setError("Please upload your resume");
+    }
+    // resume url
+    const formData = new FormData();
+    formData.append("resume", resumeFile);
+    const resumeResponse = await axios.post("/api/applications", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    form.resumeURL = resumeResponse.data.resumeUrl;
     console.log(form);
+
     try {
       await addDoc(collection(db, "pendingMentors"), form);
       alert("Data submitted!");
       setForm(initialState);
+      setSubmitted(true);
     } catch (error) {
       console.error("Error writing document: ", error);
     }
@@ -104,16 +137,21 @@ function MentorApplicationForm() {
       <div>
         <h3 className="title is-3">Ummah Professionals</h3>
       </div>
-      {/* {currentUser && currentUser.email} */}
       {error && <h1 className="Danger">{error}</h1>}
+
       <div className="form-card scrollable-form">
         <button className="btn">{"< Back"}</button>
         <h2>Mentor Application</h2>
+
         <form onSubmit={handleSubmit}>
+          {/* Full Name */}
           <div className="field">
-            <label className="label">Full Name</label>
+            <label className="label" htmlFor="name">
+              Full Name <span className="required">*</span>
+            </label>
             <div className="control">
               <input
+                id="name"
                 className="input"
                 type="text"
                 placeholder="Enter name"
@@ -125,245 +163,390 @@ function MentorApplicationForm() {
             </div>
           </div>
 
+          {/* Email */}
           <div className="field">
-            <label className="label">Email</label>
+            <label className="label" htmlFor="email">
+              Email <span className="required">*</span>
+            </label>
             <div className="control">
               <input
+                id="email"
                 className="input"
                 type="email"
                 placeholder="e.g. alex@example.com"
                 name="email"
                 value={form.email}
                 onChange={handleChange}
+                required
               />
             </div>
           </div>
 
-          <label>Years of experience</label>
-          <input
-            className="input"
-            type="text"
-            placeholder=""
-            name="yearsOfExperience"
-            value={form.yearsOfExperience}
-            onChange={handleChange}
-          />
-
-          <label>Company and past companies</label>
-          <input
-            className="input"
-            type="text"
-            placeholder=""
-            name="companies"
-            value={form.companies}
-            onChange={handleChange}
-          />
-
-          <label>
-            Company Size <span style={{ color: "red" }}>*</span>
-          </label>
-          <Select
-            name="companySize"
-            options={companySizeOptions}
-            value={companySizeOptions.find(
-              (opt) => opt.value === form.companySize
-            )}
-            onChange={(selectedOption) =>
-              setForm((prev) => ({
-                ...prev,
-                companySize: selectedOption?.value || "",
-              }))
-            }
-            classNamePrefix="react-select"
-            placeholder="Select company size..."
-            isClearable
-            required
-          />
-
-          <label>Skills (3-5)</label>
-          <input
-            className="input"
-            type="text"
-            placeholder=""
-            name="skills"
-            value={form.skills}
-            onChange={handleChange}
-          />
-
-          <label>
-            Industry <span style={{ color: "red" }}>*</span>
-          </label>
-          <Select
-            isMulti
-            name="industry"
-            options={industryOptions}
-            value={industryOptions.filter((opt) =>
-              form.industry.includes(opt.value)
-            )}
-            onChange={handleIndustryChange}
-            classNamePrefix="react-select"
-            placeholder="Select industry..."
-            required
-          />
-
-          <label htmlFor="helpIn">What do you want to help in</label>
-          <select
-            className="input"
-            name="helpIn"
-            value={form.helpIn}
-            onChange={handleChange}
-          >
-            <option value="">Select a topic</option>
-            <option value="resume_review">Resume Review</option>
-            <option value="interview_skills">Interview Skills</option>
-            <option value="career_fair_prep">Career Fair Prep</option>
-            <option value="personal_project_guidance">
-              Personal Project Guidance
-            </option>
-            <option value="mock_interviews">Mock Interviews</option>
-            <option value="career_path_exploration">
-              Career Path Exploration
-            </option>
-            <option value="portfolio_feedback">Portfolio Feedback</option>
-            <option value="job_search_strategy">Job Search Strategy</option>
-            <option value="tech_industry_insights">
-              Tech Industry Insights
-            </option>
-          </select>
-
-          <label>Do you want to put your Google/Outlook calendar?</label>
-          <div className="select">
-            <select
-              className="input"
-              aria-label="Default select example"
-              name="calendar"
-              value={form.calendar}
-              onChange={handleChange}
-            >
-              <option value="">Select</option>
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
-          </div>
-
-          <label>Region</label>
-          <div className="select">
-            <select
-              className="form-select"
-              aria-label="Default select example"
-              name="region"
-              value={form.region}
-              onChange={handleChange}
-            >
-              <option value="">Select</option>
-              <option value="NA-East">NA - East </option>
-              <option value="NA-Central">NA - Central </option>
-              <option value="NA-West">NA - West </option>
-              <option value="Other">Other </option>
-            </select>
-          </div>
-
-          <label>Gender</label>
-          <div className="select">
-            <select
-              className="form-select"
-              aria-label="Default select example"
-              name="gender"
-              value={form.gender}
-              onChange={handleChange}
-            >
-              <option value="">Select</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-            </select>
-          </div>
-
-          <label>
-            Would you be alright with teaching the opposite gender, given a
-            shortage?
-          </label>
-          <div className="select">
-            <select
-              className="form-select"
-              name="wouldYouMind"
-              value={form.wouldYouMind}
-              onChange={handleChange}
-            >
-              <option value="">Select</option>
-              <option value="yes - Dont mind">Yes</option>
-              <option value="no">No</option>
-            </select>
-          </div>
-
-          <label>General availability</label>
-          <div className="checkboxes">
-            <AvailabilityForm
-              selectedSlots={availability}
-              onAvailabilityChange={handleAvailabilityChange}
-            />
-          </div>
-
-          <label>Phone number</label>
-          <input
-            className="input"
-            type="text"
-            placeholder=""
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-          />
-
-          <label>Year of graduation</label>
-          <input
-            className="input"
-            type="text"
-            placeholder=""
-            name="yearOfGraduation"
-            value={form.yearOfGraduation}
-            onChange={handleChange}
-          />
-
-          <label>Age range for mentee pairing</label>
-          <input
-            className="input"
-            type="text"
-            placeholder=""
-            name="ageRange"
-            value={form.ageRange}
-            onChange={handleChange}
-          />
-
-          <label>University</label>
-          <input
-            className="input"
-            type="text"
-            placeholder=""
-            name="university"
-            value={form.university}
-            onChange={handleChange}
-          />
-          {/* <div className="resume-dropbox">
-            <input
-              type="file"
-              accept=".pdf,.doc,.docx"
-              className="file-input"
-              id="resume-upload"
-              name="resume"
-              value={form.resume}
-              onChange={handleChange}
-              required
-            />
-            <label htmlFor="resume-upload" className="dropbox-label">
-              <div className="file-icon">📄</div>
-              <p className="dropbox-text">
-                Drop your resume here or click to browse
-              </p>
-              <p className="format-text">Supported formats: PDF, DOC, DOCX</p>
+          {/* Years of Experience */}
+          <div className="field">
+            <label className="label" htmlFor="yearsOfExperience">
+              Years of Experience
             </label>
-          </div> */}
-          <button className="submit-btn" type="submit" disabled={loading}>
-            Submit
-          </button>
+            <div className="control">
+              <input
+                id="yearsOfExperience"
+                className="input"
+                type="number"
+                placeholder="e.g. 5"
+                name="yearsOfExperience"
+                value={form.yearsOfExperience}
+                onChange={handleChange}
+                min="0"
+              />
+            </div>
+          </div>
+
+          {/* Company and Past Companies */}
+          <div className="field">
+            <label className="label" htmlFor="companies">
+              Company and Past Companies
+            </label>
+            <div className="control">
+              <input
+                id="companies"
+                className="input"
+                type="text"
+                placeholder="e.g. Google, Microsoft, Apple"
+                name="companies"
+                value={form.companies}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          {/* Company Size */}
+          <div className="field">
+            <label className="label">
+              Company Size <span className="required">*</span>
+            </label>
+            <div className="control">
+              <Select
+                name="companySize"
+                options={companySizeOptions}
+                value={companySizeOptions.find(
+                  (opt) => opt.value === form.companySize
+                )}
+                onChange={(selectedOption) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    companySize: selectedOption?.value || "",
+                  }))
+                }
+                classNamePrefix="react-select"
+                placeholder="Select company size..."
+                isClearable
+                required
+              />
+            </div>
+          </div>
+
+          {/* Skills */}
+          <div className="field">
+            <label className="label" htmlFor="skills">
+              Skills (3-5)
+            </label>
+            <div className="control">
+              <input
+                id="skills"
+                className="input"
+                type="text"
+                placeholder="e.g. JavaScript, React, Node.js"
+                name="skills"
+                value={form.skills}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          {/* Industry */}
+          <div className="field">
+            <label className="label">
+              Industry <span className="required">*</span>
+            </label>
+            <div className="control">
+              <Select
+                isMulti
+                name="industry"
+                options={industryOptions}
+                value={industryOptions.filter((opt) =>
+                  form.industry.includes(opt.value)
+                )}
+                onChange={handleIndustryChange}
+                classNamePrefix="react-select"
+                placeholder="Select industry..."
+                required
+              />
+            </div>
+          </div>
+
+          {/* Help In */}
+          <div className="field">
+            <label className="label" htmlFor="helpIn">
+              What do you want to help in
+            </label>
+            <div className="control">
+              <Select
+                name="helpIn"
+                options={[
+                  { value: "resume_review", label: "Resume Review" },
+                  { value: "interview_skills", label: "Interview Skills" },
+                  { value: "career_fair_prep", label: "Career Fair Prep" },
+                  {
+                    value: "personal_project_guidance",
+                    label: "Personal Project Guidance",
+                  },
+                  { value: "mock_interviews", label: "Mock Interviews" },
+                  {
+                    value: "career_path_exploration",
+                    label: "Career Path Exploration",
+                  },
+                  { value: "portfolio_feedback", label: "Portfolio Feedback" },
+                  {
+                    value: "job_search_strategy",
+                    label: "Job Search Strategy",
+                  },
+                  {
+                    value: "tech_industry_insights",
+                    label: "Tech Industry Insights",
+                  },
+                ]}
+                value={
+                  form.helpIn
+                    ? {
+                        value: form.helpIn,
+                        label: form.helpIn
+                          .replace(/_/g, " ")
+                          .replace(/\b\w/g, (l) => l.toUpperCase()),
+                      }
+                    : null
+                }
+                onChange={(selectedOption) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    helpIn: selectedOption?.value || "",
+                  }))
+                }
+                classNamePrefix="react-select"
+                placeholder="Select a topic..."
+                isClearable
+              />
+            </div>
+          </div>
+
+          {/* Calendar */}
+          <div className="field">
+            <label className="label" htmlFor="calendar">
+              Do you want to put your Google/Outlook calendar?
+            </label>
+            <div className="control">
+              <div className="select">
+                <select
+                  id="calendar"
+                  className="input"
+                  name="calendar"
+                  value={form.calendar}
+                  onChange={handleChange}
+                >
+                  <option value="">Select</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Region */}
+          <div className="field">
+            <label className="label" htmlFor="region">
+              Region
+            </label>
+            <div className="control">
+              <div className="select">
+                <select
+                  id="region"
+                  className="form-select"
+                  name="region"
+                  value={form.region}
+                  onChange={handleChange}
+                >
+                  <option value="">Select</option>
+                  <option value="NA-East">NA - East</option>
+                  <option value="NA-Central">NA - Central</option>
+                  <option value="NA-West">NA - West</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Gender */}
+          <div className="field">
+            <label className="label" htmlFor="gender">
+              Gender
+            </label>
+            <div className="control">
+              <div className="select">
+                <select
+                  id="gender"
+                  className="form-select"
+                  name="gender"
+                  value={form.gender}
+                  onChange={handleChange}
+                >
+                  <option value="">Select</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Cross-Gender Teaching */}
+          <div className="field">
+            <label className="label" htmlFor="wouldYouMind">
+              Would you be alright with teaching the opposite gender, given a
+              shortage?
+            </label>
+            <div className="control">
+              <div className="select">
+                <select
+                  id="wouldYouMind"
+                  className="form-select"
+                  name="wouldYouMind"
+                  value={form.wouldYouMind}
+                  onChange={handleChange}
+                >
+                  <option value="">Select</option>
+                  <option value="yes - Dont mind">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Availability */}
+          <div className="field">
+            <label className="label">General Availability</label>
+            <div className="control">
+              <AvailabilityForm
+                selectedSlots={availability}
+                onAvailabilityChange={handleAvailabilityChange}
+              />
+            </div>
+          </div>
+
+          {/* Phone Number */}
+          <div className="field">
+            <label className="label" htmlFor="phone">
+              Phone Number
+            </label>
+            <div className="control">
+              <input
+                id="phone"
+                className="input"
+                type="tel"
+                placeholder="e.g. (555) 123-4567"
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          {/* Year of Graduation */}
+          <div className="field">
+            <label className="label" htmlFor="yearOfGraduation">
+              Year of Graduation
+            </label>
+            <div className="control">
+              <input
+                id="yearOfGraduation"
+                className="input"
+                type="number"
+                placeholder="e.g. 2020"
+                name="yearOfGraduation"
+                value={form.yearOfGraduation}
+                onChange={handleChange}
+                min="1950"
+                max="2030"
+              />
+            </div>
+          </div>
+
+          {/* Age Range */}
+          <div className="field">
+            <label className="label" htmlFor="ageRange">
+              Age Range for Mentee Pairing
+            </label>
+            <div className="control">
+              <input
+                id="ageRange"
+                className="input"
+                type="text"
+                placeholder="e.g. 20-25, 18-30"
+                name="ageRange"
+                value={form.ageRange}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          {/* University */}
+          <div className="field">
+            <label className="label" htmlFor="university">
+              University
+            </label>
+            <div className="control">
+              <input
+                id="university"
+                className="input"
+                type="text"
+                placeholder="e.g. Harvard University"
+                name="university"
+                value={form.university}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          {/* Resume Upload */}
+          <div className="field">
+            <label className="label" htmlFor="resume">
+              Resume
+            </label>
+            <div className="control">
+              <div className="file-input-wrapper">
+                <input
+                  type="file"
+                  name="resume"
+                  onChange={handleResumeChange}
+                  id="resume"
+                  accept=".pdf,.doc,.docx"
+                  className="file-input"
+                />
+                <label htmlFor="resume" className="file-label">
+                  Choose File
+                </label>
+                {resumeFile && (
+                  <span className="file-name">{resumeFile.name}</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="field">
+            <div className="control">
+              <button className="submit-btn" type="submit" disabled={loading}>
+                {loading ? "Submitting..." : "Submit"}
+              </button>
+            </div>
+          </div>
         </form>
       </div>
     </div>
