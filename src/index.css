@@ -3,7 +3,7 @@ RUN cd up-admin RIGHT AFTER THEN npm start
 FOR PUSHING TO GITHUB:
 git add .
 git commit -m "your message here"
-git push origin feature-admin-login
+git push
 */
 html,
 body,
@@ -32,17 +32,17 @@ body,
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #e0e0e0;
+  background: #E8F0FA;
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #888;
+  background: #E8F0FA;
 }
 
 /* Handle on Hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #E8F0FA;
 }
 
 code {
