@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import "./MentorSignupStyle.css";
-// import { useAuth } from "../contexts/AuthContext";
-import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import AvailabilityForm from "./AvailibilityForm";
 import axios from "axios";
 
 // profile builder component
 
-export const initialState = {
+const initialState = {
+  createdAt: "",
   name: "",
   email: "",
   yearsOfExperience: "",
@@ -75,7 +75,6 @@ const helpingOptions = [
 function MentorApplicationForm() {
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState(initialState);
-  // const { currentUser, signup } = useAuth();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [availability, setAvailability] = useState(new Set());
@@ -123,6 +122,7 @@ function MentorApplicationForm() {
     console.log(form);
 
     try {
+      form.createdAt = serverTimestamp();
       await addDoc(collection(db, "pendingMentors"), form);
       alert("Data submitted!");
       setForm(initialState);
@@ -292,6 +292,7 @@ function MentorApplicationForm() {
             <div className="control">
               <Select
                 name="helpIn"
+                isMulti
                 options={[
                   { value: "resume_review", label: "Resume Review" },
                   { value: "interview_skills", label: "Interview Skills" },
@@ -316,23 +317,25 @@ function MentorApplicationForm() {
                   },
                 ]}
                 value={
-                  form.helpIn
-                    ? {
-                        value: form.helpIn,
-                        label: form.helpIn
+                  Array.isArray(form.helpIn)
+                    ? form.helpIn.map((item) => ({
+                        value: item,
+                        label: item
                           .replace(/_/g, " ")
                           .replace(/\b\w/g, (l) => l.toUpperCase()),
-                      }
-                    : null
+                      }))
+                    : []
                 }
-                onChange={(selectedOption) =>
+                onChange={(selectedOptions) =>
                   setForm((prev) => ({
                     ...prev,
-                    helpIn: selectedOption?.value || "",
+                    helpIn: selectedOptions
+                      ? selectedOptions.map((option) => option.value)
+                      : [],
                   }))
                 }
                 classNamePrefix="react-select"
-                placeholder="Select a topic..."
+                placeholder="Select topics..."
                 isClearable
               />
             </div>
