@@ -3,7 +3,7 @@ import "./index.css";
 import { auth } from "../firebase";
 import { db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
-import DisplayAvailabilityGrid from "./DisplayAvailabilityGrid";
+import DisplayAvailabilityGrid from "./mentor-features/DisplayAvailabilityGrid";
 
 // Cant update anything yet
 

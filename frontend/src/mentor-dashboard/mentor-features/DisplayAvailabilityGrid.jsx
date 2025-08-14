@@ -48,7 +48,6 @@ function DisplayAvailabilityGrid ({ availabilityArray }){
       `}</style>
       <p>Mentees will be only be able to request an appointment if you are available.
          You can always propose a time that works for you, without affecting your general availability.</p>
-      <span>Edit profile to change availability</span>
       <div className="availability-display">
         <table className="availability-table">
           <thead>

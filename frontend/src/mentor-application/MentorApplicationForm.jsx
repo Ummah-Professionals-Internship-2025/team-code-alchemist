@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import "./MentorSignupStyle.css";
-// import { useAuth } from "../contexts/AuthContext";
 import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import AvailabilityForm from "./AvailibilityForm";
@@ -75,7 +74,6 @@ const helpingOptions = [
 function MentorApplicationForm() {
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState(initialState);
-  // const { currentUser, signup } = useAuth();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [availability, setAvailability] = useState(new Set());
