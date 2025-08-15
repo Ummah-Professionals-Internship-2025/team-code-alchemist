@@ -1,0 +1,119 @@
+body{
+    background: linear-gradient(-40deg, rgba(138, 203, 219, 0), rgba(0, 124, 166, 0.8), rgb(0, 63, 85));
+
+}
+.navbar ul{
+    list-style-type: none;
+    padding: 0px;
+    margin: 0px;
+    overflow: hidden;
+    background-color: #E7E8EE;
+    font-size: 16px;
+    font-family: Poppins;
+    font-weight: bold;
+    float: right;
+    color: #003F55;
+    width: 100%;
+    object-fit: cover;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    
+
+}
+
+.navbar a{
+    color: #003F55;
+    text-decoration: none;
+    padding: 15px;
+    
+    text-align: center;
+}
+.navbar a:hover{
+    background-color: #003F55;
+    color: #E7E8EE;
+}
+.navbar li{
+    float: left;
+    display: flex;
+
+}
+.donate{
+    color: #FDBB37;
+
+}
+.workers{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.title{
+    color: white;
+    font-size: 42px;
+    text-align: left;
+    font-family: Poppins;
+    position: relative;
+    top: 100px;
+    right: -150px;
+}
+.subtitle{
+    color: white;
+    font-size: 21px;
+    text-align: left;
+    font-weight: 300;
+    font-family: Poppins;
+    line-height: normal;
+    position: relative;
+    top: 100px;
+    right: -150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-shrink: 0;
+   
+    
+}
+a:visited{
+    color: white;
+}
+.student{
+    position: relative;
+    
+    top: 200px;
+    left: 150px;
+    color: #007CA6;
+    font-size: 17px;
+    font-family: Poppins;
+    border-radius: 10px;
+    
+    font-weight: bold;
+border: none;
+background: white;
+    padding: 10px 20px;
+    margin-top: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    width: 329px;
+height: 60px;
+flex-shrink: 0;
+
+}
+.student:hover{
+    background-color: #E7E8EE;
+    color: #003F55;
+}
+.login{
+    color: white;
+    font-size: 16px;
+    font-family: Poppins;
+    right: -150px;
+    top: 200px;
+    position: relative;
+    
+    margin-top: 20px;
+}
