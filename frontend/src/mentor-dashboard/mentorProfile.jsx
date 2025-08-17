@@ -3,6 +3,7 @@ import "./index.css";
 import { auth } from "../firebase";
 import { db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
+import DisplayAvailabilityGrid from "./mentor-features/DisplayAvailabilityGrid";
 
 // Cant update anything yet
 
@@ -12,31 +13,16 @@ function MentorProfile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        setLoading(true);
-        const profileData = await fetchUserProfile(userId);
-        setProfile(profileData);
-      } catch (error) {
-        console.error("Error loading profile:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    console.log(profile);
-
-    loadProfile();
-  }, [userId]);
 
   const fetchUserProfile = async (userId) => {
     const docRef = doc(db, "mentors", userId);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      return docSnap.data();
+      setProfile(docSnap.data())
     } else {
-      return null;
+      console.log("No data was found")
+
     }
   };
 
@@ -46,7 +32,7 @@ function MentorProfile() {
         <div className="avatar"></div>
         <div className="profile-info">
           <h1>
-            <h1>Name</h1>
+            {profile ? profile.name : "Profile Loading ..."}
             <span className="advisor-badge">Mentor</span>
           </h1>
           <p className="subtitle">Open to help in:</p>
@@ -55,9 +41,10 @@ function MentorProfile() {
             <span className="tag">Resume or Portfolio Review</span>
             <span className="tag">Mock Interviews</span>
           </div>
-          <button>Load Mentor data</button>
+          <button onClick={() => fetchUserProfile(userId)}>Load Mentor data</button>
         </div>
         <button className="edit-btn header-edit">
+          Edit Profile <> </>
           <svg
             width="16"
             height="16"
@@ -83,22 +70,9 @@ function MentorProfile() {
             <span className="value">{user.email}</span>
           </div>
           <div className="info-row">
-            <span className="label">Phone number:</span>
-            <span className="value"></span>
+            <span className="label">Phone: </span>
+            <span className="value">{profile ? profile.phone : "Not found"}</span>
           </div>
-          <button className="edit-btn">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="m18.5 2.5 3 3L12 15l-4 1 1-4Z"></path>
-            </svg>
-          </button>
         </div>
       </div>
 
@@ -108,39 +82,22 @@ function MentorProfile() {
         <div className="experience-card">
           <div className="experience-row">
             <div className="experience-item">
-              <span className="label">Employer:</span>
+              <span className="label">Employers:</span>
               <span className="value">
+                {profile ? profile.companies : "Not found"}
                 <span className="asterisk">*</span>
               </span>
             </div>
             <div className="experience-item">
-              <span className="label">Experience level:</span>
-              <span className="value"></span>
-            </div>
-          </div>
-          <div className="experience-row">
-            <div className="experience-item">
-              <span className="label">Job Title:</span>
-              <span className="value">Name</span>
+              <span className="label">Years of Experience:</span>
+              <span className="value">{profile ? profile.yearsOfExperience : "Not found"}</span>
             </div>
             <div className="experience-item">
               <span className="label">Industry:</span>
-              <span className="value"></span>
+              <span className="value">{profile ? profile.industry : "Not found"}</span>
             </div>
           </div>
-          <button className="edit-btn">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="m18.5 2.5 3 3L12 15l-4 1 1-4Z"></path>
-            </svg>
-          </button>
+         
         </div>
       </div>
 
@@ -151,26 +108,14 @@ function MentorProfile() {
           <div className="education-row">
             <div className="education-item">
               <span className="label">Alma Mater:</span>
-              <span className="value">University Name</span>
+              <span className="value">{profile ? profile.university : "Not found"}</span>
             </div>
             <div className="education-item">
               <span className="label">Major:</span>
-              <span className="value">Name</span>
+              <span className="value">{profile ? profile.major : "Not found"}</span>
             </div>
           </div>
-          <button className="edit-btn">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="m18.5 2.5 3 3L12 15l-4 1 1-4Z"></path>
-            </svg>
-          </button>
+          
         </div>
       </div>
 
@@ -179,23 +124,21 @@ function MentorProfile() {
         <h2>Skills</h2>
         <div className="skills-card">
           <div className="skills-list">
-            <span className="skill-tag">Skill 1</span>
-            <span className="skill-tag">Skill 2</span>
-            <span className="skill-tag">Skill 3</span>
+          {profile && profile.skills && profile.skills.length > 0 ? (
+            profile.skills.split(",")
+              .map((skill) => <span className="skill-tag">{skill.trim()}</span>)
+          ) : "Not found"}
           </div>
-          <button className="edit-btn">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="m18.5 2.5 3 3L12 15l-4 1 1-4Z"></path>
-            </svg>
-          </button>
+          
+        </div>
+      </div>
+
+      <div className="section">
+        <h2>General Availability</h2>
+        <div className="availability-card">
+          {profile && profile.availability && profile.availability.length > 0 ? (
+            <DisplayAvailabilityGrid availabilityArray={profile.availability} />
+          ) : "Not found"}
         </div>
       </div>
 

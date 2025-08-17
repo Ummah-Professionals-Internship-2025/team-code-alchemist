@@ -15,7 +15,7 @@ const initialState = {
   yearsOfExperience: "",
   companies: "",
   skills: "",
-  helpIn: "",
+  helpIn: [],
   industry: [],
   calendar: "",
   region: "",

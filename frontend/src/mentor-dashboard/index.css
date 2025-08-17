@@ -144,6 +144,16 @@
   gap: 12px;
 }
 
+.meeting-card-content{
+  display: flex;
+  flex-direction: column;
+  
+}
+
+.accept-btn{
+    
+}
+
 @media (max-width: 768px) {
   .mentor-home-body {
     flex-direction: column;
@@ -276,7 +286,6 @@
 
 .asterisk {
   color: #f59e0b;
-  font-size: 20px;
 }
 
 .info-card,
