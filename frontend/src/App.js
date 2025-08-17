@@ -8,13 +8,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import NavigationButtons from "./NavigateButtons";
 import MentorDashboard from "./mentor-dashboard/MentorDashboard";
 import { onAuthStateChanged } from "firebase/auth";
-import ScheduleMeeting from "./mentor-dashboard/mentor-features/ScheduleMeeting";
+import ScheduleMeeting from "./ScheduleMeeting";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   return (
-    
     // <BrowserRouter>
     //   <NavigationButtons></NavigationButtons>
     //   <Routes>
@@ -25,7 +24,11 @@ function App() {
     //     <Route path="/MentorDashboard" element={<MentorDashboard />} />
     //   </Routes>
     // </BrowserRouter>
-    <ScheduleMeeting></ScheduleMeeting>
+    <ScheduleMeeting
+      userID={"YxoDszwNZiUTYWJdNFdyAQQx7iZ2"}
+      isMentor={false}
+      targetID={"Dx5fjvwiIWfwPZNKfLaeGMkCnAs2"}
+    ></ScheduleMeeting>
   );
 }
 
