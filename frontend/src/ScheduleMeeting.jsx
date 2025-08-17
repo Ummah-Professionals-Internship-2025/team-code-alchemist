@@ -30,10 +30,17 @@ const timeSlots = [
   "9:00 PM",
 ];
 
-function ScheduleMeeting({ userID, isMentor, targetID, meetingID }) {
-  // userID is the ID of the user scheduling the meeting
+function ScheduleMeeting({
+  senderID,
+  senderIsMentor,
+  targetID,
+  meetingID,
+  service,
+}) {
+  // senderID is the ID of the user scheduling the meeting
   // targetID is the ID of the person to schedule the meeting with
   // meetingID is the document ID on the pendingMeetings collection, used for updating the meeting only if it already exists
+  // Mentee should select the service they want to meet for as well
   const date = new Date();
   const currentDay = date.getDay();
   const [startOfWeek, setStartOfWeek] = useState(
@@ -85,15 +92,16 @@ function ScheduleMeeting({ userID, isMentor, targetID, meetingID }) {
     }
     setWeekDates(newWeek);
   };
+
   const handleAvailability = async () => {
-    if (isMentor === true && targetID) {
+    if (senderIsMentor === false && targetID) {
       await getDoc(doc(db, "mentors", targetID)).then((docSnap) => {
         if (docSnap.exists()) {
           setAvailability(docSnap.data().generalAvailability);
         }
         console.log(availability);
       });
-    } else if (isMentor === false && targetID) {
+    } else if (senderIsMentor === true && targetID) {
       await getDoc(doc(db, "mentees", targetID)).then((docSnap) => {
         if (docSnap.exists()) {
           setAvailability(docSnap.data().generalAvailability);
@@ -112,21 +120,23 @@ function ScheduleMeeting({ userID, isMentor, targetID, meetingID }) {
 
   const handleSendMeetingRequest = async () => {
     if (
-      userID.length === 0 ||
+      senderID.length === 0 ||
       targetID.length === 0 ||
       selectedDay.length === 0 ||
-      selectedTime.length === 0
+      selectedTime.length === 0 ||
+      service.length === 0
     ) {
       alert("Please fill out all fields");
-      console.log("Please fill out all fields");
     }
     const meetingRequest = {
       createdAt: new Date(),
       status: "Pending",
-      senderID: userID,
+      senderID: senderID,
+      senderIsMentor: senderIsMentor,
       receiverID: targetID,
       date: selectedDay,
       time: selectedTime,
+      service: service,
     };
     console.log(meetingRequest);
     try {

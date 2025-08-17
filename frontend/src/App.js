@@ -14,21 +14,21 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   return (
-    // <BrowserRouter>
-    //   <NavigationButtons></NavigationButtons>
-    //   <Routes>
-    //     <Route path="/" element={<MentorApplicationForm />} />
-    //     <Route path="/MentorLogin" element={<MentorLogin />} />
-    //     <Route path="/create-password" element={<MentorCreateUser />} />
-    //     <Route path="/AdminDashboard" element={<AdminDashboard />} />
-    //     <Route path="/MentorDashboard" element={<MentorDashboard />} />
-    //   </Routes>
-    // </BrowserRouter>
-    <ScheduleMeeting
-      userID={"YxoDszwNZiUTYWJdNFdyAQQx7iZ2"}
-      isMentor={false}
-      targetID={"Dx5fjvwiIWfwPZNKfLaeGMkCnAs2"}
-    ></ScheduleMeeting>
+    <BrowserRouter>
+      <NavigationButtons></NavigationButtons>
+      <Routes>
+        <Route path="/" element={<MentorApplicationForm />} />
+        <Route path="/MentorLogin" element={<MentorLogin />} />
+        <Route path="/create-password" element={<MentorCreateUser />} />
+        <Route path="/AdminDashboard" element={<AdminDashboard />} />
+        <Route path="/MentorDashboard" element={<MentorDashboard />} />
+      </Routes>
+    </BrowserRouter>
+    //   <ScheduleMeeting
+    //     userID={""}
+    //     senderIsMentor={false}
+    //     targetID={""}
+    //   ></ScheduleMeeting>
   );
 }
 

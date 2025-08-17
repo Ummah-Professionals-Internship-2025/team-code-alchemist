@@ -144,15 +144,44 @@
   gap: 12px;
 }
 
-.meeting-card-content{
+/* Popup styles */
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.1);
   display: flex;
-  flex-direction: column;
-  
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-.accept-btn{
-    
+.popup-content {
+  max-width: 90vw;
+  max-height: 90vh;
+  background: white;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 24px;
+  position: relative;
+  overflow: auto;
 }
+
+.close-btn {
+  top: 10px;
+  margin-left: auto;
+  background: white;
+  border: solid 1px #e0e0e0;
+  font-size: 24px;
+  cursor: pointer;
+  color: #000000;
+  z-index: 1001;
+}
+/* End of popup styles */
 
 @media (max-width: 768px) {
   .mentor-home-body {
@@ -291,13 +320,67 @@
 .info-card,
 .experience-card,
 .education-card,
-.skills-card,
-.meeting-card {
+.skills-card {
   background: white;
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   position: relative;
+}
+
+.meeting-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+}
+
+.meeting-card-content {
+  padding: 24px;
+}
+
+.mentee-info {
+  margin: 0 0 12px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.accept-btn,
+.reschedule-btn {
+  padding: 12px 16px;
+  border: 1px solid #b3d9ff;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.accept-btn {
+  background: #f0f8ff;
+  color: #1a5490;
+}
+
+.accept-btn:hover {
+  background: #e6f3ff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.reschedule-btn {
+  background: #fff5f5;
+  color: #c53030;
+  border-color: #feb2b2;
+}
+
+.reschedule-btn:hover {
+  background: #fed7d7;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .info-row {

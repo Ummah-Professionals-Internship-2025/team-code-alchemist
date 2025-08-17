@@ -1,12 +1,17 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { CalendarClock } from "lucide-react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../firebase";
 import { Card, CardContent, Typography } from "@mui/material";
+import ScheduleMeeting from "../ScheduleMeeting";
 
+// request ID is not working yet
 function MentorHome() {
   const [activeTab, setActiveTab] = React.useState("upcoming");
   const [meetingRequests, setMeetingRequests] = React.useState([]);
+  const [showSchedule, setShowSchedule] = useState(false);
+  const [targetID, setTargetID] = useState("");
+  const [service, setService] = useState("");
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "pendingMeetings"), (snapshot) => {
@@ -31,9 +36,11 @@ function MentorHome() {
     // Handle accepting the meeting request
   };
 
-  const handleReschedule = (menteeID) => {
-    // Handle rescheduling the meeting
-    // Will use schedule meeting component
+  const handleReschedule = (menteeId, service) => {
+    console.log(menteeId);
+    setShowSchedule(true);
+    setTargetID(menteeId);
+    setService(service);
   };
 
   return (
@@ -42,7 +49,7 @@ function MentorHome() {
       <div className="mentor-home-container">
         {/* <img className="calendar-logo" src={calendar} alt="Calendar Logo" /> */}
         <div className="mentor-home-header">
-          <CalendarClock strokeWidth="1" size={32} /> 
+          <CalendarClock strokeWidth="1" size={32} />
           <h1>Meetings</h1>
         </div>
         <div className="mentor-home-body">
@@ -68,31 +75,75 @@ function MentorHome() {
       {activeTab === "upcoming" && (
         <div className="upcoming-meetings-container">
           {/* Requests */}
-            <div className="section">
-              <h2>Meetings Requests</h2>
-              <button
-                onClick={() => {
-                  window.location.reload();
-                }}
-              >
-                Refresh
-              </button>
-              <div className="meeting-card">
-                {meetingRequests.length === 0 && (
-                  <Typography>No pending meetings.</Typography>
-                )}
-                {meetingRequests.map((request) => (
-                  <Card key={request.id} sx={{ mb: 2 }}>
-                    <CardContent className="meeting-card-content">
-                      <Typography>Mentee Name: {request.menteeName}</Typography>
-                      <Typography>Mentee Email: {request.menteeEmail}</Typography>
-                      <button className="accept-btn" >Accept</button>
-                      <button className="decline-btn" onClick={() => handleReschedule(request.menteeID)}>Decline</button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+
+          <div className="section">
+            <h2>Meetings Requests</h2>
+            <button
+              onClick={() => {
+                window.location.reload();
+              }}
+            >
+              Refresh
+            </button>
+            <div className="meeting-card">
+              {meetingRequests.length === 0 && (
+                <Typography>No pending meetings.</Typography>
+              )}
+              {meetingRequests.map((request) => (
+                <div key={request.id} className="meeting-card">
+                  <div className="meeting-card-content">
+                    <p className="mentee-info">
+                      Mentee Name: {request.menteeName}
+                    </p>
+                    <p className="mentee-info">
+                      Mentee Email: {request.menteeEmail}
+                    </p>
+                    <p className="mentee-info">
+                      Meeting Date: {request.meetingDate}
+                    </p>
+                    <p className="mentee-info">
+                      Meeting Time: {request.meetingTime}
+                    </p>
+                    <p>looking for {request.service}</p>
+                    <div className="card-actions">
+                      <button className="accept-btn">Accept</button>
+                      <button
+                        className="reschedule-btn"
+                        onClick={() =>
+                          handleReschedule(request.menteeId, request.service)
+                        }
+                      >
+                        Reschedule
+                      </button>
+                      {showSchedule && (
+                        <div
+                          className="popup-overlay"
+                          onClick={() => setShowSchedule(false)}
+                        >
+                          <div
+                            className="popup-content"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <button
+                              className="close-btn"
+                              onClick={() => setShowSchedule(false)}
+                            >
+                              Close
+                            </button>
+                            <ScheduleMeeting
+                              senderIsMentor={true}
+                              targetID={targetID}
+                              senderID={auth.currentUser.uid}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
+          </div>
 
           <div className="section">
             <h2>Upcoming Meetings</h2>
