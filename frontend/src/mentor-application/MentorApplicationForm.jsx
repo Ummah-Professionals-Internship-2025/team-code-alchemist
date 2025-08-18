@@ -5,6 +5,13 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import AvailabilityForm from "./AvailibilityForm";
 import axios from "axios";
+import {
+  mentorSkills,
+  helpingOptions,
+  industryOptions,
+  companySizeOptions,
+  majorOptions,
+} from "./ListOfSkills";
 
 // profile builder component
 
@@ -14,7 +21,8 @@ const initialState = {
   email: "",
   yearsOfExperience: "",
   companies: "",
-  skills: "",
+  skills: [],
+  major: "",
   helpIn: [],
   industry: [],
   calendar: "",
@@ -30,47 +38,6 @@ const initialState = {
   status: "pending",
   availability: [],
 };
-
-const industryOptions = [
-  { value: "Business", label: "Business" },
-  { value: "Education", label: "Education" },
-  { value: "Engineering", label: "Engineering" },
-  { value: "Finance", label: "Finance" },
-  { value: "Healthcare", label: "Healthcare" },
-  { value: "Information Technology", label: "Information Technology" },
-  { value: "Law", label: "Law" },
-  { value: "Social Services", label: "Social Services" },
-  { value: "Science", label: "Science" },
-  { value: "Arts", label: "Arts" },
-  { value: "Other", label: "Other" },
-];
-
-const companySizeOptions = [
-  {
-    value: "Small Company (1-50 employees)",
-    label: "Small Company (1-50 employees)",
-  },
-  {
-    value: "Medium Company (51-500 employees)",
-    label: "Medium Company (51-500 employees)",
-  },
-  {
-    value: "Large Company (500+ employees)",
-    label: "Large Company (500+ employees)",
-  },
-];
-
-const helpingOptions = [
-  { value: "resume_review", label: "Resume Review" },
-  { value: "interview_skills", label: "Interview Skills" },
-  { value: "career_fair_prep", label: "Career Fair Prep" },
-  { value: "personal_project_guidance", label: "Personal Project Guidance" },
-  { value: "mock_interviews", label: "Mock Interviews" },
-  { value: "career_path_exploration", label: "Career Path Exploration" },
-  { value: "portfolio_feedback", label: "Portfolio Feedback" },
-  { value: "job_search_strategy", label: "Job Search Strategy" },
-  { value: "tech_industry_insights", label: "Tech Industry Insights" },
-];
 
 function MentorApplicationForm() {
   const [submitted, setSubmitted] = useState(false);
@@ -251,17 +218,41 @@ function MentorApplicationForm() {
               Skills (3-5)
             </label>
             <div className="control">
-              <input
-                id="skills"
-                className="input"
-                type="text"
-                placeholder="e.g. JavaScript, React, Node.js"
+              <Select
                 name="skills"
-                value={form.skills}
-                onChange={handleChange}
+                isMulti
+                options={mentorSkills}
+                onChange={(selectedOptions) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    skills: selectedOptions
+                      ? selectedOptions.map((option) => option.value)
+                      : [],
+                  }))
+                }
+                classNamePrefix="react-select"
+                placeholder="Select 3-5 skills..."
+                isClearable
+                isSearchable
               />
             </div>
           </div>
+          {/* Major */}
+          <label className="label">
+            Major <span className="required">*</span>
+          </label>
+          <Select
+            name="major"
+            options={majorOptions}
+            value={majorOptions.find((opt) => opt.value === form.major) || null}
+            onChange={(selected) =>
+              setForm({ ...form, major: selected ? selected.value : "" })
+            }
+            classNamePrefix="react-select"
+            placeholder="Select major..."
+            isClearable
+            required
+          />
 
           {/* Industry */}
           <div className="field">
@@ -294,25 +285,26 @@ function MentorApplicationForm() {
                 name="helpIn"
                 isMulti
                 options={[
-                  { value: "resume_review", label: "Resume Review" },
-                  { value: "interview_skills", label: "Interview Skills" },
-                  { value: "career_fair_prep", label: "Career Fair Prep" },
+                  { value: "Resume Review", label: "Resume Review" },
+                  { value: "Interview Skills", label: "Interview Skills" },
+
+                  { value: "career fair prep", label: "Career Fair Prep" },
                   {
-                    value: "personal_project_guidance",
+                    value: "personal project guidance",
                     label: "Personal Project Guidance",
                   },
-                  { value: "mock_interviews", label: "Mock Interviews" },
+                  { value: "mock interviews", label: "Mock Interviews" },
                   {
-                    value: "career_path_exploration",
+                    value: "career path exploration",
                     label: "Career Path Exploration",
                   },
-                  { value: "portfolio_feedback", label: "Portfolio Feedback" },
+                  { value: "portfolio feedback", label: "Portfolio Feedback" },
                   {
-                    value: "job_search_strategy",
+                    value: "job search strategy",
                     label: "Job Search Strategy",
                   },
                   {
-                    value: "tech_industry_insights",
+                    value: "tech industry insights",
                     label: "Tech Industry Insights",
                   },
                 ]}
@@ -347,19 +339,30 @@ function MentorApplicationForm() {
               Do you want to put your Google/Outlook calendar?
             </label>
             <div className="control">
-              <div className="select">
-                <select
-                  id="calendar"
-                  className="input"
-                  name="calendar"
-                  value={form.calendar}
-                  onChange={handleChange}
-                >
-                  <option value="">Select</option>
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
-                </select>
-              </div>
+              <Select
+                name="calendar"
+                options={[
+                  { value: "yes", label: "Yes" },
+                  { value: "no", label: "No" },
+                ]}
+                value={
+                  form.calendar
+                    ? {
+                        value: form.calendar,
+                        label: form.calendar === "yes" ? "Yes" : "No",
+                      }
+                    : null
+                }
+                onChange={(selectedOption) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    calendar: selectedOption?.value || "",
+                  }))
+                }
+                classNamePrefix="react-select"
+                placeholder="Select..."
+                isClearable
+              />
             </div>
           </div>
 
@@ -369,21 +372,29 @@ function MentorApplicationForm() {
               Region
             </label>
             <div className="control">
-              <div className="select">
-                <select
-                  id="region"
-                  className="form-select"
-                  name="region"
-                  value={form.region}
-                  onChange={handleChange}
-                >
-                  <option value="">Select</option>
-                  <option value="NA-East">NA - East</option>
-                  <option value="NA-Central">NA - Central</option>
-                  <option value="NA-West">NA - West</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
+              <Select
+                name="region"
+                options={[
+                  { value: "NA-East", label: "NA - East" },
+                  { value: "NA-Central", label: "NA - Central" },
+                  { value: "NA-West", label: "NA - West" },
+                  { value: "Other", label: "Other" },
+                ]}
+                value={
+                  form.region
+                    ? { value: form.region, label: form.region }
+                    : null
+                }
+                onChange={(selectedOption) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    region: selectedOption?.value || "",
+                  }))
+                }
+                classNamePrefix="react-select"
+                placeholder="Select..."
+                isClearable
+              />
             </div>
           </div>
 
@@ -393,19 +404,27 @@ function MentorApplicationForm() {
               Gender
             </label>
             <div className="control">
-              <div className="select">
-                <select
-                  id="gender"
-                  className="form-select"
-                  name="gender"
-                  value={form.gender}
-                  onChange={handleChange}
-                >
-                  <option value="">Select</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
-              </div>
+              <Select
+                name="gender"
+                options={[
+                  { value: "Male", label: "Male" },
+                  { value: "Female", label: "Female" },
+                ]}
+                value={
+                  form.gender
+                    ? { value: form.gender, label: form.gender }
+                    : null
+                }
+                onChange={(selectedOption) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    gender: selectedOption?.value || "",
+                  }))
+                }
+                classNamePrefix="react-select"
+                placeholder="Select..."
+                isClearable
+              />
             </div>
           </div>
 
@@ -416,19 +435,33 @@ function MentorApplicationForm() {
               shortage?
             </label>
             <div className="control">
-              <div className="select">
-                <select
-                  id="wouldYouMind"
-                  className="form-select"
-                  name="wouldYouMind"
-                  value={form.wouldYouMind}
-                  onChange={handleChange}
-                >
-                  <option value="">Select</option>
-                  <option value="yes - Dont mind">Yes</option>
-                  <option value="no">No</option>
-                </select>
-              </div>
+              <Select
+                name="wouldYouMind"
+                options={[
+                  { value: "yes - Dont mind", label: "Yes" },
+                  { value: "no", label: "No" },
+                ]}
+                value={
+                  form.wouldYouMind
+                    ? {
+                        value: form.wouldYouMind,
+                        label:
+                          form.wouldYouMind === "yes - Dont mind"
+                            ? "Yes"
+                            : "No",
+                      }
+                    : null
+                }
+                onChange={(selectedOption) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    wouldYouMind: selectedOption?.value || "",
+                  }))
+                }
+                classNamePrefix="react-select"
+                placeholder="Select..."
+                isClearable
+              />
             </div>
           </div>
 

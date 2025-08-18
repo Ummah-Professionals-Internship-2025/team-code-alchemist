@@ -2,14 +2,14 @@ import React, { useEffect, useState } from "react";
 import { CalendarClock } from "lucide-react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../firebase";
-import { Card, CardContent, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import ScheduleMeeting from "../ScheduleMeeting";
 
 // request ID is not working yet
 function MentorHome() {
   const [activeTab, setActiveTab] = React.useState("upcoming");
   const [meetingRequests, setMeetingRequests] = React.useState([]);
-  const [showSchedule, setShowSchedule] = useState(false);
+  const [activeScheduleId, setActiveScheduleId] = useState(null);
   const [targetID, setTargetID] = useState("");
   const [service, setService] = useState("");
 
@@ -17,11 +17,7 @@ function MentorHome() {
     const unsub = onSnapshot(collection(db, "pendingMeetings"), (snapshot) => {
       const data = snapshot.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }))
-        .filter(
-          (meeting) =>
-            meeting.status === "pending" &&
-            meeting.mentorEmail === auth.currentUser.email
-        );
+        .filter((meeting) => meeting.mentorEmail === auth.currentUser.email);
       setMeetingRequests(data);
     });
 
@@ -34,13 +30,6 @@ function MentorHome() {
 
   const handleMeetingRequestAccept = () => {
     // Handle accepting the meeting request
-  };
-
-  const handleReschedule = (menteeId, service) => {
-    console.log(menteeId);
-    setShowSchedule(true);
-    setTargetID(menteeId);
-    setService(service);
   };
 
   return (
@@ -91,66 +80,98 @@ function MentorHome() {
               )}
               {meetingRequests.map((request) => (
                 <div key={request.id} className="meeting-card">
-                  <div className="meeting-card-content">
-                    <p className="mentee-info">
-                      Mentee Name: {request.menteeName}
-                    </p>
-                    <p className="mentee-info">
-                      Mentee Email: {request.menteeEmail}
-                    </p>
-                    <p className="mentee-info">
-                      Meeting Date: {request.meetingDate}
-                    </p>
-                    <p className="mentee-info">
-                      Meeting Time: {request.meetingTime}
-                    </p>
-                    <p>looking for {request.service}</p>
-                    <div className="card-actions">
-                      <button className="accept-btn">Accept</button>
-                      <button
-                        className="reschedule-btn"
-                        onClick={() =>
-                          handleReschedule(request.menteeId, request.service)
-                        }
-                      >
-                        Reschedule
-                      </button>
-                      {showSchedule && (
-                        <div
-                          className="popup-overlay"
-                          onClick={() => setShowSchedule(false)}
-                        >
-                          <div
-                            className="popup-content"
-                            onClick={(e) => e.stopPropagation()}
+                  {request.status === "pending" &&
+                    request.menteeApproved === true && (
+                      <div className="meeting-card-content">
+                        <p className="mentee-info">
+                          Mentee Name: {request.menteeName}
+                        </p>
+                        <p className="mentee-info">
+                          Mentee Email: {request.menteeEmail}
+                        </p>
+                        <p className="mentee-info">
+                          Meeting Date: {request.meetingDate}
+                        </p>
+                        <p className="mentee-info">
+                          Meeting Time: {request.meetingTime}
+                        </p>
+                        <p>looking for: {request.service}</p>
+                        <div className="card-actions">
+                          <button className="accept-btn">Accept</button>
+                          <button
+                            className="reschedule-btn"
+                            onClick={() => setActiveScheduleId(request.id)}
                           >
-                            <button
-                              className="close-btn"
-                              onClick={() => setShowSchedule(false)}
+                            Reschedule
+                          </button>
+                          {activeScheduleId === request.id && (
+                            <div
+                              className="popup-overlay"
+                              onClick={() => setActiveScheduleId(null)}
                             >
-                              Close
-                            </button>
-                            <ScheduleMeeting
-                              senderIsMentor={true}
-                              targetID={targetID}
-                              senderID={auth.currentUser.uid}
-                            />
-                          </div>
+                              <div
+                                className="popup-content"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <button
+                                  className="close-btn"
+                                  onClick={() => setActiveScheduleId(null)}
+                                >
+                                  Close
+                                </button>
+
+                                <ScheduleMeeting
+                                  meetingID={request.id}
+                                  senderID={auth.currentUser.uid}
+                                  targetID={request.menteeId}
+                                  senderIsMentor={true}
+                                  service={request.service}
+                                  isRescheduling={true}
+                                  menteeEmail={request.menteeEmail}
+                                  mentorEmail={request.mentorEmail}
+                                  menteeName={request.menteeName}
+                                  mentorName={request.mentorName}
+                                  menteeID={request.menteeId}
+                                  mentorID={request.mentorId}
+                                />
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </div>
+                      </div>
+                    )}
+
+                  {request.status === "pending" &&
+                    request.menteeApproved === false && (
+                      <div className="outgoing-request-card">
+                        <p>Waiting for Mentee confirmation</p>
+                        <div className="meeting-card-content">
+                          <p className="mentee-info">
+                            Mentee Name: {request.menteeName}
+                          </p>
+                          <p className="mentee-info">
+                            Mentee Email: {request.menteeEmail}
+                          </p>
+                          <p className="mentee-info">
+                            Meeting Date: {request.meetingDate}
+                          </p>
+                          <p className="mentee-info">
+                            Meeting Time: {request.meetingTime}
+                          </p>
+                          <p>looking for: {request.service}</p>
+                        </div>
+                      </div>
+                    )}
                 </div>
               ))}
             </div>
           </div>
 
+          {/* Upcoming Meetings */}
           <div className="section">
             <h2>Upcoming Meetings</h2>
             <Typography>No upcoming meetings.</Typography>
           </div>
-
-          {/* Upcoming Meetings */}
         </div>
       )}
       {activeTab === "past" && (

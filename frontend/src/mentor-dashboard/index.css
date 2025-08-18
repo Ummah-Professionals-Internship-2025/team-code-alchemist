@@ -476,7 +476,14 @@
   align-items: center;
   gap: 4px;
 }
-
+.pending-meeting-card,
+.outgoing-request-card {
+  background-color: #f8fafc;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+}
 @media (max-width: 768px) {
   .header {
     flex-direction: column;

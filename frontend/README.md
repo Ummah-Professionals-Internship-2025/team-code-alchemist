@@ -1,14 +1,22 @@
-# Getting Started with Create React App
+# Mentor Application Flow
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+- **Mentor Application**  
+  Initial application submitted by the mentor.
 
-## Branch Information
+- **Mentor Create Account**  
+  Mentors will recieve an email that opens to this component for them to create an account
+  - Creates a new user with information that is stored in the "mentors" database
 
-Mentor Application -> Initial Application Mentor submits
-Mentor Create account -> Allows user to sign up using email and password
-Mentor Dashboard -> Empty for now; Will have Dashboard
-Mentor Login -> For mentors who already signed up to access dashboard
-Temp -> Yassir's code for approval so I can test the email process when a mentor is approved
+- **Mentor Dashboard**  
+  Mentors can:
+  - Access and update their profile
+  - Approve or reschedule meetings
+
+- **Mentor Login**  
+  For mentors who already signed up to access their dashboard.
+
+- **Temp**  
+  Yassir's code for approval testing (used to test the email process when a mentor is approved).
 
 ## Available Scripts
 

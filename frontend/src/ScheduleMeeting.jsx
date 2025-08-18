@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { auth } from "./firebase";
 import "./scheduleMeeting.css";
-import { set } from "firebase/database";
+import { set, update } from "firebase/database";
 import { db } from "./firebase";
 import { getDoc, doc, addDoc, updateDoc, collection } from "firebase/firestore";
+import { serverTimestamp } from "firebase/firestore";
 
 const days = [
   "Sunday",
@@ -31,11 +32,19 @@ const timeSlots = [
 ];
 
 function ScheduleMeeting({
-  senderID,
-  senderIsMentor,
-  targetID,
   meetingID,
+  senderID,
+  targetID,
+  senderIsMentor,
   service,
+  isRescheduling,
+  menteeEmail,
+  mentorEmail,
+  menteeName,
+  mentorName,
+  menteeID,
+  mentorID,
+  updateCounter,
 }) {
   // senderID is the ID of the user scheduling the meeting
   // targetID is the ID of the person to schedule the meeting with
@@ -119,33 +128,40 @@ function ScheduleMeeting({
   };
 
   const handleSendMeetingRequest = async () => {
-    if (
-      senderID.length === 0 ||
-      targetID.length === 0 ||
-      selectedDay.length === 0 ||
-      selectedTime.length === 0 ||
-      service.length === 0
-    ) {
-      alert("Please fill out all fields");
+    if (!updateCounter) {
+      updateCounter = 0;
     }
-    const meetingRequest = {
-      createdAt: new Date(),
-      status: "Pending",
-      senderID: senderID,
-      senderIsMentor: senderIsMentor,
-      receiverID: targetID,
-      date: selectedDay,
-      time: selectedTime,
-      service: service,
-    };
-    console.log(meetingRequest);
-    try {
-      // check if meetingID exists -> later
-      await addDoc(collection(db, "pendingMeetings"), meetingRequest);
-      alert("Meeting request sent!");
-    } catch (error) {
-      alert("Error sending meeting request:", error);
-      console.error("Error sending meeting request:", error);
+    if (!selectedDay || !selectedTime) {
+      alert("Please select a day and time");
+      return;
+    }
+    const menteeApproved = senderIsMentor ? false : true;
+    const mentorApproved = senderIsMentor ? true : false;
+    if (isRescheduling) {
+      await updateDoc(doc(db, "pendingMeetings", meetingID), {
+        menteeApproved: menteeApproved,
+        mentorApproved: mentorApproved,
+        meetingTime: selectedTime,
+        meetingDate: selectedDay,
+        updateCounter: updateCounter + 1,
+      });
+      alert("Meeting rescheduled");
+    } else {
+      await addDoc(collection(db, "pendingMeetings"), {
+        createdAt: serverTimestamp(),
+        meetingTime: selectedTime,
+        meetingDate: selectedDay,
+        menteeApproved: true,
+        mentorApproved: false,
+        menteeEmail: menteeEmail,
+        mentorEmail: mentorEmail,
+        service: service,
+        MenteeName: menteeName,
+        MentorName: mentorName,
+        menteeID: menteeID,
+        mentorID: mentorID,
+      });
+      alert("Meeting scheduled");
     }
   };
 

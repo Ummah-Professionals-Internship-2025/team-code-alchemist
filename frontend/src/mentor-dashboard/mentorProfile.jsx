@@ -13,16 +13,14 @@ function MentorProfile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-
   const fetchUserProfile = async (userId) => {
     const docRef = doc(db, "mentors", userId);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      setProfile(docSnap.data())
+      setProfile(docSnap.data());
     } else {
-      console.log("No data was found")
-
+      console.log("No data was found");
     }
   };
 
@@ -37,11 +35,16 @@ function MentorProfile() {
           </h1>
           <p className="subtitle">Open to help in:</p>
           <div className="help-tags">
-            <span className="tag">Healthcare Service</span>
-            <span className="tag">Resume or Portfolio Review</span>
-            <span className="tag">Mock Interviews</span>
+            {profile &&
+              profile.helpIn.map((tag, index) => (
+                <span key={index} className="tag">
+                  {tag}
+                </span>
+              ))}
           </div>
-          <button onClick={() => fetchUserProfile(userId)}>Load Mentor data</button>
+          <button onClick={() => fetchUserProfile(userId)}>
+            Load Mentor data
+          </button>
         </div>
         <button className="edit-btn header-edit">
           Edit Profile <> </>
@@ -71,7 +74,9 @@ function MentorProfile() {
           </div>
           <div className="info-row">
             <span className="label">Phone: </span>
-            <span className="value">{profile ? profile.phone : "Not found"}</span>
+            <span className="value">
+              {profile ? profile.phone : "Not found"}
+            </span>
           </div>
         </div>
       </div>
@@ -90,14 +95,17 @@ function MentorProfile() {
             </div>
             <div className="experience-item">
               <span className="label">Years of Experience:</span>
-              <span className="value">{profile ? profile.yearsOfExperience : "Not found"}</span>
+              <span className="value">
+                {profile ? profile.yearsOfExperience : "Not found"}
+              </span>
             </div>
             <div className="experience-item">
               <span className="label">Industry:</span>
-              <span className="value">{profile ? profile.industry : "Not found"}</span>
+              <span className="value">
+                {profile ? profile.industry : "Not found"}
+              </span>
             </div>
           </div>
-         
         </div>
       </div>
 
@@ -108,14 +116,17 @@ function MentorProfile() {
           <div className="education-row">
             <div className="education-item">
               <span className="label">Alma Mater:</span>
-              <span className="value">{profile ? profile.university : "Not found"}</span>
+              <span className="value">
+                {profile ? profile.university : "Not found"}
+              </span>
             </div>
             <div className="education-item">
               <span className="label">Major:</span>
-              <span className="value">{profile ? profile.major : "Not found"}</span>
+              <span className="value">
+                {profile ? profile.major : "Not found"}
+              </span>
             </div>
           </div>
-          
         </div>
       </div>
 
@@ -124,21 +135,25 @@ function MentorProfile() {
         <h2>Skills</h2>
         <div className="skills-card">
           <div className="skills-list">
-          {profile && profile.skills && profile.skills.length > 0 ? (
-            profile.skills.split(",")
-              .map((skill) => <span className="skill-tag">{skill.trim()}</span>)
-          ) : "Not found"}
+            {profile && profile.skills && profile.skills.length > 0
+              ? profile.skills.map((skill) => (
+                  <span className="skill-tag">{skill.trim()}</span>
+                ))
+              : "Not found"}
           </div>
-          
         </div>
       </div>
 
       <div className="section">
         <h2>General Availability</h2>
         <div className="availability-card">
-          {profile && profile.availability && profile.availability.length > 0 ? (
+          {profile &&
+          profile.availability &&
+          profile.availability.length > 0 ? (
             <DisplayAvailabilityGrid availabilityArray={profile.availability} />
-          ) : "Not found"}
+          ) : (
+            "Not found"
+          )}
         </div>
       </div>
 
