@@ -1,24 +1,34 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import MentorApplicationForm from "./mentor-application/MentorApplicationForm";
+import { useEffect, useState } from "react";
+import MentorLogin from "./mentor-login/MentorLogin";
+import MentorCreateUser from "./mentor-create-account/MentorCreateUser";
+import AdminDashboard from "./temp/dashboard";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import NavigationButtons from "./NavigateButtons";
+import MentorDashboard from "./mentor-dashboard/MentorDashboard";
+import { onAuthStateChanged } from "firebase/auth";
+import ScheduleMeeting from "./ScheduleMeeting";
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <NavigationButtons></NavigationButtons>
+      <Routes>
+        <Route path="/" element={<MentorApplicationForm />} />
+        <Route path="/MentorLogin" element={<MentorLogin />} />
+        <Route path="/create-password" element={<MentorCreateUser />} />
+        <Route path="/AdminDashboard" element={<AdminDashboard />} />
+        <Route path="/MentorDashboard" element={<MentorDashboard />} />
+      </Routes>
+    </BrowserRouter>
+    //   <ScheduleMeeting
+    //     userID={""}
+    //     senderIsMentor={false}
+    //     targetID={""}
+    //   ></ScheduleMeeting>
   );
 }
 
