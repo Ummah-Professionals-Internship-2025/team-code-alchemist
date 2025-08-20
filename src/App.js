@@ -6,9 +6,7 @@ import Dashboard from "./scenes/dashboard";
 import Sidebar from "./scenes/global/Sidebar";
 import Mentees from "./scenes/mentees";
 import Mentors from "./scenes/mentors";
-import Bar from "./scenes/bar";
-import Line from "./scenes/line";
-import Pie from "./scenes/pie";
+import Charts from "./scenes/charts";
 import Calendar from "./scenes/calendar";
 
 function App() {
@@ -24,11 +22,9 @@ function App() {
           <Topbar />
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/mentors" element ={<Mentees />} />
-            <Route path="/mentees" element ={<Mentors />} />
-            <Route path="/bar" element ={<Bar />} />
-            <Route path="/pie" element ={<Pie />} />
-            <Route path="/line" element ={<Line />} />
+            <Route path="/mentors" element ={<Mentors />} />
+            <Route path="/mentees" element ={<Mentees />} />
+            <Route path="/charts" element ={<Charts />} />
             <Route path="/calendar" element ={<Calendar />} />
           </Routes>
         </main>

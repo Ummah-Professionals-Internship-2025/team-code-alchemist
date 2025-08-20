@@ -1,14 +1,17 @@
-import { Box, Typography, useTheme } from "@mui/material";
+import { Box, Typography, useTheme, IconButton } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
 import {
   getFirestore,
   collection,
-  onSnapshot
+  onSnapshot,
+  doc,
+  deleteDoc
 } from "firebase/firestore";
 import { app } from "../../firebase";
 import { useEffect, useState } from "react";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const db = getFirestore(app);
 
@@ -31,26 +34,56 @@ const Mentees = () => {
     return () => unsub();
   }, []);
 
+  const handleDelete = async (id) => {
+    try {
+      await deleteDoc(doc(db, "mentees", id));
+      alert("Mentee deleted!");
+    } catch (error) {
+      console.error("Error deleting Mentee:", error);
+    }
+  };
+
   const columns = [
     { field: "firstName", headerName: "First Name", flex: 1, headerAlign: "center", align: "center" },
     { field: "lastName", headerName: "Last Name", flex: 1, headerAlign: "center", align: "center" },
     { field: "major", headerName: "Major", flex: 1, headerAlign: "center", align: "center" },
     { field: "phone", headerName: "Phone Number", flex: 1, headerAlign: "center", align: "center" },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 0.5,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => (
+        <IconButton
+          color="error"
+          onClick={() => handleDelete(params.row.id)}
+        >
+          <DeleteIcon />
+        </IconButton>
+      ),
+    },
   ];
 
   return (
-    <Box m="20px">
-      <Header title="TEAM" subtitle="Ummah Professional Mentees" />
+    <Box m="20px" sx={{ backgroundColor: "#E8F0FA", color: "black", minHeight: "100vh", p: 2 }}>
+      {/* Custom Header with icons */}
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Box>
+          <Header title="Mentees" color="black" subtitle="Ummah Professional Mentees" />
+        </Box>
+      </Box>
+
       <Box
         m="40px 0 0 0"
         height="75vh"
         sx={{
-          "& .MuiDataGrid-root": { border: "none" },
-          "& .MuiDataGrid-cell": { borderBottom: "none", fontWeight: "bold" },
-          "& .MuiDataGrid-columnHeaders": { backgroundColor: "#32c9d1", borderBottom: "none" },
-          "& .MuiDataGrid-columnHeaderTitle": { fontWeight: "bold" },
-          "& .MuiDataGrid-virtualScroller": { backgroundColor: colors.primary[400] },
-          "& .MuiDataGrid-footerContainer": { borderTop: "none", backgroundColor: "#32c9d1" },
+          "& .MuiDataGrid-root": { border: "none", color: "black" },
+          "& .MuiDataGrid-cell": { borderBottom: "none", fontWeight: "bold", color: "black" },
+          "& .MuiDataGrid-columnHeaders": { backgroundColor: "#E8F0FA", borderBottom: "none", color: "black" },
+          "& .MuiDataGrid-columnHeaderTitle": { fontWeight: "bold", color: "black" },
+          "& .MuiDataGrid-virtualScroller": { backgroundColor: "#E8F0FA", color: "black" },
+          "& .MuiDataGrid-footerContainer": { borderTop: "none", backgroundColor: "#E8F0FA", color: "black" },
         }}
       >
         <DataGrid rows={mentees} columns={columns} />

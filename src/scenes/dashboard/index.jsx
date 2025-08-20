@@ -43,6 +43,7 @@ const AdminDashboard = () => {
     return () => unsub();
   }, []);
 
+  // ✅ integrated your handleApprove function here
   const handleApprove = async (mentor) => {
     const dbId = mentor.id;
     const signupLink = `${window.location.origin}/create-password?dbId=${dbId}&email=${mentor.email}`;
@@ -107,11 +108,18 @@ const AdminDashboard = () => {
               <Typography>Email: {user.email}</Typography>
               <Typography>Name: {user.name}</Typography>
               <Typography>University: {user.university}</Typography>
-              <Typography>Years of Experience: {user.yearsOfExperience}</Typography>
+              <Typography>
+                Years of Experience: {user.yearsOfExperience}
+              </Typography>
               <Typography>Industry: {user.industry}</Typography>
               <Typography>Skills: {user.skills}</Typography>
               <Typography>Availability: {user.availability}</Typography>
-              <Typography>Resume:{" "} <a href={user.resumeURL} target="_blank">View Resume</a></Typography>
+              <Typography>
+                Resume:{" "}
+                <a href={user.resumeURL} target="_blank" rel="noreferrer">
+                  View Resume
+                </a>
+              </Typography>
               <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
                 <Button
                   variant="contained"

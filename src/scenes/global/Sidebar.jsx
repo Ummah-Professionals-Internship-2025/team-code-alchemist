@@ -9,9 +9,8 @@ import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
 import ContactsOutlinedIcon from "@mui/icons-material/ContactsOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
-import PieChartOutlinedIcon from "@mui/icons-material/PieChartOutlined";
-import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
+import UPLogo from "../../UPLogo.svg";
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
     return (
@@ -41,14 +40,14 @@ const Sidebar = () => {
         <Box
             sx={{
                 "& .pro-sidebar-inner": {
-                    background: "#E8F0FA !important",
+                    background: "#f4f8fc !important",  // Lighter background color for a professional look
                 },
                 "& .pro-icon-wrapper": {
                     backgroundColor: "transparent !important",
                     color: "black !important",
                 },
                 "& .pro-inner-item": {
-                    padding: "5px 35px 5px 20px !important",
+                    padding: "10px 35px 10px 20px !important",  // Adjusted padding
                     color: "black !important",
                 },
                 "& .pro-inner-item:hover": {
@@ -65,7 +64,7 @@ const Sidebar = () => {
         >
             <ProSidebar collapsed={isCollapsed}>
                 <Menu iconShape="square">
-                    {/* LOGO AND MENU ICON */}
+                    {/* UMMAH PROFESSIONALS LOGO AT TOP LEFT */}
                     <MenuItem
                         onClick={() => setIsCollapsed(!isCollapsed)}
                         icon={isCollapsed ? <MenuOutlinedIcon /> : undefined}
@@ -77,39 +76,42 @@ const Sidebar = () => {
                         {!isCollapsed && (
                             <Box
                                 display="flex"
-                                justifyContent="space-between"
+                                justifyContent="flex-start"
                                 alignItems="center"
                                 ml="15px"
                             >
-                                <Typography variant="h6" color="black">
-                                    UMMAH PROFESSIONALS
-                                </Typography>
-                                <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
-                                    <MenuOutlinedIcon sx={{ color: "black" }} />
-                                </IconButton>
+                                <img
+                                    alt="logo"
+                                    src={UPLogo}  
+                                    width="150px"
+                                    style={{
+                                        cursor: "pointer",
+                                    }}
+                                />
                             </Box>
                         )}
                     </MenuItem>
 
-                    {/* USER */}
+                    {/* USER PROFILE BELOW LOGO */}
                     {!isCollapsed && (
-                        <Box mb="25px">
+                        <Box mb="25px" textAlign="center">
                             <Box display="flex" justifyContent="center" alignItems="center">
                                 <img
                                     alt="profile-user"
-                                    width="100px"
-                                    height="100px"
+                                    width="80px"  // Smaller profile image
+                                    height="80px"
                                     src={`../../assets/user.jpg`}
                                     style={{
                                         cursor: "pointer",
                                         borderRadius: "50%",
+                                        boxShadow: "0 0 5px rgba(0, 0, 0, 0.1)",
                                     }}
                                 />
                             </Box>
 
                             <Box textAlign="center">
                                 <Typography
-                                    variant="h3"
+                                    variant="h6"
                                     color="black"
                                     fontWeight="bold"
                                     sx={{ m: "10px 0 0 0" }}
@@ -117,7 +119,7 @@ const Sidebar = () => {
                                     Yassir Khalaf
                                 </Typography>
                                 <Typography
-                                    variant="h5"
+                                    variant="h6"
                                     sx={{ color: "#4a90e2" }}
                                 >
                                     UP SDE
@@ -135,9 +137,8 @@ const Sidebar = () => {
                         <Item title="Mentor List" to="/mentors" icon={<PeopleOutlinedIcon />} selected={selected} setSelected={setSelected} />
                         <Item title="Mentee List" to="/mentees" icon={<ContactsOutlinedIcon />} selected={selected} setSelected={setSelected} />
                         <Item title="Calendar" to="/calendar" icon={<CalendarTodayOutlinedIcon />} selected={selected} setSelected={setSelected} />
-                        <Item title="Bar Chart" to="/bar" icon={<BarChartOutlinedIcon />} selected={selected} setSelected={setSelected} />
-                        <Item title="Pie Chart" to="/pie" icon={<PieChartOutlinedIcon />} selected={selected} setSelected={setSelected} />
-                        <Item title="Line Chart" to="/line" icon={<TimelineOutlinedIcon />} selected={selected} setSelected={setSelected} />
+                        <Item title="Charts" to="/charts" icon={<BarChartOutlinedIcon />} selected={selected} setSelected={setSelected} />
+
                     </Box>
                 </Menu>
             </ProSidebar>
