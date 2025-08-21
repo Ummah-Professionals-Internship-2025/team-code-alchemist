@@ -5,14 +5,102 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from './firebase';
 import Sidebar from './Sidebar';
 import './Sidebar.css';
+import Rescheduling, { getMeetingStatus } from './Rescheduling';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
 const DEFAULT_AVATAR = "https://www.gravatar.com/avatar/?d=mp&f=y";
 
 function Dashboard() {
-  // Placeholder for appointments; in real app, fetch from backend
-  const appointments = [];
+  const [pendingMeetings, setPendingMeetings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showReschedule, setShowReschedule] = useState(false);
+  const [activeMeeting, setActiveMeeting] = useState(null);
+
+  const fetchPendingMeetings = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const response = await fetch(`http://localhost:3003/api/meetings/mentee/${user.uid}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setPendingMeetings(data.meetings);
+      }
+    } catch (error) {
+      console.error('Error fetching pending meetings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPendingMeetings();
+  }, []);
+
+  const acceptMeeting = async (meetingId) => {
+    try {
+      let res = await fetch(`http://localhost:3003/api/meetings/${meetingId}/accept`, { method: 'POST' });
+      if (res.status === 404) {
+        res = await fetch(`http://localhost:3001/api/meetings/${meetingId}/accept`, { method: 'POST' });
+      }
+      await fetchPendingMeetings();
+    } catch (e) {
+      console.error('Accept meeting failed', e);
+    }
+  };
+
+  const proposeMeeting = (meeting) => {
+    if (meeting && meeting.id) {
+      window.alert(`Scheduling a new time for meeting ID: ${meeting.id}`);
+    } else {
+      window.alert('Scheduling a new time for this meeting.');
+    }
+    setActiveMeeting(meeting);
+    setShowReschedule(true);
+  };
+
+  const handleRescheduleSubmit = async ({ meetingDate, meetingTime }) => {
+    if (!activeMeeting) return;
+    try {
+      let res = await fetch(`http://localhost:3003/api/meetings/${activeMeeting.id}/propose`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ meetingDate, meetingTime })
+      });
+      let data = {};
+      try { data = await res.json(); } catch {}
+      if (res.status === 404) {
+        // Fallback to forms backend if userportal backend route not found
+        res = await fetch(`http://localhost:3001/api/meetings/${activeMeeting.id}/propose`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ meetingDate, meetingTime })
+        });
+        try { data = await res.json(); } catch { data = {}; }
+      }
+      if (!res.ok) {
+        const text = typeof data.error === 'string' ? data.error : `${res.status} ${res.statusText}`;
+        window.alert(`Could not schedule new time. ${text}`);
+        return;
+      }
+      if (!data.success) {
+        window.alert(`Could not schedule new time. ${data.error || 'Unknown error'}`);
+        return;
+      }
+      window.alert('New meeting scheduled.');
+      setShowReschedule(false);
+      setActiveMeeting(null);
+      await fetchPendingMeetings();
+    } catch (e) {
+      console.error('Propose meeting failed', e);
+      window.alert('An error occurred while scheduling.');
+    }
+  };
+
+  // Status logic is centralized in Rescheduling.getMeetingStatus
+
   return (
     <div style={{ padding: 40, minHeight: '100vh', background: '#E7E8EE' }}>
       <h1 style={{ color: '#007CA6', fontSize: 38, fontWeight: 800, marginBottom: 8 }}>DASHBOARD</h1>
@@ -20,9 +108,62 @@ function Dashboard() {
       <div style={{ display: 'flex', justifyContent: 'center', gap: 32, marginBottom: 32 }}>
         {/* Current Appointment Box */}
         <div style={{ background: '#FFFFFF', borderRadius: 20, boxShadow: '0 4px 24px rgba(138,203,219,0.18)', border: '2px solid #8ACBDB', padding: 32, minWidth: 320, color: '#00212C', margin: 16, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-          <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 8 }}>Current Appointment</h2>
-          <div style={{ color: '#FDBB37', fontWeight: 700, fontSize: 20 }}>{appointments.length === 0 ? 'None' : appointments[0].title}</div>
+          <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 8 }}>Current Meetings</h2>
+          {loading ? (
+            <div style={{ color: '#666', fontSize: 16 }}>Loading...</div>
+          ) : pendingMeetings.length === 0 ? (
+            <div style={{ color: '#666', fontSize: 16 }}>No pending meetings</div>
+          ) : (
+            <div style={{ width: '100%' }}>
+              {pendingMeetings.map((meeting, index) => {
+                const statusInfo = getMeetingStatus(meeting);
+                return (
+                  <div key={meeting.id} style={{ 
+                    border: '1px solid #e0e0e0', 
+                    borderRadius: 8, 
+                    padding: 16, 
+                    marginBottom: index < pendingMeetings.length - 1 ? 12 : 0,
+                    background: '#f9f9f9'
+                  }}>
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: '#007CA6' }}>With:</strong> {meeting.mentorName}
+                    </div>
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: '#007CA6' }}>When:</strong> {(() => {
+                        // meetingDate might already be a human-readable string; if not, try to format ISO
+                        const dateVal = meeting.meetingDate;
+                        const looksLikeISO = typeof dateVal === 'string' && /\d{4}-\d{2}-\d{2}T/.test(dateVal);
+                        const dateStr = typeof dateVal === 'string'
+                          ? (looksLikeISO ? new Date(dateVal).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : dateVal)
+                          : '';
+                        return `${dateStr ? dateStr + ' ' : ''}${meeting.meetingTime || ''}`.trim();
+                      })()}
+                    </div>
+                    <div style={{ 
+                      color: statusInfo.color, 
+                      fontWeight: 600, 
+                      fontSize: 14 
+                    }}>
+                      {statusInfo.status}
+                    </div>
+                    {(!meeting.menteeApproved && meeting.mentorApproved) && (
+                      <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+                        <button onClick={() => acceptMeeting(meeting.id)} style={{ background: '#4caf50', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>Accept</button>
+                        <button onClick={() => proposeMeeting(meeting)} style={{ background: '#FDBB37', color: '#00212C', border: 'none', padding: '8px 12px', borderRadius: 6, cursor: 'pointer', fontWeight: 700 }}>Propose new time</button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
+        <Rescheduling
+          open={showReschedule}
+          onClose={() => { setShowReschedule(false); setActiveMeeting(null); }}
+          onSubmit={handleRescheduleSubmit}
+          meeting={activeMeeting}
+        />
         {/* Calendar Box */}
         <div style={{ background: '#FFFFFF', borderRadius: 20, boxShadow: '0 4px 24px rgba(138,203,219,0.18)', border: '2px solid #8ACBDB', padding: 32, minWidth: 320, color: '#00212C', margin: 16, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
           <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 8 }}>Calendar</h2>

@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import MentorForm from './MentorForm';
-import MenteeForm from './MenteeForm';
+import MenteeForm from './MenteeForm.js';
 import './App.css';
 
 function Home() {
@@ -10,7 +9,6 @@ function Home() {
     <div className="container">
       <h1 className="main-title">What do you want to be?</h1>
       <div className="button-group">
-        <button className="btn" onClick={() => navigate('/mentor')}>Mentor</button>
         <button className="btn" onClick={() => navigate('/mentee')}>Mentee</button>
       </div>
     </div>
@@ -23,7 +21,6 @@ function App() {
       <div className="header">ummah professionals</div>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/mentor" element={<MentorForm />} />
         <Route path="/mentee" element={<MenteeForm />} />
       </Routes>
     </Router>

@@ -1,0 +1,35 @@
+{
+  "name": "ummah-professionals",
+  "version": "1.0.0",
+  "description": "Ummah Professionals - Mentorship Platform",
+  "main": "index.js",
+  "scripts": {
+    "install-all": "npm install && cd forms/frontend && npm install && cd ../backend && npm install && cd ../../userportal && npm install && cd backend && npm install",
+    "start": "npm run start-all",
+    "start-all": "concurrently \"npm run start-backend\" \"npm run start-frontend\"",
+    "start-frontend": "node app.js",
+    "start-backend": "node server.js",
+    "start-forms-backend": "cd forms/backend && PORT=3001 node server.js",
+    "start-forms-frontend": "cd forms/frontend && PORT=3000 npm start",
+    "start-userportal-backend": "cd userportal/backend && PORT=3003 node server.js",
+    "start-userportal-frontend": "cd userportal && PORT=3002 npm start",
+    "dev": "npm run start-all",
+    "build": "cd forms/frontend && npm run build && cd ../../userportal && npm run build"
+  },
+  "keywords": [
+    "mentorship",
+    "ummah",
+    "professionals",
+    "react",
+    "nodejs"
+  ],
+  "author": "Ummah Professionals Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}

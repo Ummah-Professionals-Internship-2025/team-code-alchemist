@@ -5,6 +5,8 @@ import { auth, db, storage } from './firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import MentorMatchesModal from './MentorMatchesModal.js';
+import AvailabilityForm from './AvailibilityForm.jsx';
 
 const industryOptions = [
   { value: 'Business', label: 'Business' },
@@ -20,9 +22,7 @@ const industryOptions = [
   { value: 'Other', label: 'Other' },
 ];
 
-const daysOfWeek = [
-  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
-];
+
 
 const majorOptions = [
   { value: 'Accounting', label: 'Accounting' },
@@ -356,6 +356,8 @@ const initialState = {
   major: '',
   currentGrade: '',
   serviceLookingFor: '',
+  skillsToLearn: [], // Add this new field
+  companySizePreference: [], // Add this new field
   resume: null,
   password: '',
   confirmPassword: '',
@@ -391,6 +393,9 @@ function MenteeForm() {
   const [showPasswordFeedback, setShowPasswordFeedback] = useState(false);
   const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
   const [confirmPasswordFocused, setConfirmPasswordFocused] = useState(false);
+  const [showMentorMatches, setShowMentorMatches] = useState(false);
+  const [menteeData, setMenteeData] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = e => {
@@ -406,26 +411,53 @@ function MenteeForm() {
     setForm({ ...form, industry: selectedOptions ? selectedOptions.map(opt => opt.value) : [] });
   };
 
-  const handleAvailabilityChange = (day, checked) => {
-    setForm(f => ({
-      ...f,
-      generalAvailability: {
-        ...f.generalAvailability,
-        [day]: checked ? { from: '', to: '' } : undefined
+  // Convert availability from Set format to grouped by day format
+  const convertAvailabilityToGrouped = (selectedSlots) => {
+    const grouped = {};
+    selectedSlots.forEach(slot => {
+      const [day, time] = slot.split('-');
+      if (!grouped[day]) {
+        grouped[day] = [];
       }
-    }));
-  };
-
-  const handleAvailabilityTimeChange = (day, value) => {
-    setForm(f => ({
-      ...f,
-      generalAvailability: {
-        ...f.generalAvailability,
-        [day]: {
-          ...f.generalAvailability[day],
-          when: value
+      // Convert time format from "9:00 AM" to "9am-10am" format
+      const timeMatch = time.match(/(\d+):\d+\s*(AM|PM)/);
+      if (timeMatch) {
+        const hour = parseInt(timeMatch[1]);
+        const period = timeMatch[2];
+        const nextHour = hour === 12 ? 1 : hour + 1;
+        const nextPeriod = hour === 11 ? 'PM' : hour === 12 ? 'PM' : period;
+        const timeSlot = `${hour}${period === 'AM' ? 'am' : 'pm'}-${nextHour}${nextPeriod === 'AM' ? 'am' : 'pm'}`;
+        if (!grouped[day].includes(timeSlot)) {
+          grouped[day].push(timeSlot);
         }
       }
+    });
+    return grouped;
+  };
+
+  // Convert grouped availability to Set format for AvailabilityForm
+  const convertGroupedToAvailabilitySet = (groupedAvailability) => {
+    const selectedSlots = new Set();
+    Object.entries(groupedAvailability).forEach(([day, timeSlots]) => {
+      timeSlots.forEach(timeSlot => {
+        // Convert "9am-10am" format back to "9:00 AM" format
+        const timeMatch = timeSlot.match(/(\d+)(am|pm)/);
+        if (timeMatch) {
+          const hour = parseInt(timeMatch[1]);
+          const period = timeMatch[2].toUpperCase();
+          const timeString = `${hour}:00 ${period}`;
+          selectedSlots.add(`${day}-${timeString}`);
+        }
+      });
+    });
+    return selectedSlots;
+  };
+
+  const handleAvailabilityChange = (selectedSlots) => {
+    const groupedAvailability = convertAvailabilityToGrouped(selectedSlots);
+    setForm(f => ({
+      ...f,
+      generalAvailability: groupedAvailability
     }));
   };
 
@@ -434,7 +466,7 @@ function MenteeForm() {
     return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
   };
 
-  const handleSubmit = async e => {
+  const handleContinue = async e => {
     e.preventDefault();
     if (!validatePassword(form.password)) {
       setPasswordError('Password must be at least 8 characters, include an uppercase letter, a lowercase letter, and a number.');
@@ -444,27 +476,54 @@ function MenteeForm() {
       setPasswordError('Passwords do not match.');
       return;
     }
+    // Validate that at least one day has availability selected
+    const hasAvailability = Object.keys(form.generalAvailability).length > 0 && 
+      Object.values(form.generalAvailability).some(slots => slots && slots.length > 0);
+    if (!hasAvailability) {
+      setPasswordError('Please select at least one available time slot.');
+      return;
+    }
     setPasswordError('');
+    setLoading(true);
+    
     try {
       const formData = new FormData();
       // Append all fields except arrays/objects and file
       Object.entries(form).forEach(([key, value]) => {
         if (key === 'resume' && value) {
           formData.append('resume', value);
-        } else if (key === 'industry' || key === 'generalAvailability') {
+        } else if (key === 'industry' || key === 'generalAvailability' || key === 'skillsToLearn' || key === 'companySizePreference') {
           formData.append(key, JSON.stringify(value));
         } else if (key !== 'resume') {
           formData.append(key, value);
         }
       });
+      
       const response = await fetch('http://localhost:3001/api/mentee', {
         method: 'POST',
         body: formData,
       });
       const data = await response.json();
+      
       if (data.success) {
-        setSubmitted(true);
-        setTimeout(() => window.location.href = 'http://localhost:3002/', 10000); // Update to your user portal port
+        // Store mentee data for pairing
+        setMenteeData({
+          ...form,
+          uid: data.uid,
+          resumeUrl: data.resumeUrl
+        });
+        
+        // Fetch mentors for pairing
+        const mentorsResponse = await fetch('http://localhost:3001/api/mentors');
+        const mentorsData = await mentorsResponse.json();
+        
+        if (mentorsData.success) {
+          setShowMentorMatches(true);
+        } else {
+          // If no mentors available, proceed with normal submission
+          setSubmitted(true);
+          setTimeout(() => window.location.href = 'http://localhost:3002/', 10000);
+        }
       } else {
         if (data.error && data.error.includes('already exists')) {
           setPasswordError('An account with this email already exists. Please login to the user portal instead.');
@@ -474,6 +533,30 @@ function MenteeForm() {
       }
     } catch (err) {
       setPasswordError('Network error: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMeetingSubmit = async (meetingData) => {
+    try {
+      const response = await fetch('http://localhost:3001/api/meetings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(meetingData),
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setSubmitted(true);
+        setTimeout(() => window.location.href = 'http://localhost:3002/', 10000);
+      } else {
+        setPasswordError('Error scheduling meeting: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      setPasswordError('Network error scheduling meeting: ' + error.message);
     }
   };
 
@@ -490,9 +573,56 @@ function MenteeForm() {
 
   const passwordStrength = getPasswordStrength(form.password, form.name);
 
-  const timeIntervals = [
-    '8am-9am', '9am-10am', '10am-11am', '11am-12pm', '12pm-1pm', '1pm-2pm', '2pm-3pm', '3pm-4pm', '4pm-5pm', '5pm-6pm', '6pm-7pm', '7pm-8pm'
-  ].map(t => ({ value: t, label: t }));
+  const skillsToLearnOptions = [
+    { value: 'Technical Skills', label: 'Technical Skills' },
+    { value: 'Leadership', label: 'Leadership' },
+    { value: 'Communication', label: 'Communication' },
+    { value: 'Public Speaking', label: 'Public Speaking' },
+    { value: 'Project Management', label: 'Project Management' },
+    { value: 'Problem Solving', label: 'Problem Solving' },
+    { value: 'Critical Thinking', label: 'Critical Thinking' },
+    { value: 'Time Management', label: 'Time Management' },
+    { value: 'Teamwork', label: 'Teamwork' },
+    { value: 'Negotiation', label: 'Negotiation' },
+    { value: 'Sales Skills', label: 'Sales Skills' },
+    { value: 'Marketing', label: 'Marketing' },
+    { value: 'Financial Literacy', label: 'Financial Literacy' },
+    { value: 'Data Analysis', label: 'Data Analysis' },
+    { value: 'Research Skills', label: 'Research Skills' },
+    { value: 'Networking', label: 'Networking' },
+    { value: 'Confidence Building', label: 'Confidence Building' },
+    { value: 'Interview Skills', label: 'Interview Skills' },
+    { value: 'Resume Writing', label: 'Resume Writing' },
+    { value: 'Career Planning', label: 'Career Planning' },
+    { value: 'Entrepreneurship', label: 'Entrepreneurship' },
+    { value: 'Innovation', label: 'Innovation' },
+    { value: 'Strategic Thinking', label: 'Strategic Thinking' },
+    { value: 'Customer Service', label: 'Customer Service' },
+    { value: 'Conflict Resolution', label: 'Conflict Resolution' },
+    { value: 'Mentoring Others', label: 'Mentoring Others' },
+    { value: 'Cross-cultural Communication', label: 'Cross-cultural Communication' },
+    { value: 'Digital Marketing', label: 'Digital Marketing' },
+    { value: 'Social Media Management', label: 'Social Media Management' },
+    { value: 'Content Creation', label: 'Content Creation' },
+    { value: 'Design Thinking', label: 'Design Thinking' },
+    { value: 'Agile/Scrum', label: 'Agile/Scrum' },
+    { value: 'Risk Management', label: 'Risk Management' },
+    { value: 'Quality Assurance', label: 'Quality Assurance' },
+    { value: 'Supply Chain Management', label: 'Supply Chain Management' },
+    { value: 'Human Resources', label: 'Human Resources' },
+    { value: 'Legal Knowledge', label: 'Legal Knowledge' },
+    { value: 'Regulatory Compliance', label: 'Regulatory Compliance' },
+    { value: 'Sustainability', label: 'Sustainability' },
+    { value: 'Remote Work Skills', label: 'Remote Work Skills' },
+    { value: 'Virtual Collaboration', label: 'Virtual Collaboration' },
+    { value: 'Other', label: 'Other' },
+  ];
+
+  const companySizeOptions = [
+    { value: 'Small Company (1-50 employees)', label: 'Small Company (1-50 employees)' },
+    { value: 'Medium Company (51-500 employees)', label: 'Medium Company (51-500 employees)' },
+    { value: 'Large Company (500+ employees)', label: 'Large Company (500+ employees)' },
+  ];
 
   return (
     <div className="container">
@@ -500,7 +630,7 @@ function MenteeForm() {
       <div className="form-card scrollable-form">
         <button className="btn" style={{marginBottom: 24, width: 'auto', maxWidth: 120}} type="button" onClick={() => navigate('/')}>{'< Back'}</button>
         <h2>Mentee Application</h2>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleContinue}>
           <label>First Name <span style={{color: 'red'}}>*</span></label>
           <input name="firstName" value={form.firstName} onChange={handleChange} required />
 
@@ -560,48 +690,44 @@ function MenteeForm() {
             <option value="Interview prep">Interview prep</option>
           </select>
 
-          {/* General Availability Section - OUTSIDE the blue card */}
+          <label>What skills do you want to learn from your mentor? <span style={{color: 'red'}}>*</span></label>
+          <Select
+            isMulti
+            name="skillsToLearn"
+            options={skillsToLearnOptions}
+            value={skillsToLearnOptions.filter(opt => (form.skillsToLearn || []).includes(opt.value))}
+            onChange={selectedOptions => {
+              setForm({ ...form, skillsToLearn: selectedOptions ? selectedOptions.map(opt => opt.value) : [] });
+            }}
+            classNamePrefix="react-select"
+            placeholder="Select skills you want to learn..."
+            required
+          />
+          <div style={{fontSize: '0.95rem', color: '#888', marginBottom: 12}}>You can select multiple skills. This helps us match you with the best mentors.</div>
+
+          <label>What company size would you prefer to work for? <span style={{color: 'red'}}>*</span></label>
+          <Select
+            isMulti
+            name="companySizePreference"
+            options={companySizeOptions}
+            value={companySizeOptions.filter(opt => (form.companySizePreference || []).includes(opt.value))}
+            onChange={selectedOptions => {
+              setForm({ ...form, companySizePreference: selectedOptions ? selectedOptions.map(opt => opt.value) : [] });
+            }}
+            classNamePrefix="react-select"
+            placeholder="Select company size preferences..."
+            required
+          />
+          <div style={{fontSize: '0.95rem', color: '#888', marginBottom: 12}}>You can select multiple preferences. This helps us match you with mentors from your preferred company types.</div>
+
+          {/* General Availability Section */}
           <div style={{margin: '16px 0 8px 0'}}>
             <label style={{fontWeight: 'bold', fontSize: '1em', color: '#007399', marginBottom: 2, display: 'inline-block'}}>General Availability <span style={{color: 'red'}}>*</span></label>
-            <div style={{background: '#ededed', border: '1px solid #ccc', borderRadius: 8, padding: '8px 8px 4px 8px', marginTop: 4, maxWidth: 700}}>
-              <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4}}>
-                {daysOfWeek.map(day => (
-                  <div key={day} style={{flex: 1, textAlign: 'center'}}>
-                    <div style={{fontWeight: 'bold', color: '#222', fontSize: '0.85em', marginBottom: 2, lineHeight: 1.1}}>{day}</div>
-                    <input
-                      type="checkbox"
-                      checked={Array.isArray(form.generalAvailability[day])}
-                      onChange={e => setForm(f => ({
-                        ...f,
-                        generalAvailability: {
-                          ...f.generalAvailability,
-                          ...(e.target.checked
-                            ? { [day]: Array.isArray(f.generalAvailability[day]) ? f.generalAvailability[day] : [] }
-                            : (() => { const g = { ...f.generalAvailability }; delete g[day]; return g; })())
-                        }
-                      }))}
-                      style={{margin: 0}}
-                    />
-                    {Array.isArray(form.generalAvailability[day]) && (
-                      <Select
-                        isMulti
-                        options={timeIntervals}
-                        value={form.generalAvailability[day].map(val => timeIntervals.find(opt => opt.value === val)).filter(Boolean)}
-                        onChange={selected => setForm(f => ({
-                          ...f,
-                          generalAvailability: {
-                            ...f.generalAvailability,
-                            [day]: selected ? selected.map(opt => opt.value) : []
-                          }
-                        }))}
-                        classNamePrefix="react-select"
-                        placeholder="Select times..."
-                        styles={{ menu: base => ({ ...base, zIndex: 9999 }) }}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
+            <div style={{background: '#ededed', border: '1px solid #ccc', borderRadius: 8, padding: '16px', marginTop: 4}}>
+              <AvailabilityForm
+                selectedSlots={convertGroupedToAvailabilitySet(form.generalAvailability)}
+                onAvailabilityChange={handleAvailabilityChange}
+              />
             </div>
           </div>
 
@@ -681,9 +807,24 @@ function MenteeForm() {
           )}
           {passwordError && <div style={{color: 'red', marginBottom: 16}}>{passwordError}</div>}
 
-          <button className="btn" type="submit">Submit</button>
+          <button className="btn" type="submit" disabled={loading}>
+            {loading ? 'Processing...' : 'Continue'}
+          </button>
         </form>
       </div>
+
+      {/* Mentor Matches Modal */}
+      {showMentorMatches && menteeData && (
+        <MentorMatchesModal
+          menteeData={menteeData}
+          onClose={() => {
+            setShowMentorMatches(false);
+            setSubmitted(true);
+            setTimeout(() => window.location.href = 'http://localhost:3002/', 10000);
+          }}
+          onSubmit={handleMeetingSubmit}
+        />
+      )}
     </div>
   );
 }
