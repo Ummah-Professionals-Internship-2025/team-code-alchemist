@@ -102,25 +102,28 @@ function ScheduleMeeting({
     setWeekDates(newWeek);
   };
 
-  const handleAvailability = async () => {
-    if (senderIsMentor === false && targetID) {
-      await getDoc(doc(db, "mentors", targetID)).then((docSnap) => {
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      if (!targetID) {
+        alert("Error: No user found");
+        return;
+      }
+
+      const collectionName = senderIsMentor ? "mentees" : "mentors";
+      try {
+        const docSnap = await getDoc(doc(db, collectionName, targetID));
         if (docSnap.exists()) {
           setAvailability(docSnap.data().generalAvailability);
+          console.log("Availability:", docSnap.data().generalAvailability);
         }
-        console.log(availability);
-      });
-    } else if (senderIsMentor === true && targetID) {
-      await getDoc(doc(db, "mentees", targetID)).then((docSnap) => {
-        if (docSnap.exists()) {
-          setAvailability(docSnap.data().generalAvailability);
-        }
-        console.log(availability);
-      });
-    } else {
-      alert("Error: No user found");
-    }
-  };
+      } catch (err) {
+        console.error("Error fetching availability:", err);
+      }
+    };
+
+    fetchAvailability();
+  }, []);
+
   const handleDayClick = (date, dayName) => {
     setAvailableTimes(availability[dayName]);
     setSelectedDay(date.toString().substring(4, 11));
@@ -177,8 +180,6 @@ function ScheduleMeeting({
 
   return (
     <div>
-      <button onClick={handleAvailability}>Get availability</button>
-
       <div className="schedule-meeting">
         <div className="control-week">
           {weekTracker > 0 && (
