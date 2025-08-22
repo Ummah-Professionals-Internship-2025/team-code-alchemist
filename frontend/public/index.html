@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentor Landing Page</title>
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+    <style>
+        
+        .root{
+            font-family: Kollektif, system-ui, Avenir, Helvetica, Arial, sans-serif;
+            text-rendering: optimizelegibility;
+            -webkit-font-smoothing: antialiased;
+            --up-dark-blue: #003f55;
+            --up-blue: #007ca6;
+            --up-yellow: #fdbb37;
+            --up-light-blue: #8acbdb;
+            --up-navy: #00212c;
+            --up-gray: #e7e8ed;
+            --up-white: #fbfbfc;
+            font-synthesis: none;
+        }
+        .navbar ul{
+            list-style-type: none;
+            padding: 0px;
+            margin: 0px;
+            overflow: hidden;
+            background-color: #E7E8EE;
+            font-size: 16px;
+            font-family: Poppins;
+            font-weight: bold;
+            float: right;
+            color: #003F55;
+            width: 100%;
+            object-fit: cover;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            
+
+        }
+        
+        .navbar a{
+            color: #003F55;
+            text-decoration: none;
+            padding: 15px;
+            
+            text-align: center;
+        }
+        .navbar a:hover{
+            background-color: #003F55;
+            color: #E7E8EE;
+        }
+        .navbar li{
+            float: left;
+            display: flex;
+
+        }
+        .donate{
+            color: #FDBB37;
+
+        }
+        .workers{
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .title{
+            color: #fbfbfc;
+            font-size: 42px;
+            text-align: left;
+            font-family: Poppins;
+            position: relative;
+            top: 100px;
+            right: -150px;
+        }
+        
+        a:visited{
+            color:  #003F55;
+        }
+        
+        .student:hover{
+            background-color: #E7E8EE;
+            color: #003F55;
+        }
+        
+    @media (min-width: 1024px) {
+        .mobile-container{
+            display:none;
+        }
+        .mobile-navbar-button{
+            display:none;
+        }
+        .mobile-navbar-open{
+            display:none;
+        }
+        body{
+            background: linear-gradient(-40deg, rgba(138, 203, 219, 0), rgba(0, 124, 166, 0.8), rgb(0, 63, 85));
+            background-repeat: no-repeat;
+            min-height: 100vh;
+
+        }
+        .student{
+            position: relative;
+            
+            top: 200px;
+            left: 150px;
+            color: #007CA6;
+            font-size: 17px;
+            font-family: Poppins;
+            border-radius: 10px;
+            
+            font-weight: bold;
+border: none;
+background: white;
+            padding: 10px 20px;
+            margin-top: 20px;
+            margin-left: 20px;
+            margin-right: 20px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 329px;
+height: 60px;
+flex-shrink: 0;
+
+        }
+        .subtitle{
+            color: #fbfbfc;
+            font-size: 21px;
+            text-align: left;
+            font-weight: 300;
+            font-family: Poppins;
+            line-height: normal;
+            position: relative;
+            top: 100px;
+            right: -150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex-shrink: 0;
+           
+            
+        }
+        .login{
+            color: white;
+            font-size: 16px;
+            font-family: Poppins;
+            right: -150px;
+            top: 200px;
+            position: relative;
+            
+            margin-top: 20px;
+        }
+        
+    }
+    @media (max-width: 1023px) {
+        body{
+            background: white;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+
+        }
+        .student{
+            position: relative;
+            
+            top: 200px;
+            left: 150px;
+            color: black;
+            font-size: 17px;
+            font-family: Poppins;
+            border-radius: 10px;
+            
+            font-weight: bold;
+border: none;
+background: #fdbb37;
+            padding: 10px 20px;
+            margin-top: 20px;
+            margin-left: 20px;
+            margin-right: 20px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 329px;
+height: 60px;
+flex-shrink: 0;
+top: 400px;
+padding: 0 2rem
+32px
+;
+
+        }
+        .title{
+            font-family: Kollektif-Bold, sans-serif;
+    font-size: 3rem;
+    font-weight: 700;
+        }
+        .subtitle{
+            color: #007CA6;
+            font-size: 21px;
+            text-align: left;
+            font-weight: 300;
+            font-family: Poppins;
+            line-height: 2.25rem;
+            position: relative;
+            top: 350px;
+            right: -150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex-shrink: 0;
+           
+            
+        }
+        .navbar{
+            display: none;
+        }
+        .mobile-container{
+            display: grid;
+            grid-template-columns: 4fr 3fr;
+            background: linear-gradient(-40deg, rgba(138, 203, 219, 0), rgba(0, 124, 166, 0.8), rgb(0, 63, 85));
+            list-style-type: none;
+            padding: 30px 20px 0;
+            margin: 0px;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            object-fit: cover;
+            min-height: 50vh;
+            z-index: 1000;
+        }
+        .login{
+            color: #007CA6;
+            font-size: 16px;
+            font-family: Poppins;
+            right: -150px;
+            top: 400px;
+            position: relative;
+            
+            margin-top: 20px;
+        }
+        .mobile-navbar-open{
+            right: 0;
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 250px;
+            height: 100%;
+            object-fit: cover;
+            background-color: #003F55;
+            box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0);
+            transition: right 0.3s ease-out;
+            z-index: 1000;
+        }
+        
+        .mobile-navbar-open ul{
+            list-style-type: none;
+            font-size: 16px;
+            font-family: Poppins;
+            padding: 30px 20px 0;
+            background-color: #003F55;
+            font-weight: bold;
+            float: right;
+            color: #ffffff;
+            width: 100%;
+            object-fit: cover;
+            position: fixed;
+            display: block;
+            margin-block-start: 1em;
+            margin-block-end: 1em;
+            padding-inline-start: 40px;
+            unicode-bidi: isolate;
+            
+        }
+        .mobile-navbar-open li{
+            margin: .5rem 0;
+        }
+        .mobile-navbar-open a{
+            color: #ffffff;
+        }
+        .mobile-navbar-open a:visited{
+            color:  #ffffff;
+        }  
+        .menu{
+            overflow-clip-margin: content-box;
+            overflow-x: hidden;
+            overflow-y: hidden;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: fixed;
+            top: 0;
+            left: 0;
+            top: 0;
+            left: 0;
+            background-color: #003F55;
+        }
+        .email{
+            color: #ffffff;
+            font-size: 16px;
+            font-family: Poppins;
+            font-weight: bold;
+            float: right;
+            color: #ffffff;
+            width: 100%;
+            object-fit: cover;
+            position: fixed;
+            margin: 2rem;
+            display: block;
+            font-size: 1.17em;
+            margin-block-start: 1em;
+            margin-block-end: 1em;
+            margin-inline-start: 0px;
+            margin-inline-end: 0px;
+            font-weight: bold;
+            unicode-bidi: isolate;
+        }
+        .white-to-blue{
+            background-image: linear-gradient(to bottom, #fbfbfc, #8acbdb);
+    display: flex
+;
+    flex-direction:column;
+    gap: 8.5rem;
+    padding-bottom: 20%;
+    align-items: center;
+    padding-top: 16%;
+    margin-top: -16%;
+    
+        }
+        .donate-mobile{
+            background-color: #FDBB37;
+            font-size: 1.15rem;
+            font-family: Poppins;
+            font-weight: bold;
+            color: rgb(2, 33, 44);
+            width: 20%;
+            padding: .5rem;
+            border-radius: .5rem;
+            min-width: 10rem;
+            cursor: pointer;
+        }
+        .overlay{
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: #00000080;
+            z-index:999;
+        }
+        .mobile-navbar-button{
+            display: flex;
+            justify-content: flex-end;
+        }
+    }
+        
+    </style>
+</head>
+<body>
+    
+    
+    <div id="root"></div>
+        <div class="container">
+            
+                <nav class="navbar">
+                    <img class="navy" src="./navy.png" alt="logo">
+                    <ul>
+                        <li><a href="https://www.ummahprofessionals.com/">home</a></li>
+                        <li><a href="https://www.ummahprofessionals.com/about">about</a></li>
+                        <li><a href="https://www.ummahprofessionals.com/students">get involved</a></li>
+                        <li><a href="https://www.ummahprofessionals.com/events">events</a></li>
+                        <li><a href="https://www.ummahprofessionals.com/contact">contact us</a></li>
+                        <li class="donate"><a href="https://www.ummahprofessionals.com/donate">donate</a></li>
+                    </ul>
+                </nav>
+                <h1 class="title"><strong>mentor platform</strong></h1>
+                <p class="subtitle">Give personalized career advice to Muslim <br> students and be the change to get them their first job.</p>
+                <button class="student">give career advice</button>
+                <p class="login"><i>already have an account? <a href="">login here</a></i></p>
+        </div>
+        <main>
+                <div class="mobile-container">
+                    <div class="navbar-logo" alt="logo">
+                        <a href= "https://www.ummahprofessionals.com/"><img src="/assets/white-horizontal-C2p6e4w-.svg"></a>
+                    </div>
+                    <div class="mobile-navbar-button">
+                        <img src="data:image/svg+xml,%3csvg%20width='39'%20height='14'%20viewBox='0%200%2039%2014'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3cpath%20d='M5.5%207H38M1.5%2013H38M11.5%201H38'%20stroke='%23E7E8ED'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'/%3e%3c/svg%3e">
+                    </div>
+                    <div class ="mobile-textBlockContainer">
+                        <h1 class="title"><strong>mentor platform</strong></h1>
+                            <div class ="white-to-blue">
+                                <p class="subtitle">Give personalized career advice <br> to Muslim students and be the <br> change to get them their first job.</p>
+                                <button class="student">give career advice</button>
+                                <p class="login"><i>already have an account? <a href="">login here</a></i></p>
+                            </div>
+                    </div>
+                </main>
+                    <div class="overlay"></div>
+                    <div class="mobile-navbar-open">
+                        
+                        <ul>
+                            <li><a href="https://www.ummahprofessionals.com/">home</a></li>
+                            <li><a href="https://www.ummahprofessionals.com/about">about</a></li>
+                            <li><a>get involved</a><ul>
+                                <li><a href="https://www.ummahprofessionals.com/students">students</a></li>
+                                <li><a href="https://www.ummahprofessionals.com/mentors">mentors</a></li>
+                                <li><a href="https://www.ummahprofessionals.com/volunteers">volunteers</a></li>
+                            </ul></li>
+                            <li><a href="https://www.ummahprofessionals.com/events">events</a></li>
+                            <li><a href="https://www.ummahprofessionals.com/contact">contact us</a></li>
+                        </ul>
+                        <h3 class="email">info@ummahprofessionals.com</h3>
+                        <div class="socials">
+                                <a href="https://www.instagram.com/ummahprofessionals/" target="_blank"><img src="data:image/svg+xml,%3csvg%20width='70'%20height='70'%20viewBox='0%200%2070%2070'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3cpath%20fill-rule='evenodd'%20clip-rule='evenodd'%20d='M35%200C54.317%200%2070%2015.683%2070%2035C70%2054.317%2054.317%2070%2035%2070C15.683%2070%200%2054.317%200%2035C0%2015.683%2015.683%200%2035%200ZM35%2013.125C29.0592%2013.125%2028.3142%2013.1502%2025.9809%2013.2567C23.6526%2013.3629%2022.0624%2013.7327%2020.6709%2014.2734C19.2325%2014.8325%2018.0126%2015.5805%2016.7964%2016.7966C15.5803%2018.0127%2014.8323%2019.2326%2014.2733%2020.6711C13.7326%2022.0624%2013.3629%2023.6526%2013.2565%2025.9809C13.1502%2028.3142%2013.125%2029.0592%2013.125%2035C13.125%2040.9408%2013.1502%2041.6858%2013.2565%2044.0191C13.3629%2046.3474%2013.7326%2047.9376%2014.2733%2049.3289C14.8323%2050.7674%2015.5803%2051.9873%2016.7964%2053.2036C18.0126%2054.4197%2019.2325%2055.1677%2020.6709%2055.7267C22.0624%2056.2673%2023.6526%2056.6371%2025.9809%2056.7433C28.3142%2056.8498%2029.0592%2056.875%2035%2056.875C40.9408%2056.875%2041.6858%2056.8498%2044.0191%2056.7433C46.3474%2056.6371%2047.9376%2056.2673%2049.3289%2055.7267C50.7674%2055.1677%2051.9873%2054.4197%2053.2036%2053.2036C54.4197%2051.9873%2055.1677%2050.7674%2055.7267%2049.3289C56.2673%2047.9376%2056.6371%2046.3474%2056.7433%2044.0191C56.8498%2041.6858%2056.875%2040.9408%2056.875%2035C56.875%2029.0592%2056.8498%2028.3142%2056.7433%2025.9809C56.6371%2023.6526%2056.2673%2022.0624%2055.7267%2020.6711C55.1677%2019.2326%2054.4197%2018.0127%2053.2036%2016.7966C51.9873%2015.5805%2050.7674%2014.8325%2049.3289%2014.2734C47.9376%2013.7327%2046.3474%2013.3629%2044.0191%2013.2567C41.6858%2013.1502%2040.9408%2013.125%2035%2013.125ZM35%2017.0665C40.8409%2017.0665%2041.5327%2017.0888%2043.8394%2017.194C45.9722%2017.2914%2047.1304%2017.6477%2047.9012%2017.9472C48.9223%2018.344%2049.6511%2018.8181%2050.4164%2019.5836C51.182%2020.3489%2051.656%2021.0778%2052.0528%2022.0988C52.3523%2022.8696%2052.7088%2024.0278%2052.806%2026.1606C52.9113%2028.4673%2052.9335%2029.1591%2052.9335%2035C52.9335%2040.8409%2052.9113%2041.5327%2052.806%2043.8394C52.7088%2045.9722%2052.3523%2047.1304%2052.0528%2047.9012C51.656%2048.9223%2051.182%2049.6511%2050.4164%2050.4164C49.6511%2051.182%2048.9223%2051.656%2047.9012%2052.0528C47.1304%2052.3523%2045.9722%2052.7088%2043.8394%2052.806C41.5331%2052.9113%2040.8413%2052.9335%2035%2052.9335C29.1587%2052.9335%2028.467%2052.9113%2026.1606%2052.806C24.0278%2052.7088%2022.8696%2052.3523%2022.0988%2052.0528C21.0777%2051.656%2020.3489%2051.182%2019.5835%2050.4164C18.818%2049.6511%2018.344%2048.9223%2017.9472%2047.9012C17.6477%2047.1304%2017.2912%2045.9722%2017.1939%2043.8394C17.0886%2041.5327%2017.0665%2040.8409%2017.0665%2035C17.0665%2029.1591%2017.0886%2028.4673%2017.1939%2026.1606C17.2912%2024.0278%2017.6477%2022.8696%2017.9472%2022.0988C18.344%2021.0778%2018.818%2020.3489%2019.5835%2019.5836C20.3489%2018.8181%2021.0777%2018.344%2022.0988%2017.9472C22.8696%2017.6477%2024.0278%2017.2914%2026.1606%2017.194C28.4673%2017.0888%2029.1591%2017.0665%2035%2017.0665ZM35%2023.7669C28.7961%2023.7669%2023.7669%2028.7961%2023.7669%2035C23.7669%2041.2039%2028.7961%2046.2331%2035%2046.2331C41.2039%2046.2331%2046.2331%2041.2039%2046.2331%2035C46.2331%2028.7961%2041.2039%2023.7669%2035%2023.7669ZM35%2042.2916C30.9729%2042.2916%2027.7084%2039.0271%2027.7084%2035C27.7084%2030.9729%2030.9729%2027.7084%2035%2027.7084C39.0271%2027.7084%2042.2916%2030.9729%2042.2916%2035C42.2916%2039.0271%2039.0271%2042.2916%2035%2042.2916ZM49.302%2023.3231C49.302%2024.7729%2048.1266%2025.948%2046.6769%2025.948C45.2272%2025.948%2044.052%2024.7729%2044.052%2023.3231C44.052%2021.8734%2045.2272%2020.6981%2046.6769%2020.6981C48.1266%2020.6981%2049.302%2021.8734%2049.302%2023.3231Z'%20fill='%23D9D9D9'/%3e%3c/svg%3e" alt="instagram icon"></a>
+                                <img src="data:image/svg+xml,%3csvg%20width='70'%20height='70'%20viewBox='0%200%2070%2070'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3cpath%20fill-rule='evenodd'%20clip-rule='evenodd'%20d='M35%200C54.317%200%2070%2015.683%2070%2035C70%2054.317%2054.317%2070%2035%2070C15.683%2070%200%2054.317%200%2035C0%2015.683%2015.683%200%2035%200ZM35%2013.125C29.0592%2013.125%2028.3142%2013.1502%2025.9809%2013.2567C23.6526%2013.3629%2022.0624%2013.7327%2020.6709%2014.2734C19.2325%2014.8325%2018.0126%2015.5805%2016.7964%2016.7966C15.5803%2018.0127%2014.8323%2019.2326%2014.2733%2020.6711C13.7326%2022.0624%2013.3629%2023.6526%2013.2565%2025.9809C13.1502%2028.3142%2013.125%2029.0592%2013.125%2035C13.125%2040.9408%2013.1502%2041.6858%2013.2565%2044.0191C13.3629%2046.3474%2013.7326%2047.9376%2014.2733%2049.3289C14.8323%2050.7674%2015.5803%2051.9873%2016.7964%2053.2036C18.0126%2054.4197%2019.2325%2055.1677%2020.6709%2055.7267C22.0624%2056.2673%2023.6526%2056.6371%2025.9809%2056.7433C28.3142%2056.8498%2029.0592%2056.875%2035%2056.875C40.9408%2056.875%2041.6858%2056.8498%2044.0191%2056.7433C46.3474%2056.6371%2047.9376%2056.2673%2049.3289%2055.7267C50.7674%2055.1677%2051.9873%2054.4197%2053.2036%2053.2036C54.4197%2051.9873%2055.1677%2050.7674%2055.7267%2049.3289C56.2673%2047.9376%2056.6371%2046.3474%2056.7433%2044.0191C56.8498%2041.6858%2056.875%2040.9408%2056.875%2035C56.875%2029.0592%2056.8498%2028.3142%2056.7433%2025.9809C56.6371%2023.6526%2056.2673%2022.0624%2055.7267%2020.6711C55.1677%2019.2326%2054.4197%2018.0127%2053.2036%2016.7966C51.9873%2015.5805%2050.7674%2014.8325%2049.3289%2014.2734C47.9376%2013.7327%2046.3474%2013.3629%2044.0191%2013.2567C41.6858%2013.1502%2040.9408%2013.125%2035%2013.125ZM35%2017.0665C40.8409%2017.0665%2041.5327%2017.0888%2043.8394%2017.194C45.9722%2017.2914%2047.1304%2017.6477%2047.9012%2017.9472C48.9223%2018.344%2049.6511%2018.8181%2050.4164%2019.5836C51.182%2020.3489%2051.656%2021.0778%2052.0528%2022.0988C52.3523%2022.8696%2052.7088%2024.0278%2052.806%2026.1606C52.9113%2028.4673%2052.9335%2029.1591%2052.9335%2035C52.9335%2040.8409%2052.9113%2041.5327%2052.806%2043.8394C52.7088%2045.9722%2052.3523%2047.1304%2052.0528%2047.9012C51.656%2048.9223%2051.182%2049.6511%2050.4164%2050.4164C49.6511%2051.182%2048.9223%2051.656%2047.9012%2052.0528C47.1304%2052.3523%2045.9722%2052.7088%2043.8394%2052.806C41.5331%2052.9113%2040.8413%2052.9335%2035%2052.9335C29.1587%2052.9335%2028.467%2052.9113%2026.1606%2052.806C24.0278%2052.7088%2022.8696%2052.3523%2022.0988%2052.0528C21.0777%2051.656%2020.3489%2051.182%2019.5835%2050.4164C18.818%2049.6511%2018.344%2048.9223%2017.9472%2047.9012C17.6477%2047.1304%2017.2912%2045.9722%2017.1939%2043.8394C17.0886%2041.5327%2017.0665%2040.8409%2017.0665%2035C17.0665%2029.1591%2017.0886%2028.4673%2017.1939%2026.1606C17.2912%2024.0278%2017.6477%2022.8696%2017.9472%2022.0988C18.344%2021.0778%2018.818%2020.3489%2019.5835%2019.5836C20.3489%2018.8181%2021.0777%2018.344%2022.0988%2017.9472C22.8696%2017.6477%2024.0278%2017.2914%2026.1606%2017.194C28.4673%2017.0888%2029.1591%2017.0665%2035%2017.0665ZM35%2023.7669C28.7961%2023.7669%2023.7669%2028.7961%2023.7669%2035C23.7669%2041.2039%2028.7961%2046.2331%2035%2046.2331C41.2039%2046.2331%2046.2331%2041.2039%2046.2331%2035C46.2331%2028.7961%2041.2039%2023.7669%2035%2023.7669ZM35%2042.2916C30.9729%2042.2916%2027.7084%2039.0271%2027.7084%2035C27.7084%2030.9729%2030.9729%2027.7084%2035%2027.7084C39.0271%2027.7084%2042.2916%2030.9729%2042.2916%2035C42.2916%2039.0271%2039.0271%2042.2916%2035%2042.2916ZM49.302%2023.3231C49.302%2024.7729%2048.1266%2025.948%2046.6769%2025.948C45.2272%2025.948%2044.052%2024.7729%2044.052%2023.3231C44.052%2021.8734%2045.2272%2020.6981%2046.6769%2020.6981C48.1266%2020.6981%2049.302%2021.8734%2049.302%2023.3231Z'%20fill='%23D9D9D9'/%3e%3c/svg%3e" alt="instagram icon">
+                                <img src="data:image/svg+xml,%3csvg%20width='70'%20height='70'%20viewBox='0%200%2070%2070'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3cpath%20d='M35%200C15.67%200%200%2015.67%200%2035C0%2054.33%2015.67%2070%2035%2070C54.33%2070%2070%2054.33%2070%2035C70%2015.67%2054.33%200%2035%200ZM52.7215%2031.771C49.0049%2031.771%2045.3887%2030.5648%2042.6043%2028.5239L42.5821%2042.4009C42.5798%2044.9722%2041.7934%2047.4817%2040.3278%2049.5944C38.8622%2051.7072%2036.7871%2053.3227%2034.3794%2054.2255C31.9718%2055.1282%2029.3461%2055.2752%2026.8527%2054.6469C24.3593%2054.0186%2022.1168%2052.6448%2020.4245%2050.7088C18.7322%2048.7729%2017.6706%2046.3669%2017.3812%2043.8119C17.0919%2041.2569%2017.5886%2038.6744%2018.8052%2036.409C20.0217%2034.1437%2021.9002%2032.3032%2024.1899%2031.1332C26.4797%2029.9633%2029.0718%2029.5194%2031.6203%2029.8609V36.6756C30.4181%2036.3205%2029.1346%2036.3528%2027.9518%2036.7681C26.769%2037.1834%2025.7471%2037.9606%2025.0308%2038.9894C24.3145%2040.0182%2023.9404%2041.2463%2023.9613%2042.4997C23.9823%2043.7531%2024.3974%2044.9681%2025.1477%2045.9723C25.8981%2046.9765%2026.9455%2047.719%2028.1415%2048.0945C29.3375%2048.47%2030.6214%2048.4593%2031.8111%2048.0641C33.0007%2047.6689%2034.0357%2046.9091%2034.7693%2045.8926C35.5028%2044.8761%2035.8977%2043.6544%2035.898%2042.4009V14.9479H42.9082C42.9082%2016.2365%2043.162%2017.5125%2043.6552%2018.7031C44.1483%2019.8936%2044.8711%2020.9754%2045.7823%2021.8866C46.6936%2022.7978%2047.7753%2023.5205%2048.9659%2024.0137C50.1564%2024.5068%2051.4324%2024.7606%2052.7211%2024.7606L52.7215%2031.771Z'%20fill='%23D9D9D9'/%3e%3c/svg%3e" alt="tiktok icon">
+                        </div>
+                        <button class="donate-mobile">donate</button>
+
+                    
+                </div>
+                </div>
+               
+            
+        
+    
+    
+</body>
+</html>
