@@ -44,7 +44,10 @@ function NavigationButtons() {
         Navigation Menu
       </h2>
 
-      <button style={buttonStyle} onClick={() => navigate("/")}>
+      <button
+        style={buttonStyle}
+        onClick={() => navigate("/MentorApplicationForm")}
+      >
         Mentor Application Form
       </button>
 

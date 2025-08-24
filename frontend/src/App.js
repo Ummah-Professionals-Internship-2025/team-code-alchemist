@@ -17,18 +17,16 @@ function App() {
     <BrowserRouter>
       <NavigationButtons></NavigationButtons>
       <Routes>
-        <Route path="/" element={<MentorApplicationForm />} />
+        <Route
+          path="/MentorApplicationForm"
+          element={<MentorApplicationForm />}
+        />
         <Route path="/MentorLogin" element={<MentorLogin />} />
         <Route path="/create-password" element={<MentorCreateUser />} />
         <Route path="/AdminDashboard" element={<AdminDashboard />} />
         <Route path="/MentorDashboard" element={<MentorDashboard />} />
       </Routes>
     </BrowserRouter>
-    //   <ScheduleMeeting
-    //     userID={""}
-    //     senderIsMentor={false}
-    //     targetID={""}
-    //   ></ScheduleMeeting>
   );
 }
 
