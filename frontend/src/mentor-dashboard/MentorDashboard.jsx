@@ -4,8 +4,10 @@ import MentorHome from "./MentorHome";
 import MentorSettings from "./MentorSettings";
 import UP_fullLogo from "../Images/UP_fullLogo.png";
 import { auth } from "../firebase";
+import { useNavigate } from "react-router-dom";
 
 function MentorDashboard() {
+  const navigate = useNavigate();
   const [activeComponent, setActiveComponent] = React.useState("Home");
 
   const handleComponentChange = (component) => {
@@ -28,6 +30,8 @@ function MentorDashboard() {
           <button
             className="logout-btn"
             onClick={() => {
+              localStorage.clear();
+              navigate("/MentorLogin");
               auth.signOut();
             }}
           >

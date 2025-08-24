@@ -30,8 +30,12 @@ function MentorLogin() {
       await doSignInWithEmailAndPassword(
         formData.email,
         formData.password
-      ).then();
-      navigate("/mentor-dashboard");
+      ).then((userCredential) => {
+        const user = userCredential.user;
+        console.log(user);
+        navigate("/MentorDashboard");
+      });
+
       setIsSigningIn(false);
     }
   };
