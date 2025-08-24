@@ -28,8 +28,25 @@ function MentorHome() {
     setActiveTab(tab);
   };
 
-  const handleMeetingRequestAccept = () => {
-    // Handle accepting the meeting request
+  const handleMeetingRequestAccept = async (meetingData) => {
+    const response = await fetch("/api/create-meeting", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: "Team Meeting",
+        startTime: "2025-09-09T10:00:00-07:00",
+        endTime: "2026-09-09T11:00:00-07:00",
+        attendeeEmails: [
+          "marufuddin0@email.com",
+          "mu128@scarletmail.rutgers.edu",
+        ],
+        description: "Weekly team sync",
+      }),
+    });
+
+    const result = await response.json();
+    console.log("Meet link:", result.meetLink);
+    alert("Meeting scheduled");
   };
 
   return (
@@ -97,7 +114,12 @@ function MentorHome() {
                         </p>
                         <p>looking for: {request.service}</p>
                         <div className="card-actions">
-                          <button className="accept-btn">Accept</button>
+                          <button
+                            className="accept-btn"
+                            onClick={handleMeetingRequestAccept}
+                          >
+                            Accept
+                          </button>
                           <button
                             className="reschedule-btn"
                             onClick={() => setActiveScheduleId(request.id)}

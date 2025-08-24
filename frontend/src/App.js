@@ -24,11 +24,6 @@ function App() {
         <Route path="/MentorDashboard" element={<MentorDashboard />} />
       </Routes>
     </BrowserRouter>
-    //   <ScheduleMeeting
-    //     userID={""}
-    //     senderIsMentor={false}
-    //     targetID={""}
-    //   ></ScheduleMeeting>
   );
 }
 

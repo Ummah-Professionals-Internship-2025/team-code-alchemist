@@ -80,7 +80,7 @@ function MentorApplicationForm() {
     // resume url
     const formData = new FormData();
     formData.append("resume", resumeFile);
-    const resumeResponse = await axios.post("/api/applications", formData, {
+    const resumeResponse = await axios.post("/api/resumeUpload", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

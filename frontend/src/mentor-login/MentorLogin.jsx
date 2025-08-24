@@ -24,12 +24,13 @@ function MentorLogin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!isSigningIn) {
       setIsSigningIn(true);
       await doSignInWithEmailAndPassword(
         formData.email,
         formData.password
-      ).then(alert("signed in"));
+      ).then();
       navigate("/mentor-dashboard");
       setIsSigningIn(false);
     }
@@ -72,7 +73,7 @@ function MentorLogin() {
           </div>
         </div>
         <button className="submit-btn" type="submit" onClick={handleSubmit}>
-          Submit
+          Log In
         </button>
       </div>
     </div>
