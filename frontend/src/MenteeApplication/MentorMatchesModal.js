@@ -16,7 +16,7 @@ const MentorMatchesModal = ({ menteeData, onClose, onSubmit }) => {
     const fetchMentors = async () => {
       try {
         const response = await axios.get("/api/mentors");
-        const data = await response.json();
+        const data = await response.data;
         if (data.success) {
           console.log("Fetched mentors data:", data.mentors);
           setMentors(data.mentors);

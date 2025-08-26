@@ -611,7 +611,7 @@ function MenteeForm() {
       // Parses JSON file => creates user with mentor information
       // API uploads mentor data and resume
       const response = await axios.post("/api/mentee", formData);
-      const data = await response.json();
+      const data = await response.data;
 
       if (data.success) {
         // Store mentee data for pairing
@@ -653,7 +653,7 @@ function MenteeForm() {
     try {
       const response = await axios.post("/api/meetings", meetingData);
 
-      const data = await response.json();
+      const data = await response.data;
       if (data.success) {
         setSubmitted(true);
         setTimeout(() => navigate("/mentee-dashboard"), 10000);

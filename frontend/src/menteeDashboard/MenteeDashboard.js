@@ -24,7 +24,7 @@ function Dashboard() {
       if (!user) return;
 
       const response = await axios.get(`/api/meetings/mentee/${user.uid}`);
-      const data = await response.json();
+      const data = await response.data;
 
       if (data.success) {
         setPendingMeetings(data.meetings);
