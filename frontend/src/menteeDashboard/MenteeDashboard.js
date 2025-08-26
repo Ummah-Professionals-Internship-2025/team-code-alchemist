@@ -1,0 +1,485 @@
+import React, { useState, useEffect } from "react";
+import "./MenteeDashboard.css";
+import ProfilePage from "./ProfilePage";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
+import Sidebar from "./Sidebar";
+import "./Sidebar.css";
+import Rescheduling, { getMeetingStatus } from "./Rescheduling";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase";
+import axios from "axios";
+
+const DEFAULT_AVATAR = "https://www.gravatar.com/avatar/?d=mp&f=y";
+
+function Dashboard() {
+  const [pendingMeetings, setPendingMeetings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showReschedule, setShowReschedule] = useState(false);
+  const [activeMeeting, setActiveMeeting] = useState(null);
+
+  const fetchPendingMeetings = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const response = await axios.get(`/api/meetings/mentee/${user.uid}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setPendingMeetings(data.meetings);
+      }
+    } catch (error) {
+      console.error("Error fetching pending meetings:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPendingMeetings();
+  }, []);
+
+  //  NOT WORKING
+  //   const acceptMeeting = async (meetingId) => {
+  //     try {
+  //       let res = await fetch(
+  //         `http://localhost:3003/api/meetings/${meetingId}/accept`,
+  //         { method: "POST" }
+  //       );
+  //       if (res.status === 404) {
+  //         res = await fetch(
+  //           `http://localhost:3001/api/meetings/${meetingId}/accept`,
+  //           { method: "POST" }
+  //         );
+  //       }
+  //       await fetchPendingMeetings();
+  //     } catch (e) {
+  //       console.error("Accept meeting failed", e);
+  //     }
+  //   };
+
+  const proposeMeeting = (meeting) => {
+    if (meeting && meeting.id) {
+      window.alert(`Scheduling a new time for meeting ID: ${meeting.id}`);
+    } else {
+      window.alert("Scheduling a new time for this meeting.");
+    }
+    setActiveMeeting(meeting);
+    setShowReschedule(true);
+  };
+
+  const handleRescheduleSubmit = async ({ meetingDate, meetingTime }) => {
+    if (!activeMeeting) return;
+    try {
+      let res = await axios.post(`/api/meetings/${activeMeeting.id}/propose`, {
+        meetingDate,
+        meetingTime,
+      });
+      let data = {};
+      try {
+        data = await res.json();
+      } catch {}
+      if (res.status === 404) {
+        // Fallback to forms backend if userportal backend route not found
+        res = await axios.post(`/api/meetings/${activeMeeting.id}/propose`, {
+          meetingDate,
+          meetingTime,
+        });
+        try {
+          data = res.data;
+        } catch {
+          data = {};
+        }
+      }
+      if (!res.ok) {
+        const text =
+          typeof data.error === "string"
+            ? data.error
+            : `${res.status} ${res.statusText}`;
+        window.alert(`Could not schedule new time. ${text}`);
+        return;
+      }
+      if (!data.success) {
+        window.alert(
+          `Could not schedule new time. ${data.error || "Unknown error"}`
+        );
+        return;
+      }
+      window.alert("New meeting scheduled.");
+      setShowReschedule(false);
+      setActiveMeeting(null);
+      await fetchPendingMeetings();
+    } catch (e) {
+      console.error("Propose meeting failed", e);
+      window.alert("An error occurred while scheduling.");
+    }
+  };
+
+  // Status logic is centralized in Rescheduling.getMeetingStatus
+
+  return (
+    <div style={{ padding: 40, minHeight: "100vh", background: "#E7E8EE" }}>
+      <h1
+        style={{
+          color: "#007CA6",
+          fontSize: 38,
+          fontWeight: 800,
+          marginBottom: 8,
+        }}
+      >
+        DASHBOARD
+      </h1>
+      <div style={{ color: "#007CA6", fontSize: 20, marginBottom: 32 }}>
+        Current requests
+      </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: 32,
+          marginBottom: 32,
+        }}
+      >
+        {/* Current Appointment Box */}
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 20,
+            boxShadow: "0 4px 24px rgba(138,203,219,0.18)",
+            border: "2px solid #8ACBDB",
+            padding: 32,
+            minWidth: 320,
+            color: "#00212C",
+            margin: 16,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+          }}
+        >
+          <h2
+            style={{
+              color: "#007CA6",
+              fontWeight: 800,
+              fontSize: 28,
+              marginBottom: 8,
+            }}
+          >
+            Current Meetings
+          </h2>
+          {loading ? (
+            <div style={{ color: "#666", fontSize: 16 }}>Loading...</div>
+          ) : pendingMeetings.length === 0 ? (
+            <div style={{ color: "#666", fontSize: 16 }}>
+              No pending meetings
+            </div>
+          ) : (
+            <div style={{ width: "100%" }}>
+              {pendingMeetings.map((meeting, index) => {
+                const statusInfo = getMeetingStatus(meeting);
+                return (
+                  <div
+                    key={meeting.id}
+                    style={{
+                      border: "1px solid #e0e0e0",
+                      borderRadius: 8,
+                      padding: 16,
+                      marginBottom: index < pendingMeetings.length - 1 ? 12 : 0,
+                      background: "#f9f9f9",
+                    }}
+                  >
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: "#007CA6" }}>With:</strong>{" "}
+                      {meeting.mentorName}
+                    </div>
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: "#007CA6" }}>When:</strong>{" "}
+                      {(() => {
+                        // meetingDate might already be a human-readable string; if not, try to format ISO
+                        const dateVal = meeting.meetingDate;
+                        const looksLikeISO =
+                          typeof dateVal === "string" &&
+                          /\d{4}-\d{2}-\d{2}T/.test(dateVal);
+                        const dateStr =
+                          typeof dateVal === "string"
+                            ? looksLikeISO
+                              ? new Date(dateVal).toLocaleDateString("en-US", {
+                                  weekday: "long",
+                                  month: "long",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })
+                              : dateVal
+                            : "";
+                        return `${dateStr ? dateStr + " " : ""}${meeting.meetingTime || ""}`.trim();
+                      })()}
+                    </div>
+                    <div
+                      style={{
+                        color: statusInfo.color,
+                        fontWeight: 600,
+                        fontSize: 14,
+                      }}
+                    >
+                      {statusInfo.status}
+                    </div>
+                    {!meeting.menteeApproved && meeting.mentorApproved && (
+                      <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+                        <button
+                          //   onClick={() => acceptMeeting(meeting.id)}
+                          style={{
+                            background: "#4caf50",
+                            color: "#fff",
+                            border: "none",
+                            padding: "8px 12px",
+                            borderRadius: 6,
+                            cursor: "pointer",
+                            fontWeight: 600,
+                          }}
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => proposeMeeting(meeting)}
+                          style={{
+                            background: "#FDBB37",
+                            color: "#00212C",
+                            border: "none",
+                            padding: "8px 12px",
+                            borderRadius: 6,
+                            cursor: "pointer",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Propose new time
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+        <Rescheduling
+          open={showReschedule}
+          onClose={() => {
+            setShowReschedule(false);
+            setActiveMeeting(null);
+          }}
+          onSubmit={handleRescheduleSubmit}
+          meeting={activeMeeting}
+        />
+        {/* Calendar Box */}
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 20,
+            boxShadow: "0 4px 24px rgba(138,203,219,0.18)",
+            border: "2px solid #8ACBDB",
+            padding: 32,
+            minWidth: 320,
+            color: "#00212C",
+            margin: 16,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+          }}
+        >
+          <h2
+            style={{
+              color: "#007CA6",
+              fontWeight: 800,
+              fontSize: 28,
+              marginBottom: 8,
+            }}
+          >
+            Calendar
+          </h2>
+          <div style={{ color: "#FDBB37", fontWeight: 700, fontSize: 20 }}>
+            Calendar coming soon.
+          </div>
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        {/* Placeholder Box */}
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 20,
+            boxShadow: "0 4px 24px rgba(138,203,219,0.18)",
+            border: "2px solid #8ACBDB",
+            padding: 32,
+            minWidth: 672,
+            color: "#00212C",
+            margin: 16,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+          }}
+        >
+          <h2
+            style={{
+              color: "#007CA6",
+              fontWeight: 800,
+              fontSize: 28,
+              marginBottom: 8,
+            }}
+          >
+            Placeholder
+          </h2>
+          <div style={{ color: "#FDBB37", fontWeight: 700, fontSize: 20 }}>
+            More features coming soon.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RequestMentor() {
+  return (
+    <div style={{ padding: 40, color: "#fff" }}>
+      <h2>Request a Mentor</h2>
+      <div>Feature coming soon.</div>
+    </div>
+  );
+}
+function Feedback() {
+  return (
+    <div style={{ padding: 40, color: "#fff" }}>
+      <h2>Feedback</h2>
+      <div>Feature coming soon.</div>
+    </div>
+  );
+}
+
+function LoginScreen({ onLogin }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleLogin = async () => {
+    setError("");
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      onLogin();
+    } catch (err) {
+      setError("Login failed: incorrect email or password");
+    }
+  };
+
+  return (
+    <div className="login-bg">
+      <div className="login-card">
+        <h2>Sign In</h2>
+        <input
+          className="login-input"
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          className="login-input"
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button className="login-btn" onClick={handleLogin}>
+          Sign In
+        </button>
+        {error && <div style={{ color: "red", marginTop: 12 }}>{error}</div>}
+      </div>
+    </div>
+  );
+}
+
+function MenteeDashboard() {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [activePage, setActivePage] = useState("dashboard");
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!loggedIn) return;
+      const authUser = auth.currentUser;
+      if (!authUser) return;
+      const docRef = doc(db, "mentees", authUser.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setUser({
+          firstName: docSnap.data().firstName || "",
+          lastName: docSnap.data().lastName || "",
+          profilePic: docSnap.data().profilePic || "",
+        });
+      }
+    };
+    fetchUser();
+  }, [loggedIn, showProfile]);
+
+  const handleLogout = () => {
+    setLoggedIn(false);
+    setUser(null);
+    setActivePage("dashboard");
+  };
+
+  const handleProfileBack = () => {
+    setShowProfile(false);
+    setActivePage("dashboard");
+  };
+
+  if (!loggedIn) {
+    return <LoginScreen onLogin={() => setLoggedIn(true)} />;
+  }
+
+  let mainContent;
+  if (showProfile || activePage === "profile")
+    mainContent = <ProfilePage onBack={handleProfileBack} user={user} />;
+  else if (activePage === "dashboard") mainContent = <Dashboard />;
+  else if (activePage === "request") mainContent = <RequestMentor />;
+  else if (activePage === "feedback") mainContent = <Feedback />;
+  else if (activePage === "calendar")
+    mainContent = (
+      <div style={{ padding: 40, color: "#fff" }}>
+        <h2>Calendar</h2>
+        <div>Feature coming soon.</div>
+      </div>
+    );
+  else mainContent = <Dashboard />;
+
+  return (
+    <div style={{ display: "flex", minHeight: "100vh", background: "#00212C" }}>
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        onToggle={() => setSidebarCollapsed((c) => !c)}
+        onNavigate={(key) => {
+          if (key === "profile") setShowProfile(true);
+          else {
+            setShowProfile(false);
+            setActivePage(key);
+          }
+        }}
+        activeKey={showProfile ? "profile" : activePage}
+        user={user}
+        onLogout={handleLogout}
+      />
+      <div
+        style={{
+          marginLeft: sidebarCollapsed ? 64 : 260,
+          flex: 1,
+          transition: "margin-left 0.2s",
+          background: "#00212C",
+          minHeight: "100vh",
+        }}
+      >
+        {mainContent}
+      </div>
+    </div>
+  );
+}
+
+export default MenteeDashboard;

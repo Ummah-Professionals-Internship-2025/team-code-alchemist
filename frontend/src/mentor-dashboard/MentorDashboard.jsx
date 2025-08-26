@@ -32,7 +32,7 @@ function MentorDashboard() {
             className="logout-btn"
             onClick={() => {
               auth.signOut();
-              navigate("/MentorLogin");
+              navigate("/mentor-login");
             }}
           >
             Log out

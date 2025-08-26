@@ -14,7 +14,6 @@ export default function MentorCreateUser() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [mentorData, setMentorData] = useState({});
-  // const history = useHistory();
 
   useEffect(() => {
     const fetchMentorData = async () => {

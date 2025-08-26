@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import "./MentorLogin.css";
+import styles from "./MentorLogin.module.css";
 import { doSignInWithEmailAndPassword } from "../Auth";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
+import { Navigate } from "react-router-dom";
 
 function MentorLogin() {
-  // const {userLoggedIn} = useAuth();
+  const userLoggedIn = auth.currentUser ? true : false;
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -13,6 +14,10 @@ function MentorLogin() {
     password: "",
   });
   const navigate = useNavigate();
+
+  if (userLoggedIn) {
+    navigate("/mentor-dashboard");
+  }
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

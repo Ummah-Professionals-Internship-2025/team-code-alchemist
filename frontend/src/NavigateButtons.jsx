@@ -46,12 +46,12 @@ function NavigationButtons() {
 
       <button
         style={buttonStyle}
-        onClick={() => navigate("/MentorApplicationForm")}
+        onClick={() => navigate("/mentor-application-form")}
       >
         Mentor Application Form
       </button>
 
-      <button style={buttonStyle} onClick={() => navigate("/MentorLogin")}>
+      <button style={buttonStyle} onClick={() => navigate("/mentor-login")}>
         Mentor Login
       </button>
 
@@ -62,15 +62,11 @@ function NavigationButtons() {
       {auth.currentUser && (
         <button
           style={buttonStyle}
-          onClick={() => navigate("/MentorDashboard")}
+          onClick={() => navigate("/mentor-dashboard")}
         >
           Mentor Profile
         </button>
       )}
-
-      <button style={buttonStyle} onClick={() => navigate("/AdminDashboard")}>
-        Admin Dashboard
-      </button>
     </div>
   );
 }
