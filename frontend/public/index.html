@@ -1,291 +1,335 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mentor Landing Page</title>
-    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
-    <style>
-        .root{
-            font-family: Kollektif, system-ui, Avenir, Helvetica, Arial, sans-serif;
-            text-rendering: optimizelegibility;
-            -webkit-font-smoothing: antialiased;
-            --up-dark-blue: #003f55;
-            --up-blue: #007ca6;
-            --up-yellow: #fdbb37;
-            --up-light-blue: #8acbdb;
-            --up-navy: #00212c;
-            --up-gray: #e7e8ed;
-            --up-white: #fbfbfc;
-            font-synthesis: none;
-        }
-        .navbar ul{
-            list-style-type: none;
-            padding: 0px;
-            margin: 0px;
-            overflow: hidden;
-            background-color: #E7E8EE;
-            font-size: 16px;
-            font-family: Poppins;
-            font-weight: bold;
-            float: right;
-            color: #003F55;
-            width: 100%;
-            object-fit: cover;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-        }
-        .navbar a{
-            color: #003F55;
-            text-decoration: none;
-            padding: 15px;
-            text-align: center;
-        }
-        .navbar a:hover{
-            background-color: #003F55;
-            color: #E7E8EE;
-        }
-        .navbar li{
-            float: left;
-            display: flex;
-        }
-        .donate{
-            color: #FDBB37;
-        }
-        .workers{
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .title{
-            color: #fbfbfc;
-            font-size: 42px;
-            text-align: left;
-            font-family: Poppins;
-            position: relative;
-            top: 100px;
-            right: -150px;
-        }
-        a:visited{
-            color:  #003F55;
-        }
-        .student:hover{
-            background-color: #E7E8EE;
-            color: #003F55;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mentor Landing Page</title>
+  <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+  <style>
+    .root{
+      font-family: Kollektif, system-ui, Avenir, Helvetica, Arial, sans-serif;
+      text-rendering: optimizelegibility;
+      -webkit-font-smoothing: antialiased;
+      --up-dark-blue: #003f55;
+      --up-blue: #007ca6;
+      --up-yellow: #fdbb37;
+      --up-light-blue: #8acbdb;
+      --up-navy: #00212c;
+      --up-gray: #e7e8ed;
+      --up-white: #fbfbfc;
+      font-synthesis: none;
+    }
+    .navbar ul{
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      background-color: #E7E8EE;
+      font-size: 16px;
+      font-family: Poppins;
+      font-weight: bold;
+      float: right;
+      color: #003F55;
+      width: 100%;
+      object-fit: cover;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+    }
+    .navbar a{
+      color: #003F55;
+      text-decoration: none;
+      padding: 15px;
+      text-align: center;
+    }
+    .navbar a:hover{
+      background-color: #003F55;
+      color: #E7E8EE;
+    }
+    .navbar li{
+      float: left;
+      display: flex;
+    }
+    .donate{
+      color: #FDBB37;
+    }
+    .workers{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .title{
+      color: #fbfbfc;
+      font-size: 42px;
+      text-align: left;
+      font-family: Poppins;
+      position: relative;
+      top: 100px;
+      right: -150px;
+    }
+    a:visited{
+      color: #003F55;
+    }
+    .student:hover{
+      background-color: #E7E8EE;
+      color: #003F55;
+    }
     @media (min-width: 1024px) {
-        .mobile-container{
-            display:none;
-        }
-        .mobile-navbar-button{
-            display:none;
-        }
-        .mobile-navbar-open{
-            display:none;
-        }
-        body{
-            background: linear-gradient(-40deg, rgba(138, 203, 219, 0), rgba(0, 124, 166, 0.8), rgb(0, 63, 85));
-            background-repeat: no-repeat;
-            min-height: 100vh;
-        }
-        .student{
-            position: relative;
-            top: 200px;
-            left: 150px;
-            color: #007CA6;
-            font-size: 17px;
-            font-family: Poppins;
-            border-radius: 10px;
-            font-weight: bold;
-            border: none;
-            background: white;
-            padding: 10px 20px;
-            margin-top: 20px;
-            margin-left: 20px;
-            margin-right: 20px;
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            width: 329px;
-            height: 60px;
-            flex-shrink: 0;
-        }
-        .subtitle{
-            color: #fbfbfc;
-            font-size: 21px;
-            text-align: left;
-            font-weight: 300;
-            font-family: Poppins;
-            line-height: normal;
-            position: relative;
-            top: 100px;
-            right: -150px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .login{
-            color: white;
-            font-size: 16px;
-            font-family: Poppins;
-            right: -150px;
-            top: 200px;
-            position: relative;
-            margin-top: 20px;
-        }
+      .mobile-container{display:none;}
+      .mobile-navbar-button{display:none;}
+      .mobile-navbar-open{display:none;}
+      body{
+        background: linear-gradient(-40deg, rgba(138,203,219,0), rgba(0,124,166,0.8), rgb(0,63,85));
+        background-repeat: no-repeat;
+        min-height: 100vh;
+      }
+      .student{
+        position: relative;
+        top: 200px;
+        left: 150px;
+        color: #007CA6;
+        font-size: 17px;
+        font-family: Poppins;
+        border-radius: 10px;
+        font-weight: bold;
+        border: none;
+        background: white;
+        padding: 10px 20px;
+        margin: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        width: 329px;
+        height: 60px;
+        flex-shrink: 0;
+      }
+      .subtitle{
+        color: #fbfbfc;
+        font-size: 21px;
+        text-align: left;
+        font-weight: 300;
+        font-family: Poppins;
+        line-height: normal;
+        position: relative;
+        top: 100px;
+        right: -150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .login{
+        color: white;
+        font-size: 16px;
+        font-family: Poppins;
+        right: -150px;
+        top: 200px;
+        position: relative;
+        margin-top: 20px;
+      }
     }
     @media (max-width: 1023px) {
-        body{
-            background: white;
-            background-repeat: no-repeat;
-            min-height: 100vh;
+      body{
+        background: white;
+        background-repeat: no-repeat;
+        min-height: 100vh;
+      }
+      .student{
+        position: relative;
+        top: 400px;
+        left: 150px;
+        color: black;
+        font-size: 17px;
+        font-family: Poppins;
+        border-radius: 10px;
+        font-weight: bold;
+        border: none;
+        background: #fdbb37;
+        padding: 10px 20px;
+        margin: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        width: 329px;
+        height: 60px;
+        flex-shrink: 0;
+      }
+      .title{
+        font-family: Kollektif-Bold, sans-serif;
+        font-size: 3rem;
+        font-weight: 700;
+      }
+      .subtitle{
+        color: #007CA6;
+        font-size: 21px;
+        text-align: left;
+        font-weight: 300;
+        font-family: Poppins;
+        line-height: 2.25rem;
+        position: relative;
+        top: 350px;
+        right: -150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .navbar{display:none;}
+      .mobile-container{
+        display: grid;
+        grid-template-columns: 4fr 3fr;
+        background: linear-gradient(-40deg, rgba(138,203,219,0), rgba(0,124,166,0.8), rgb(0,63,85));
+        list-style-type: none;
+        padding: 30px 20px 0;
+        margin: 0;
+        overflow: hidden;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        object-fit: cover;
+        min-height: 50vh;
+        z-index: 1000;
+      }
+      .login{
+        color: #007CA6;
+        font-size: 16px;
+        font-family: Poppins;
+        right: -150px;
+        top: 400px;
+        position: relative;
+        margin-top: 20px;
+      }
+      .mobile-navbar-open{
+        right: 0;
+        position: fixed;
+        top: 0;
+        width: 250px;
+        height: 100%;
+        background-color: #003F55;
+        transition: right 0.3s ease-out;
+        z-index: 1000;
+        overflow-y: auto;
+      }
+      .mobile-navbar-open ul{
+        list-style: none;
+        font-size: 16px;
+        font-family: Poppins;
+        padding: 30px 20px;
+        font-weight: bold;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        margin: 0;
+      }
+      .mobile-navbar-open li{
+        margin: .5rem 0;
+        width: 100%;
+      }
+      .mobile-navbar-open a{
+        color: #fff;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+      }
+      .mobile-navbar-open a::before{
+        content: '›';
+        display: inline-block;
+        margin-right: 8px;
+        transition: transform 0.2s ease;
+      }
+      .mobile-navbar-open li > ul{
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+        padding-left: 20px;
+        margin: 0;
+      }
+      .mobile-navbar-open li.open > ul{
+        display: flex;
+      }
+      .mobile-navbar-open li.open > a::before{
+        transform: rotate(90deg);
+      }
+      .email{
+        color: #fff;
+        font-size: 16px;
+        font-family: Poppins;
+        font-weight: bold;
+        margin: 2rem;
+      }
+      .white-to-blue{
+        background-image: linear-gradient(to bottom, #fbfbfc, #8acbdb);
+        display: flex;
+        flex-direction:column;
+        gap: 8.5rem;
+        padding-bottom: 20%;
+        align-items: center;
+        padding-top: 16%;
+        margin-top: -16%;
+      }
+      .donate-mobile{
+        background-color: #FDBB37;
+        font-size: 1.15rem;
+        font-family: Poppins;
+        font-weight: bold;
+        color: rgb(2, 33, 44);
+        width: 20%;
+        padding: .5rem;
+        border-radius: .5rem;
+        min-width: 10rem;
+        cursor: pointer;
+      }
+      .overlay{
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        background: #00000080;
+        z-index:999;
+      }
+      .mobile-navbar-button{
+        display: flex;
+        justify-content: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="mobile-navbar-open">
+    <ul>
+      <li><a href="#">home</a></li>
+      <li><a href="#">about</a></li>
+      <li>
+        <a href="#">get involved</a>
+        <ul>
+          <li><a href="#">students</a></li>
+          <li><a href="#">mentors</a></li>
+          <li><a href="#">volunteers</a></li>
+        </ul>
+      </li>
+      <li><a href="#">events</a></li>
+      <li><a href="#">contact</a></li>
+    </ul>
+    <h3 class="email">info@ummahprofessionals.com</h3>
+    <button class="donate-mobile">donate</button>
+  </div>
+  <script>
+    document.querySelectorAll('.mobile-navbar-open li').forEach(li=>{
+      const sub = li.querySelector('ul');
+      if(sub){
+        const trigger = li.querySelector('a');
+        if(trigger){
+          trigger.addEventListener('click', e=>{
+            e.preventDefault();
+            li.classList.toggle('open');
+          });
         }
-        .student{
-            position: relative;
-            top: 200px;
-            left: 150px;
-            color: black;
-            font-size: 17px;
-            font-family: Poppins;
-            border-radius: 10px;
-            font-weight: bold;
-            border: none;
-            background: #fdbb37;
-            padding: 10px 20px;
-            margin-top: 20px;
-            margin-left: 20px;
-            margin-right: 20px;
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            width: 329px;
-            height: 60px;
-            flex-shrink: 0;
-            top: 400px;
-            padding: 0 2rem 32px;
-        }
-        .title{
-            font-family: Kollektif-Bold, sans-serif;
-            font-size: 3rem;
-            font-weight: 700;
-        }
-        .subtitle{
-            color: #007CA6;
-            font-size: 21px;
-            text-align: left;
-            font-weight: 300;
-            font-family: Poppins;
-            line-height: 2.25rem;
-            position: relative;
-            top: 350px;
-            right: -150px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .navbar{
-            display: none;
-        }
-        .mobile-container{
-            display: grid;
-            grid-template-columns: 4fr 3fr;
-            background: linear-gradient(-40deg, rgba(138, 203, 219, 0), rgba(0, 124, 166, 0.8), rgb(0, 63, 85));
-            list-style-type: none;
-            padding: 30px 20px 0;
-            margin: 0px;
-            overflow: hidden;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            width: 100%;
-            object-fit: cover;
-            min-height: 50vh;
-            z-index: 1000;
-        }
-        .login{
-            color: #007CA6;
-            font-size: 16px;
-            font-family: Poppins;
-            right: -150px;
-            top: 400px;
-            position: relative;
-            margin-top: 20px;
-        }
-        .mobile-navbar-open{
-            right: 0;
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 250px;
-            height: 100%;
-            object-fit: cover;
-            background-color: #003F55;
-            box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0);
-            transition: right 0.3s ease-out;
-            z-index: 1000;
-            overflow-y: auto;
-        }
-        .mobile-navbar-open ul{
-            list-style-type: none;
-            font-size: 16px;
-            font-family: Poppins;
-            padding: 30px 20px;
-            background-color: #003F55;
-            font-weight: bold;
-            color: #ffffff;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-            margin: 0;
-        }
-        .mobile-navbar-open li{
-            margin: .5rem 0;
-        }
-        .mobile-navbar-open li > a{
-            color: #ffffff;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .mobile-navbar-open li > a::before{
-            content: '›';
-            display: inline-block;
-            line-height: 1;
-            transition: transform .2s ease;
-        }
-        .mobile-navbar-open li > ul{
-            display: none;
-            flex-direction: column;
-            gap: 10px;
-            padding: 0 0 0 20px;
-            margin: 0;
-        }
-        .mobile-navbar-open li.open > ul{
-            display: flex;
-        }
-        .mobile-navbar-open li.open > a::before{
-            transform: rotate(90deg);
-        }
-        .mobile-navbar-open a:visited{
-            color:  #ffffff;
-        }  
-        .menu{
-            overflow-clip-margin: content-box;
-            overflow-x: hidden;
-            overflow-y: hidden;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            position: fix
-
-    
+      }
+    });
+  </script>
+</body>
+</html>
