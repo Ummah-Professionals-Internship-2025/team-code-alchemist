@@ -24,6 +24,10 @@ function MentorProfile() {
     }
   };
 
+  useEffect(() => {
+    fetchUserProfile(userId);
+  }, [userId]);
+
   return (
     <div className="header">
       <div className="profile-section">
@@ -42,9 +46,6 @@ function MentorProfile() {
                 </span>
               ))}
           </div>
-          <button onClick={() => fetchUserProfile(userId)}>
-            Load Mentor data
-          </button>
         </div>
         <button className="edit-btn header-edit">
           Edit Profile <> </>
@@ -135,7 +136,10 @@ function MentorProfile() {
         <h2>Skills</h2>
         <div className="skills-card">
           <div className="skills-list">
-            {profile && profile.skills && profile.skills.length > 0
+            {profile &&
+            profile.skills &&
+            Array.isArray(profile.skills) &&
+            profile.skills.length > 0
               ? profile.skills.map((skill) => (
                   <span className="skill-tag">{skill.trim()}</span>
                 ))

@@ -748,7 +748,7 @@ function MenteeForm() {
 
   return (
     <div className="container">
-      <div className="header">ummah professionals</div>
+      <div className="mentee-header">ummah professionals</div>
       <div className="form-card scrollable-form">
         <button
           className="btn"
