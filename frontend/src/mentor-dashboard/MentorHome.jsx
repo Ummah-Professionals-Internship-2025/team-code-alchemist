@@ -46,7 +46,7 @@ function MentorHome() {
             className={`upcoming-meetings ${activeTab === "upcoming" ? "active" : ""}`}
             onClick={() => handleTabClick("upcoming")}
           >
-            <h2>Upcoming Meetings</h2>
+            <h2 className="mentor-h2">Upcoming Meetings</h2>
           </button>
           <div className="divider">
             <h2>|</h2>
@@ -55,7 +55,7 @@ function MentorHome() {
             className={`past-meetings ${activeTab === "past" ? "active" : ""}`}
             onClick={() => handleTabClick("past")}
           >
-            <h2>Past Meetings</h2>
+            <h2 className="mentor-h2">Past Meetings</h2>
           </button>
         </div>
       </div>
@@ -67,13 +67,6 @@ function MentorHome() {
 
           <div className="section">
             <h2>Meetings Requests</h2>
-            <button
-              onClick={() => {
-                window.location.reload();
-              }}
-            >
-              Refresh
-            </button>
             <div className="meeting-card">
               {meetingRequests.length === 0 && (
                 <Typography>No pending meetings.</Typography>
@@ -95,7 +88,9 @@ function MentorHome() {
                         <p className="mentee-info">
                           Meeting Time: {request.meetingTime}
                         </p>
-                        <p>looking for: {request.service}</p>
+                        <p className="mentee-info">
+                          looking for: {request.service}
+                        </p>
                         <div className="card-actions">
                           <button className="accept-btn">Accept</button>
                           <button

@@ -18,15 +18,30 @@ function MentorDashboard() {
     <div className="mentor-dashboard">
       <div className="side-bar">
         {/* UP Logo */}
-        <img className="mentor-dashboard-img" src={UP_fullLogo} alt="UP Logo" />
+        <button className="up-logo-btn">
+          onClick=
+          {() => {
+            // should redirect to "https://www.ummahprofessionals.com/"
+          }}
+          <img
+            className="mentor-dashboard-img"
+            src={UP_fullLogo}
+            alt="UP Logo"
+          />
+        </button>
         {/* Nav Bar */}
         <div className="page-manager">
-          <button onClick={() => handleComponentChange("Home")}>Home</button>
-          <button onClick={() => handleComponentChange("Profile")}>
-            Profile
+          <button
+            className="home-btn"
+            onClick={() => handleComponentChange("Home")}
+          >
+            Home
           </button>
-          <button onClick={() => handleComponentChange("Settings")}>
-            Settings
+          <button
+            className="profile-btn"
+            onClick={() => handleComponentChange("Profile")}
+          >
+            Profile
           </button>
           <button
             className="logout-btn"

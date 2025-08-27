@@ -5,6 +5,7 @@ import { set, update } from "firebase/database";
 import { db } from "./firebase";
 import { getDoc, doc, addDoc, updateDoc, collection } from "firebase/firestore";
 import { serverTimestamp } from "firebase/firestore";
+import { send } from "emailjs-com";
 
 const days = [
   "Sunday",
@@ -103,24 +104,28 @@ function ScheduleMeeting({
   };
 
   const handleAvailability = async () => {
+    console.log(targetID);
     if (senderIsMentor === false && targetID) {
       await getDoc(doc(db, "mentors", targetID)).then((docSnap) => {
         if (docSnap.exists()) {
           setAvailability(docSnap.data().generalAvailability);
         }
-        console.log(availability);
       });
     } else if (senderIsMentor === true && targetID) {
       await getDoc(doc(db, "mentees", targetID)).then((docSnap) => {
         if (docSnap.exists()) {
           setAvailability(docSnap.data().generalAvailability);
         }
-        console.log(availability);
       });
     } else {
       alert("Error: No user found");
     }
+    console.log(availability);
   };
+
+  useEffect(() => {
+    handleAvailability();
+  }, [targetID]);
   const handleDayClick = (date, dayName) => {
     setAvailableTimes(availability[dayName]);
     setSelectedDay(date.toString().substring(4, 11));
@@ -174,6 +179,15 @@ function ScheduleMeeting({
 
     return false;
   };
+
+  if (updateCounter >= 0 && senderIsMentor) {
+    return (
+      <div className="deffer">
+        <span>Can't find a time that works for you?</span>
+        <button>Deffer</button>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -247,11 +261,6 @@ function ScheduleMeeting({
           </button>
         </div>
       )}
-
-      <div className="deffer">
-        <span>Can't find a time that works for you?</span>
-        <button>Deffer</button>
-      </div>
     </div>
   );
 }

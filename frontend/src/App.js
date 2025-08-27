@@ -7,9 +7,10 @@ import NavigationButtons from "./NavigateButtons";
 import MentorDashboard from "./mentor-dashboard/MentorDashboard";
 import { onAuthStateChanged } from "firebase/auth";
 import LandingPage from "./mentor-langing-page/LandingPage";
-import MenteeForm from "./MenteeApplication/MenteeForm";
+import MenteeForm from "./mentee-application/MenteeForm";
 import react from "react";
-import MenteeDashboard from "./menteeDashboard/MenteeDashboard";
+import MenteeDashboard from "./mentee-dashboard/MenteeDashboard";
+import AdminView from "./admin-dashboard/AdminView";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -28,6 +29,7 @@ function App() {
         <Route path="/mentor-login" element={<MentorLogin />} />
         <Route path="/create-password" element={<MentorCreateUser />} />
         <Route path="/mentor-dashboard" element={<MentorDashboard />} />
+        <Route path="/admin-dashboard/*" element={<AdminView />} />
       </Routes>
     </BrowserRouter>
   );
