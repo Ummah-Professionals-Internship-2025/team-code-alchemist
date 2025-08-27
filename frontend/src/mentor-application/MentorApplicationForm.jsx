@@ -99,13 +99,15 @@ function MentorApplicationForm() {
     }
   }
 
+  if (submitted) {
+    return (
+      <div>Your form has been submitted. We will reach out to you soon.</div>
+    );
+  }
+
   return (
     <div className="form-container">
-      <div>
-        <h3 className="title is-3">Ummah Professionals</h3>
-      </div>
-      {error && <h1 className="Danger">{error}</h1>}
-
+      <h3 className="title is-3">Ummah Professionals</h3>
       <div className="form-card scrollable-form">
         <button className="btn">{"< Back"}</button>
         <h2>Mentor Application</h2>
@@ -574,6 +576,8 @@ function MentorApplicationForm() {
               </div>
             </div>
           </div>
+
+          {error && <h1 className="Danger">{error}</h1>}
 
           {/* Submit Button */}
           <div className="field">

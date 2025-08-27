@@ -461,6 +461,10 @@
   margin-bottom: 16px;
 }
 
+.meeting-card :last-child {
+  margin-bottom: 0;
+}
+
 .meeting-card-content {
   padding: 24px;
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./MentorLogin.module.css";
 import { doSignInWithEmailAndPassword } from "../Auth";
 import { useNavigate } from "react-router-dom";
@@ -15,10 +15,6 @@ function MentorLogin() {
   });
   const navigate = useNavigate();
 
-  if (userLoggedIn) {
-    navigate("/mentor-dashboard");
-  }
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -31,17 +27,21 @@ function MentorLogin() {
     e.preventDefault();
     if (!isSigningIn) {
       setIsSigningIn(true);
-      await doSignInWithEmailAndPassword(
-        formData.email,
-        formData.password
-      ).then(alert("signed in"));
-      navigate("/mentor-dashboard");
+      await doSignInWithEmailAndPassword(formData.email, formData.password)
+        .then((userCredential) => {
+          console.log("Signed in user:", userCredential.user);
+          navigate("/mentor-dashboard");
+        })
+        .catch((error) => {
+          console.error("Error signing in:", error);
+        });
       setIsSigningIn(false);
     }
   };
 
   return (
     <div className="form-container">
+      {userLoggedIn && <Navigate to="/mentor-dashboard" />}
       <div className="form-content">
         <h1 className="form-title">Mentor Log In</h1>
 

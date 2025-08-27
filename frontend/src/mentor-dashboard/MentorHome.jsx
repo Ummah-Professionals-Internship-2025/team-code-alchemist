@@ -12,8 +12,14 @@ function MentorHome() {
   const [activeScheduleId, setActiveScheduleId] = useState(null);
   const [targetID, setTargetID] = useState("");
   const [service, setService] = useState("");
+  const [upcomingMeetings, setUpcomingMeetings] = useState([]);
 
   useEffect(() => {
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "/mentor-login";
+      }
+    });
     const unsub = onSnapshot(collection(db, "pendingMeetings"), (snapshot) => {
       const data = snapshot.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }))
@@ -21,7 +27,20 @@ function MentorHome() {
       setMeetingRequests(data);
     });
 
-    return () => unsub();
+    const unsub2 = onSnapshot(
+      collection(db, "confirmedMeeting"),
+      (snapshot) => {
+        const data = snapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .filter((meeting) => meeting.mentorEmail === auth.currentUser.email);
+        setUpcomingMeetings(data);
+      }
+    );
+
+    return () => {
+      unsub();
+      unsub2();
+    };
   }, []);
 
   const handleTabClick = (tab) => {
@@ -164,8 +183,31 @@ function MentorHome() {
 
           {/* Upcoming Meetings */}
           <div className="section">
-            <h2>Upcoming Meetings</h2>
-            <Typography>No upcoming meetings.</Typography>
+            <h2>Confirmed Meetings</h2>
+            <div className="meeting-card">
+              {upcomingMeetings.length === 0 && (
+                <Typography>No confirmed meetings.</Typography>
+              )}
+              {upcomingMeetings.map((meeting) => (
+                <div key={meeting.id} className="meeting-card">
+                  <div className="meeting-card-content">
+                    <p className="mentee-info">
+                      Mentee Name: {meeting.menteeName}
+                    </p>
+                    <p className="mentee-info">
+                      Mentee Email: {meeting.menteeEmail}
+                    </p>
+                    <p className="mentee-info">
+                      Meeting Date: {meeting.meetingDate}
+                    </p>
+                    <p className="mentee-info">
+                      Meeting Time: {meeting.meetingTime}
+                    </p>
+                    <p>looking for: {meeting.service}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

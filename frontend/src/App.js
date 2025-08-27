@@ -22,10 +22,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/mentee-form" element={<MenteeForm />} />
         <Route path="/mentee-dashboard" element={<MenteeDashboard />} />
-        <Route
-          path="/mentor-application-form"
-          element={<MentorApplicationForm />}
-        />
+        <Route path="/mentor-application" element={<MentorApplicationForm />} />
         <Route path="/mentor-login" element={<MentorLogin />} />
         <Route path="/create-password" element={<MentorCreateUser />} />
         <Route path="/mentor-dashboard" element={<MentorDashboard />} />

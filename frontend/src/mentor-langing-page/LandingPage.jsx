@@ -38,10 +38,7 @@ const LandingPage = () => {
         Give personalized career advice to Muslim <br /> students and be the
         change to get them their first job.
       </p>
-      <button
-        class="student"
-        onClick={() => navigate("/mentor-application-form")}
-      >
+      <button class="student" onClick={() => navigate("/mentor-application")}>
         give career advice
       </button>
       <p class="login" onClick={() => navigate("/mentor-login")}>

@@ -3,6 +3,7 @@ import { doCreateUserWithEmailAndPassword } from "../Auth";
 import { db } from "../firebase";
 import { deleteDoc, doc } from "firebase/firestore";
 import { getDoc, setDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
 export default function MentorCreateUser() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -14,6 +15,7 @@ export default function MentorCreateUser() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [mentorData, setMentorData] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMentorData = async () => {
@@ -44,12 +46,16 @@ export default function MentorCreateUser() {
         (userCredential) => {
           const user = userCredential.user;
           uid = user.uid;
+          user.updateProfile({
+            displayName: name,
+          });
         }
       );
       await setDoc(doc(db, "mentors", uid), mentorData);
       await deleteDoc(doc(db, "pendingMentors", dbIdFromUrl));
 
-      alert("user created");
+      alert("Welcome to the team");
+      navigate("/mentor-dashboard");
     } catch (error) {
       console.error("Error creating user:", error);
       setError("Failed to create an account");
