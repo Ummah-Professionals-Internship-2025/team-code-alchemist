@@ -8,8 +8,9 @@ import './Sidebar.css';
 import Rescheduling, { getMeetingStatus } from './Rescheduling';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
-import { sendMeetingConfirmationEmails, sendNewTimeProposalEmails } from './emailService';
+import { sendMeetingEmails, sendMeetingConfirmationEmails, sendNewTimeProposalEmails } from './emailService';
 import Information from './Information';
+import Select from 'react-select';
 
 const DEFAULT_AVATAR = "https://www.gravatar.com/avatar/?d=mp&f=y";
 
@@ -288,18 +289,18 @@ function Dashboard() {
                   }}>
                                       <div style={{ marginBottom: 8 }}>
                     <strong style={{ color: '#007CA6' }}>Mentor:</strong> {meeting.mentorName}
-                  </div>
+        </div>
 
                   {/* Show mentor details from API or fallback to meeting data */}
                   {(mentorDetail?.company || meeting.mentorCompany) && (
                     <div style={{ marginBottom: 8 }}>
                       <strong style={{ color: '#007CA6' }}>Company:</strong> {mentorDetail?.company || meeting.mentorCompany}
-                    </div>
+      </div>
                   )}
                   {(mentorDetail?.position || meeting.mentorPosition) && (
                     <div style={{ marginBottom: 8 }}>
                       <strong style={{ color: '#007CA6' }}>Position:</strong> {mentorDetail?.position || meeting.mentorPosition}
-                    </div>
+        </div>
                   )}
                   {mentorDetail?.yearsOfExperience && (
                     <div style={{ marginBottom: 8 }}>
@@ -405,19 +406,35 @@ function RequestMentor() {
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [menteeData, setMenteeData] = useState(null);
   const [formData, setFormData] = useState({
-    major: '',
+    major: [],
     industry: [],
-    serviceLookingFor: '',
+    serviceLookingFor: [],
     skillsToLearn: []
   });
   const [showMatches, setShowMatches] = useState(false);
   const [mentorMatches, setMentorMatches] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedMentor, setSelectedMentor] = useState(null);
+  const [showAvailability, setShowAvailability] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [schedulingMeeting, setSchedulingMeeting] = useState(false);
+  const [currentWeek, setCurrentWeek] = useState(() => {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = now.getDate() - day;
+    return new Date(now.getFullYear(), now.getMonth(), diff);
+  });
 
   // Check for current meetings on component mount
   useEffect(() => {
     checkCurrentMeetings();
   }, []);
+
+  // Debug state changes
+  useEffect(() => {
+    console.log('State changed - showAvailability:', showAvailability, 'selectedMentor:', selectedMentor);
+  }, [showAvailability, selectedMentor]);
 
   const checkCurrentMeetings = async () => {
     try {
@@ -460,9 +477,9 @@ function RequestMentor() {
         const data = docSnap.data();
         setMenteeData(data);
         setFormData({
-          major: data.major || '',
+          major: Array.isArray(data.major) ? data.major : (data.major ? [data.major] : []),
           industry: data.industry || [],
-          serviceLookingFor: data.serviceLookingFor || '',
+          serviceLookingFor: Array.isArray(data.serviceLookingFor) ? data.serviceLookingFor : (data.serviceLookingFor ? [data.serviceLookingFor] : []),
           skillsToLearn: data.skillsToLearn || []
         });
       }
@@ -495,9 +512,9 @@ function RequestMentor() {
       
       // Create mentee object for matching
       const menteeForMatching = {
-        major: formData.major,
+        major: Array.isArray(formData.major) ? formData.major[0] : formData.major, // Use first major for matching
         industry: formData.industry,
-        serviceLookingFor: formData.serviceLookingFor,
+        serviceLookingFor: Array.isArray(formData.serviceLookingFor) ? formData.serviceLookingFor[0] : formData.serviceLookingFor, // Use first service for matching
         skillsToLearn: formData.skillsToLearn
       };
 
@@ -529,6 +546,147 @@ function RequestMentor() {
       setError('Error processing your request. Please try again.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleSelectMentor = (mentor) => {
+    console.log('Select mentor clicked:', mentor);
+    setSelectedMentor(mentor);
+    setShowAvailability(true);
+    setShowMatches(false); // Hide the matches screen
+    console.log('State updated - selectedMentor:', mentor, 'showAvailability: true');
+  };
+
+  // Calendar helper functions
+  const getCurrentWeekStart = (date) => {
+    const day = date.getDay();
+    const diff = date.getDate() - day;
+    return new Date(date.getFullYear(), date.getMonth(), diff);
+  };
+
+  const getWeekDays = (weekStart) => {
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      days.push(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + i));
+    }
+    return days;
+  };
+
+  const getWeekDisplayName = (weekStart) => {
+    const weekEnd = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 6);
+    return `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  };
+
+  const navigateWeek = (direction) => {
+    setCurrentWeek(prev => {
+      const newWeek = new Date(prev);
+      newWeek.setDate(prev.getDate() + (direction * 7));
+      
+      // Limit navigation to current week and next week only
+      const currentDate = new Date();
+      const currentWeekStart = getCurrentWeekStart(currentDate);
+      const nextWeekStart = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), currentWeekStart.getDate() + 7);
+      
+      if (newWeek < currentWeekStart) {
+        return currentWeekStart;
+      }
+      
+      if (newWeek >= nextWeekStart) {
+        return nextWeekStart;
+      }
+      
+      return newWeek;
+    });
+  };
+
+  // Check if a date is available for the selected mentor
+  const isDateAvailable = (date) => {
+    if (!selectedMentor || !selectedMentor.mentor.availability) return false;
+    
+    const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+    const dayAvailability = selectedMentor.mentor.availability[dayName];
+    
+    return dayAvailability && Array.isArray(dayAvailability) && dayAvailability.length > 0;
+  };
+
+  // Get available times for a specific date
+  const getAvailableTimesForDate = (date) => {
+    if (!selectedMentor || !selectedMentor.mentor.availability) return [];
+    
+    const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+    const dayAvailability = selectedMentor.mentor.availability[dayName];
+    
+    return Array.isArray(dayAvailability) ? dayAvailability : [];
+  };
+
+  const handleScheduleMeeting = async () => {
+    if (!selectedMentor || !selectedDate || !selectedTime) {
+      setError('Please select a date and time for the meeting.');
+      return;
+    }
+
+    setSchedulingMeeting(true);
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      // Create meeting data
+      const meetingData = {
+        menteeId: user.uid,
+        menteeName: menteeData?.firstName + ' ' + menteeData?.lastName,
+        menteeEmail: menteeData?.email,
+        mentorId: selectedMentor.mentor.id,
+        mentorName: selectedMentor.mentor.name,
+        mentorEmail: selectedMentor.mentor.email,
+        meetingDate: selectedDate.toISOString().split('T')[0],
+        meetingTime: selectedTime,
+        status: 'pending',
+        createdAt: new Date()
+      };
+
+      // Send meeting request to backend
+      const response = await fetch('http://localhost:3001/api/meetings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(meetingData)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Send confirmation emails
+        const { sendMeetingEmails } = await import('./emailService.js');
+        const emailResult = await sendMeetingEmails(meetingData, selectedDate);
+        
+        if (emailResult.success) {
+          window.alert('Meeting scheduled successfully! Confirmation emails have been sent to both mentor and mentee.');
+        } else {
+          window.alert(`Meeting scheduled successfully! However, there was an issue sending confirmation emails: ${emailResult.error}`);
+        }
+        
+        // Reset state and go back to main view
+        setShowMatches(false);
+        setShowAvailability(false);
+        setSelectedMentor(null);
+        setSelectedDate(null);
+        setSelectedTime(null);
+        setMentorMatches([]);
+        setFormData({
+          major: [],
+          industry: [],
+          serviceLookingFor: [],
+          skillsToLearn: []
+        });
+      } else {
+        setError('Failed to schedule meeting. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error scheduling meeting:', error);
+      setError('Error scheduling meeting. Please try again.');
+    } finally {
+      setSchedulingMeeting(false);
     }
   };
 
@@ -575,6 +733,8 @@ function RequestMentor() {
     );
   }
 
+  console.log('Rendering - showMatches:', showMatches, 'showAvailability:', showAvailability, 'selectedMentor:', selectedMentor);
+  
   if (showMatches) {
     return (
       <div style={{ padding: 40, color: '#00212C', background: '#f5f7fa', minHeight: '100vh' }}>
@@ -620,10 +780,29 @@ function RequestMentor() {
                     <div style={{ 
                       color: '#4caf50', 
                       fontWeight: 600, 
-                      fontSize: 14 
+                      fontSize: 14,
+                      marginBottom: 12
                     }}>
                       Match Score: {Math.round(match.totalScore)}%
                     </div>
+                    <button
+                      onClick={() => {
+                        console.log('Button clicked for mentor:', match);
+                        handleSelectMentor(match);
+                      }}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: 6,
+                        background: '#007CA6',
+                        color: 'white',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: 14,
+                        fontWeight: 600
+                      }}
+                    >
+                      Select & Schedule
+                    </button>
                   </div>
                 ))}
               </div>
@@ -658,7 +837,639 @@ function RequestMentor() {
     );
   }
 
+  if (showAvailability && selectedMentor) {
+    console.log('Rendering availability screen - showAvailability:', showAvailability, 'selectedMentor:', selectedMentor);
+    return (
+      <div style={{ padding: 40, color: '#00212C', background: '#f5f7fa', minHeight: '100vh' }}>
+        <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 24 }}>Schedule Meeting</h2>
+        <div style={{ 
+          background: 'white', 
+          borderRadius: 12, 
+          padding: 24, 
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          marginBottom: 32 
+        }}>
+          <div style={{ marginBottom: 24 }}>
+            <h3 style={{ color: '#007CA6', fontWeight: 700, fontSize: 20, marginBottom: 16 }}>
+              Selected Mentor: {selectedMentor.mentor.name}
+            </h3>
+            <div style={{ 
+              border: '1px solid #e0e0e0', 
+              borderRadius: 8, 
+              padding: 16, 
+              background: '#f9f9f9',
+              marginBottom: 16
+            }}>
+              <div style={{ marginBottom: 8 }}>
+                <strong style={{ color: '#007CA6' }}>Experience:</strong> {selectedMentor.mentor.yearsOfExperience} years
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <strong style={{ color: '#007CA6' }}>Major:</strong> {selectedMentor.mentor.major}
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <strong style={{ color: '#007CA6' }}>Industry:</strong> {selectedMentor.mentor.industry}
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <strong style={{ color: '#007CA6' }}>Skills:</strong> {Array.isArray(selectedMentor.mentor.skills) ? selectedMentor.mentor.skills.join(', ') : selectedMentor.mentor.skills}
+              </div>
+              <div style={{ 
+                color: '#4caf50', 
+                fontWeight: 600, 
+                fontSize: 14 
+              }}>
+                Match Score: {Math.round(selectedMentor.totalScore)}%
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#007CA6' }}>
+              Select Date & Time *
+            </label>
+            
+            {/* Calendar Navigation */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <button 
+                onClick={() => navigateWeek(-1)}
+                disabled={(() => {
+                  const currentDate = new Date();
+                  const currentWeekStart = getCurrentWeekStart(currentDate);
+                  return currentWeek.getTime() <= currentWeekStart.getTime();
+                })()}
+                style={{
+                  background: (() => {
+                    const currentDate = new Date();
+                    const currentWeekStart = getCurrentWeekStart(currentDate);
+                    return currentWeek.getTime() <= currentWeekStart.getTime() ? '#ccc' : '#f0f0f0';
+                  })(),
+                  border: 'none',
+                  padding: '8px 12px',
+                  borderRadius: 4,
+                  cursor: (() => {
+                    const currentDate = new Date();
+                    const currentWeekStart = getCurrentWeekStart(currentDate);
+                    return currentWeek.getTime() <= currentWeekStart.getTime() ? 'not-allowed' : 'pointer';
+                  })()
+                }}
+              >
+                ← Previous Week
+              </button>
+              <h5 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
+                {getWeekDisplayName(currentWeek)}
+              </h5>
+              <button 
+                onClick={() => navigateWeek(1)}
+                disabled={(() => {
+                  const currentDate = new Date();
+                  const currentWeekStart = getCurrentWeekStart(currentDate);
+                  const nextWeekStart = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), currentWeekStart.getDate() + 7);
+                  return currentWeek.getTime() >= nextWeekStart.getTime();
+                })()}
+                style={{
+                  background: (() => {
+                    const currentDate = new Date();
+                    const currentWeekStart = getCurrentWeekStart(currentDate);
+                    const nextWeekStart = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), currentWeekStart.getDate() + 7);
+                    return currentWeek.getTime() >= nextWeekStart.getTime() ? '#ccc' : '#f0f0f0';
+                  })(),
+                  border: 'none',
+                  padding: '8px 12px',
+                  borderRadius: 4,
+                  cursor: (() => {
+                    const currentDate = new Date();
+                    const currentWeekStart = getCurrentWeekStart(currentDate);
+                    const nextWeekStart = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), currentWeekStart.getDate() + 7);
+                    return currentWeek.getTime() >= nextWeekStart.getTime() ? 'not-allowed' : 'pointer';
+                  })()
+                }}
+              >
+                Next Week →
+              </button>
+            </div>
+
+            {/* Calendar Grid */}
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(7, 1fr)', 
+              gap: 2, 
+              marginBottom: 16,
+              border: '1px solid #ddd',
+              borderRadius: 8,
+              overflow: 'hidden'
+            }}>
+              {/* Day headers */}
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                <div key={day} style={{
+                  background: '#f5f5f5',
+                  padding: '8px 4px',
+                  textAlign: 'center',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  borderBottom: '1px solid #ddd'
+                }}>
+                  {day}
+                </div>
+              ))}
+              
+              {/* Calendar days - Week view */}
+              {(() => {
+                const weekDays = getWeekDays(currentWeek);
+                const days = [];
+                
+                weekDays.forEach((date, index) => {
+                  const currentDate = new Date();
+                  const isAvailable = isDateAvailable(date);
+                  const isToday = date.toDateString() === currentDate.toDateString();
+                  const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
+                  const isPastDate = date < new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+                  
+                  days.push(
+                    <div 
+                      key={index}
+                      onClick={() => {
+                        if (isAvailable && !isPastDate) {
+                          setSelectedDate(date);
+                          setSelectedTime(''); // Clear previous time selection
+                        }
+                      }}
+                      style={{
+                        padding: '8px 4px',
+                        textAlign: 'center',
+                        fontSize: '14px',
+                        cursor: (isAvailable && !isPastDate) ? 'pointer' : 'default',
+                        background: isPastDate ? '#f0f0f0' : (isAvailable ? '#e3f2fd' : '#f5f5f5'),
+                        color: isPastDate ? '#ccc' : (isAvailable ? '#1976d2' : '#999'),
+                        border: isSelected ? '3px solid #007CA6' : isToday ? '2px solid #007CA6' : '1px solid transparent',
+                        borderRadius: isSelected ? '6px' : isToday ? '4px' : '0',
+                        fontWeight: isSelected ? 700 : isToday ? 600 : 400
+                      }}
+                    >
+                      {date.getDate()}
+                    </div>
+                  );
+                });
+                
+                return days;
+              })()}
+            </div>
+
+            {/* Available Times for Selected Date */}
+            {selectedDate && (
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#007CA6' }}>
+                  Available Times for {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}:
+                </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {getAvailableTimesForDate(selectedDate).map((time, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedTime(time)}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: 6,
+                        background: selectedTime === time ? '#007CA6' : '#f0f0f0',
+                        color: selectedTime === time ? 'white' : '#333',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: 14,
+                        fontWeight: selectedTime === time ? 600 : 400
+                      }}
+                    >
+                      {time}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button
+              onClick={handleScheduleMeeting}
+              disabled={schedulingMeeting || !selectedDate || !selectedTime}
+              style={{
+                padding: '12px 24px',
+                borderRadius: 8,
+                background: schedulingMeeting || !selectedDate || !selectedTime ? '#ccc' : '#007CA6',
+                color: 'white',
+                border: 'none',
+                cursor: schedulingMeeting || !selectedDate || !selectedTime ? 'not-allowed' : 'pointer',
+                fontSize: 16,
+                fontWeight: 600,
+                flex: 1
+              }}
+            >
+              {schedulingMeeting ? 'Scheduling...' : 'Schedule Meeting'}
+            </button>
+            <button
+              onClick={() => {
+                setShowAvailability(false);
+                setSelectedMentor(null);
+                setSelectedDate(null);
+                setSelectedTime(null);
+              }}
+              style={{
+                padding: '12px 24px',
+                borderRadius: 8,
+                background: '#666',
+                color: 'white',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 16,
+                fontWeight: 600
+              }}
+            >
+              Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (showQuestionnaire) {
+    // Define the same options as in the original MenteeForm
+    const industryOptions = [
+      { value: 'Business', label: 'Business' },
+      { value: 'Education', label: 'Education' },
+      { value: 'Engineering', label: 'Engineering' },
+      { value: 'Finance', label: 'Finance' },
+      { value: 'Healthcare', label: 'Healthcare' },
+      { value: 'Information Technology', label: 'Information Technology' },
+      { value: 'Law', label: 'Law' },
+      { value: 'Social Services', label: 'Social Services' },
+      { value: 'Science', label: 'Science' },
+      { value: 'Arts', label: 'Arts' },
+      { value: 'Other', label: 'Other' },
+    ];
+
+    const majorOptions = [
+      { value: 'Accounting', label: 'Accounting' },
+      { value: 'Actuarial Science', label: 'Actuarial Science' },
+      { value: 'Advertising Major', label: 'Advertising Major' },
+      { value: 'Aerospace Engineering', label: 'Aerospace Engineering' },
+      { value: 'African Languages, Literatures, and Linguistics', label: 'African Languages, Literatures, and Linguistics' },
+      { value: 'African Studies', label: 'African Studies' },
+      { value: 'African-American Studies', label: 'African-American Studies' },
+      { value: 'Agricultural Business and Management', label: 'Agricultural Business and Management' },
+      { value: 'Agricultural Economics', label: 'Agricultural Economics' },
+      { value: 'Agricultural Education', label: 'Agricultural Education' },
+      { value: 'Agricultural Journalism', label: 'Agricultural Journalism' },
+      { value: 'Agricultural Mechanization Major', label: 'Agricultural Mechanization Major' },
+      { value: 'Agricultural Technology Management', label: 'Agricultural Technology Management' },
+      { value: 'Agricultural/Biological Engineering and Bioengineering', label: 'Agricultural/Biological Engineering and Bioengineering' },
+      { value: 'Agriculture', label: 'Agriculture' },
+      { value: 'Agronomy and Crop Science', label: 'Agronomy and Crop Science' },
+      { value: 'Air Traffic Control', label: 'Air Traffic Control' },
+      { value: 'American History', label: 'American History' },
+      { value: 'American Literature', label: 'American Literature' },
+      { value: 'American Sign Language', label: 'American Sign Language' },
+      { value: 'American Studies', label: 'American Studies' },
+      { value: 'Anatomy', label: 'Anatomy' },
+      { value: 'Ancient Studies', label: 'Ancient Studies' },
+      { value: 'Animal Behavior and Ethology', label: 'Animal Behavior and Ethology' },
+      { value: 'Animal Science', label: 'Animal Science' },
+      { value: 'Animation and Special Effects', label: 'Animation and Special Effects' },
+      { value: 'Anthropology', label: 'Anthropology' },
+      { value: 'Applied Mathematics', label: 'Applied Mathematics' },
+      { value: 'Aquaculture', label: 'Aquaculture' },
+      { value: 'Aquatic Biology', label: 'Aquatic Biology' },
+      { value: 'Arabic', label: 'Arabic' },
+      { value: 'Archeology', label: 'Archeology' },
+      { value: 'Architectural Engineering', label: 'Architectural Engineering' },
+      { value: 'Architectural History', label: 'Architectural History' },
+      { value: 'Architecture', label: 'Architecture' },
+      { value: 'Art', label: 'Art' },
+      { value: 'Art Education', label: 'Art Education' },
+      { value: 'Art History', label: 'Art History' },
+      { value: 'Art Therapy', label: 'Art Therapy' },
+      { value: 'Artificial Intelligence and Robotics', label: 'Artificial Intelligence and Robotics' },
+      { value: 'Asian-American Studies', label: 'Asian-American Studies' },
+      { value: 'Astronomy', label: 'Astronomy' },
+      { value: 'Astrophysics', label: 'Astrophysics' },
+      { value: 'Athletic Training', label: 'Athletic Training' },
+      { value: 'Atmospheric Science', label: 'Atmospheric Science' },
+      { value: 'Automotive Engineering', label: 'Automotive Engineering' },
+      { value: 'Aviation', label: 'Aviation' },
+      { value: 'Bakery Science', label: 'Bakery Science' },
+      { value: 'Biblical Studies', label: 'Biblical Studies' },
+      { value: 'Biochemistry', label: 'Biochemistry' },
+      { value: 'Bioethics', label: 'Bioethics' },
+      { value: 'Biology', label: 'Biology' },
+      { value: 'Biomedical Engineering', label: 'Biomedical Engineering' },
+      { value: 'Biomedical Science', label: 'Biomedical Science' },
+      { value: 'Biopsychology', label: 'Biopsychology' },
+      { value: 'Biotechnology', label: 'Biotechnology' },
+      { value: 'Botany/Plant Biology', label: 'Botany/Plant Biology' },
+      { value: 'Business Administration/Management', label: 'Business Administration/Management' },
+      { value: 'Business Communications', label: 'Business Communications' },
+      { value: 'Business Education', label: 'Business Education' },
+      { value: 'Canadian Studies', label: 'Canadian Studies' },
+      { value: 'Caribbean Studies', label: 'Caribbean Studies' },
+      { value: 'Cell Biology Major', label: 'Cell Biology Major' },
+      { value: 'Ceramic Engineering', label: 'Ceramic Engineering' },
+      { value: 'Ceramics', label: 'Ceramics' },
+      { value: 'Chemical Engineering Major', label: 'Chemical Engineering Major' },
+      { value: 'Chemical Physics', label: 'Chemical Physics' },
+      { value: 'Chemistry Major', label: 'Chemistry Major' },
+      { value: 'Child Care', label: 'Child Care' },
+      { value: 'Child Development', label: 'Child Development' },
+      { value: 'Chinese', label: 'Chinese' },
+      { value: 'Chiropractic', label: 'Chiropractic' },
+      { value: 'Church Music', label: 'Church Music' },
+      { value: 'Cinematography and Film/Video Production', label: 'Cinematography and Film/Video Production' },
+      { value: 'Circulation Technology', label: 'Circulation Technology' },
+      { value: 'Civil Engineering', label: 'Civil Engineering' },
+      { value: 'Classics', label: 'Classics' },
+      { value: 'Clinical Psychology', label: 'Clinical Psychology' },
+      { value: 'Cognitive Psychology', label: 'Cognitive Psychology' },
+      { value: 'Communication Disorders', label: 'Communication Disorders' },
+      { value: 'Communications Studies/Speech Communication and Rhetoric', label: 'Communications Studies/Speech Communication and Rhetoric' },
+      { value: 'Comparative Literature', label: 'Comparative Literature' },
+      { value: 'Computer and Information Science', label: 'Computer and Information Science' },
+      { value: 'Computer Engineering', label: 'Computer Engineering' },
+      { value: 'Computer Graphics', label: 'Computer Graphics' },
+      { value: 'Computer Systems Analysis Major', label: 'Computer Systems Analysis Major' },
+      { value: 'Construction Management', label: 'Construction Management' },
+      { value: 'Counseling', label: 'Counseling' },
+      { value: 'Crafts', label: 'Crafts' },
+      { value: 'Creative Writing', label: 'Creative Writing' },
+      { value: 'Criminal Science', label: 'Criminal Science' },
+      { value: 'Criminology', label: 'Criminology' },
+      { value: 'Culinary Arts', label: 'Culinary Arts' },
+      { value: 'Dance', label: 'Dance' },
+      { value: 'Data Processing', label: 'Data Processing' },
+      { value: 'Dental Hygiene', label: 'Dental Hygiene' },
+      { value: 'Developmental Psychology', label: 'Developmental Psychology' },
+      { value: 'Diagnostic Medical Sonography', label: 'Diagnostic Medical Sonography' },
+      { value: 'Dietetics', label: 'Dietetics' },
+      { value: 'Digital Communications and Media/Multimedia', label: 'Digital Communications and Media/Multimedia' },
+      { value: 'Drawing', label: 'Drawing' },
+      { value: 'Early Childhood Education', label: 'Early Childhood Education' },
+      { value: 'East Asian Studies', label: 'East Asian Studies' },
+      { value: 'East European Studies', label: 'East European Studies' },
+      { value: 'Ecology', label: 'Ecology' },
+      { value: 'Economics Major', label: 'Economics Major' },
+      { value: 'Education', label: 'Education' },
+      { value: 'Education Administration', label: 'Education Administration' },
+      { value: 'Education of the Deaf', label: 'Education of the Deaf' },
+      { value: 'Educational Psychology', label: 'Educational Psychology' },
+      { value: 'Electrical Engineering', label: 'Electrical Engineering' },
+      { value: 'Elementary Education', label: 'Elementary Education' },
+      { value: 'Engineering Mechanics', label: 'Engineering Mechanics' },
+      { value: 'Engineering Physics', label: 'Engineering Physics' },
+      { value: 'English', label: 'English' },
+      { value: 'English Composition', label: 'English Composition' },
+      { value: 'English Literature Major', label: 'English Literature Major' },
+      { value: 'Entomology', label: 'Entomology' },
+      { value: 'Entrepreneurship Major', label: 'Entrepreneurship Major' },
+      { value: 'Environmental Design/Architecture', label: 'Environmental Design/Architecture' },
+      { value: 'Environmental Science', label: 'Environmental Science' },
+      { value: 'Environmental/Environmental Health Engineering', label: 'Environmental/Environmental Health Engineering' },
+      { value: 'Epidemiology', label: 'Epidemiology' },
+      { value: 'Equine Studies', label: 'Equine Studies' },
+      { value: 'Ethnic Studies', label: 'Ethnic Studies' },
+      { value: 'European History', label: 'European History' },
+      { value: 'Experimental Pathology', label: 'Experimental Pathology' },
+      { value: 'Experimental Psychology', label: 'Experimental Psychology' },
+      { value: 'Fashion Design', label: 'Fashion Design' },
+      { value: 'Fashion Merchandising', label: 'Fashion Merchandising' },
+      { value: 'Feed Science', label: 'Feed Science' },
+      { value: 'Fiber, Textiles, and Weaving Arts', label: 'Fiber, Textiles, and Weaving Arts' },
+      { value: 'Film', label: 'Film' },
+      { value: 'Finance', label: 'Finance' },
+      { value: 'Floriculture', label: 'Floriculture' },
+      { value: 'Food Science', label: 'Food Science' },
+      { value: 'Forensic Science', label: 'Forensic Science' },
+      { value: 'Forestry', label: 'Forestry' },
+      { value: 'French', label: 'French' },
+      { value: 'Furniture Design', label: 'Furniture Design' },
+      { value: 'Game Design', label: 'Game Design' },
+      { value: 'Gay and Lesbian Studies', label: 'Gay and Lesbian Studies' },
+      { value: 'Genetics', label: 'Genetics' },
+      { value: 'Geography', label: 'Geography' },
+      { value: 'Geological Engineering', label: 'Geological Engineering' },
+      { value: 'Geology', label: 'Geology' },
+      { value: 'Geophysics', label: 'Geophysics' },
+      { value: 'German', label: 'German' },
+      { value: 'Gerontology', label: 'Gerontology' },
+      { value: 'Government Major', label: 'Government Major' },
+      { value: 'Graphic Design', label: 'Graphic Design' },
+      { value: 'Health Administration', label: 'Health Administration' },
+      { value: 'Hebrew', label: 'Hebrew' },
+      { value: 'Hispanic-American, Puerto Rican, and Chicano Studies', label: 'Hispanic-American, Puerto Rican, and Chicano Studies' },
+      { value: 'Historic Preservation', label: 'Historic Preservation' },
+      { value: 'History', label: 'History' },
+      { value: 'Home Economics', label: 'Home Economics' },
+      { value: 'Horticulture', label: 'Horticulture' },
+      { value: 'Hospitality', label: 'Hospitality' },
+      { value: 'Human Development', label: 'Human Development' },
+      { value: 'Human Resources Management Major', label: 'Human Resources Management Major' },
+      { value: 'Illustration', label: 'Illustration' },
+      { value: 'Industrial Design', label: 'Industrial Design' },
+      { value: 'Industrial Engineering', label: 'Industrial Engineering' },
+      { value: 'Industrial Management', label: 'Industrial Management' },
+      { value: 'Industrial Psychology', label: 'Industrial Psychology' },
+      { value: 'Information Technology', label: 'Information Technology' },
+      { value: 'Interior Architecture', label: 'Interior Architecture' },
+      { value: 'Interior Design', label: 'Interior Design' },
+      { value: 'International Agriculture', label: 'International Agriculture' },
+      { value: 'International Business', label: 'International Business' },
+      { value: 'International Relations', label: 'International Relations' },
+      { value: 'International Studies', label: 'International Studies' },
+      { value: 'Islamic Studies', label: 'Islamic Studies' },
+      { value: 'Italian', label: 'Italian' },
+      { value: 'Japanese', label: 'Japanese' },
+      { value: 'Jazz Studies', label: 'Jazz Studies' },
+      { value: 'Jewelry and Metalsmithing', label: 'Jewelry and Metalsmithing' },
+      { value: 'Jewish Studies', label: 'Jewish Studies' },
+      { value: 'Journalism', label: 'Journalism' },
+      { value: 'Kinesiology', label: 'Kinesiology' },
+      { value: 'Korean', label: 'Korean' },
+      { value: 'Land Use Planning and Management', label: 'Land Use Planning and Management' },
+      { value: 'Landscape Architecture', label: 'Landscape Architecture' },
+      { value: 'Landscape Horticulture', label: 'Landscape Horticulture' },
+      { value: 'Latin American Studies', label: 'Latin American Studies' },
+      { value: 'Library Science', label: 'Library Science' },
+      { value: 'Linguistics', label: 'Linguistics' },
+      { value: 'Logistics Management', label: 'Logistics Management' },
+      { value: 'Management Information Systems', label: 'Management Information Systems' },
+      { value: 'Managerial Economics', label: 'Managerial Economics' },
+      { value: 'Marine Biology Major', label: 'Marine Biology Major' },
+      { value: 'Marine Science', label: 'Marine Science' },
+      { value: 'Marketing Major', label: 'Marketing Major' },
+      { value: 'Mass Communication', label: 'Mass Communication' },
+      { value: 'Massage Therapy', label: 'Massage Therapy' },
+      { value: 'Materials Science', label: 'Materials Science' },
+      { value: 'Mathematics', label: 'Mathematics' },
+      { value: 'Mechanical Engineering', label: 'Mechanical Engineering' },
+      { value: 'Medical Technology', label: 'Medical Technology' },
+      { value: 'Medieval and Renaissance Studies', label: 'Medieval and Renaissance Studies' },
+      { value: 'Mental Health Services', label: 'Mental Health Services' },
+      { value: 'Merchandising and Buying Operations', label: 'Merchandising and Buying Operations' },
+      { value: 'Metallurgical Engineering', label: 'Metallurgical Engineering' },
+      { value: 'Microbiology', label: 'Microbiology' },
+      { value: 'Middle Eastern Studies', label: 'Middle Eastern Studies' },
+      { value: 'Military Science', label: 'Military Science' },
+      { value: 'Mineral Engineering', label: 'Mineral Engineering' },
+      { value: 'Missions', label: 'Missions' },
+      { value: 'Modern Greek', label: 'Modern Greek' },
+      { value: 'Molecular Biology', label: 'Molecular Biology' },
+      { value: 'Molecular Genetics', label: 'Molecular Genetics' },
+      { value: 'Mortuary Science', label: 'Mortuary Science' },
+      { value: 'Museum Studies', label: 'Museum Studies' },
+      { value: 'Music', label: 'Music' },
+      { value: 'Music Education', label: 'Music Education' },
+      { value: 'Music History Major', label: 'Music History Major' },
+      { value: 'Music Management', label: 'Music Management' },
+      { value: 'Music Therapy', label: 'Music Therapy' },
+      { value: 'Musical Theater', label: 'Musical Theater' },
+      { value: 'Native American Studies', label: 'Native American Studies' },
+      { value: 'Natural Resources Conservation', label: 'Natural Resources Conservation' },
+      { value: 'Naval Architecture', label: 'Naval Architecture' },
+      { value: 'Neurobiology', label: 'Neurobiology' },
+      { value: 'Neuroscience', label: 'Neuroscience' },
+      { value: 'Nuclear Engineering', label: 'Nuclear Engineering' },
+      { value: 'Nursing Major', label: 'Nursing Major' },
+      { value: 'Nutrition', label: 'Nutrition' },
+      { value: 'Occupational Therapy', label: 'Occupational Therapy' },
+      { value: 'Ocean Engineering', label: 'Ocean Engineering' },
+      { value: 'Oceanography', label: 'Oceanography' },
+      { value: 'Operations Management', label: 'Operations Management' },
+      { value: 'Organizational Behavior Studies', label: 'Organizational Behavior Studies' },
+      { value: 'Painting', label: 'Painting' },
+      { value: 'Paleontology', label: 'Paleontology' },
+      { value: 'Pastoral Studies', label: 'Pastoral Studies' },
+      { value: 'Peace Studies', label: 'Peace Studies' },
+      { value: 'Petroleum Engineering', label: 'Petroleum Engineering' },
+      { value: 'Pharmacology', label: 'Pharmacology' },
+      { value: 'Pharmacy', label: 'Pharmacy' },
+      { value: 'Philosophy', label: 'Philosophy' },
+      { value: 'Photography', label: 'Photography' },
+      { value: 'Photojournalism Major', label: 'Photojournalism Major' },
+      { value: 'Physical Education', label: 'Physical Education' },
+      { value: 'Physical Therapy', label: 'Physical Therapy' },
+      { value: 'Physician Assistant', label: 'Physician Assistant' },
+      { value: 'Physics', label: 'Physics' },
+      { value: 'Physiological Psychology', label: 'Physiological Psychology' },
+      { value: 'Piano', label: 'Piano' },
+      { value: 'Planetary Science', label: 'Planetary Science' },
+      { value: 'Plant Pathology', label: 'Plant Pathology' },
+      { value: 'Playwriting and Screenwriting', label: 'Playwriting and Screenwriting' },
+      { value: 'Political Communication', label: 'Political Communication' },
+      { value: 'Political Science Major', label: 'Political Science Major' },
+      { value: 'Portuguese', label: 'Portuguese' },
+      { value: 'Pre-Dentistry', label: 'Pre-Dentistry' },
+      { value: 'Pre-Law', label: 'Pre-Law' },
+      { value: 'Pre-Medicine', label: 'Pre-Medicine' },
+      { value: 'Pre-Optometry', label: 'Pre-Optometry' },
+      { value: 'Pre-Seminary', label: 'Pre-Seminary' },
+      { value: 'Pre-Veterinary Medicine', label: 'Pre-Veterinary Medicine' },
+      { value: 'Printmaking', label: 'Printmaking' },
+      { value: 'Psychology', label: 'Psychology' },
+      { value: 'Public Administration', label: 'Public Administration' },
+      { value: 'Public Health', label: 'Public Health' },
+      { value: 'Public Policy Analysis', label: 'Public Policy Analysis' },
+      { value: 'Public Relations Major', label: 'Public Relations Major' },
+      { value: 'Radio and Television', label: 'Radio and Television' },
+      { value: 'Radiologic Technology', label: 'Radiologic Technology' },
+      { value: 'Range Science and Management', label: 'Range Science and Management' },
+      { value: 'Real Estate', label: 'Real Estate' },
+      { value: 'Recording Arts Technology', label: 'Recording Arts Technology' },
+      { value: 'Recreation Management', label: 'Recreation Management' },
+      { value: 'Rehabilitation Services', label: 'Rehabilitation Services' },
+      { value: 'Religious Studies', label: 'Religious Studies' },
+      { value: 'Respiratory Therapy', label: 'Respiratory Therapy' },
+      { value: 'Risk Management', label: 'Risk Management' },
+      { value: 'Rural Sociology', label: 'Rural Sociology' },
+      { value: 'Russian', label: 'Russian' },
+      { value: 'Scandinavian Studies', label: 'Scandinavian Studies' },
+      { value: 'Sculpture', label: 'Sculpture' },
+      { value: 'Slavic Languages and Literatures', label: 'Slavic Languages and Literatures' },
+      { value: 'Social Psychology', label: 'Social Psychology' },
+      { value: 'Social Work', label: 'Social Work' },
+      { value: 'Sociology', label: 'Sociology' },
+      { value: 'Soil Science', label: 'Soil Science' },
+      { value: 'Sound Engineering', label: 'Sound Engineering' },
+      { value: 'South Asian Studies', label: 'South Asian Studies' },
+      { value: 'Southeast Asia Studies', label: 'Southeast Asia Studies' },
+      { value: 'Spanish Major', label: 'Spanish Major' },
+      { value: 'Special Education', label: 'Special Education' },
+      { value: 'Speech Pathology', label: 'Speech Pathology' },
+      { value: 'Sport and Leisure Studies', label: 'Sport and Leisure Studies' },
+      { value: 'Sports Management', label: 'Sports Management' },
+      { value: 'Statistics Major', label: 'Statistics Major' },
+      { value: 'Surveying', label: 'Surveying' },
+      { value: 'Sustainable Resource Management', label: 'Sustainable Resource Management' },
+      { value: 'Teacher Education', label: 'Teacher Education' },
+      { value: 'Teaching English as a Second Language', label: 'Teaching English as a Second Language' },
+      { value: 'Technical Writing', label: 'Technical Writing' },
+      { value: 'Technology Education', label: 'Technology Education' },
+      { value: 'Textile Engineering', label: 'Textile Engineering' },
+      { value: 'Theatre', label: 'Theatre' },
+      { value: 'Theology', label: 'Theology' },
+      { value: 'Tourism', label: 'Tourism' },
+      { value: 'Toxicology', label: 'Toxicology' },
+      { value: 'Turfgrass Science', label: 'Turfgrass Science' },
+      { value: 'Urban Planning', label: 'Urban Planning' },
+      { value: 'Urban Studies', label: 'Urban Studies' },
+      { value: 'Visual Communication', label: 'Visual Communication' },
+      { value: 'Voice', label: 'Voice' },
+      { value: 'Web Design', label: 'Web Design' },
+      { value: 'Webmaster and Web Management', label: 'Webmaster and Web Management' },
+      { value: 'Welding Engineering', label: 'Welding Engineering' },
+      { value: 'Wildlife Management', label: 'Wildlife Management' },
+      { value: 'Women\'s Studies', label: 'Women\'s Studies' },
+      { value: 'Youth Ministries', label: 'Youth Ministries' },
+      { value: 'Zoology', label: 'Zoology' },
+      { value: 'Other', label: 'Other' },
+    ];
+
+    const skillsToLearnOptions = [
+      { value: 'Technical Skills', label: 'Technical Skills' },
+      { value: 'Leadership', label: 'Leadership' },
+      { value: 'Communication', label: 'Communication' },
+      { value: 'Public Speaking', label: 'Public Speaking' },
+      { value: 'Project Management', label: 'Project Management' },
+      { value: 'Problem Solving', label: 'Problem Solving' },
+      { value: 'Critical Thinking', label: 'Critical Thinking' },
+      { value: 'Time Management', label: 'Time Management' },
+      { value: 'Teamwork', label: 'Teamwork' },
+      { value: 'Negotiation', label: 'Negotiation' },
+      { value: 'Sales Skills', label: 'Sales Skills' },
+      { value: 'Marketing', label: 'Marketing' },
+      { value: 'Financial Literacy', label: 'Financial Literacy' },
+      { value: 'Data Analysis', label: 'Data Analysis' },
+      { value: 'Research Skills', label: 'Research Skills' },
+      { value: 'Networking', label: 'Networking' },
+      { value: 'Confidence Building', label: 'Confidence Building' },
+      { value: 'Interview Skills', label: 'Interview Skills' },
+      { value: 'Resume Writing', label: 'Resume Writing' },
+      { value: 'Career Planning', label: 'Career Planning' },
+      { value: 'Entrepreneurship', label: 'Entrepreneurship' },
+      { value: 'Innovation', label: 'Innovation' },
+      { value: 'Strategic Thinking', label: 'Strategic Thinking' },
+      { value: 'Customer Service', label: 'Customer Service' },
+      { value: 'Conflict Resolution', label: 'Conflict Resolution' },
+      { value: 'Mentoring Others', label: 'Mentoring Others' },
+      { value: 'Cross-cultural Communication', label: 'Cross-cultural Communication' },
+      { value: 'Digital Marketing', label: 'Digital Marketing' },
+      { value: 'Social Media Management', label: 'Social Media Management' },
+      { value: 'Content Creation', label: 'Content Creation' },
+      { value: 'Design Thinking', label: 'Design Thinking' },
+      { value: 'Agile/Scrum', label: 'Agile/Scrum' },
+      { value: 'Risk Management', label: 'Risk Management' },
+      { value: 'Quality Assurance', label: 'Quality Assurance' },
+      { value: 'Supply Chain Management', label: 'Supply Chain Management' },
+      { value: 'Human Resources', label: 'Human Resources' },
+      { value: 'Legal Knowledge', label: 'Legal Knowledge' },
+      { value: 'Regulatory Compliance', label: 'Regulatory Compliance' },
+      { value: 'Sustainability', label: 'Sustainability' },
+      { value: 'Remote Work Skills', label: 'Remote Work Skills' },
+      { value: 'Virtual Collaboration', label: 'Virtual Collaboration' },
+      { value: 'Other', label: 'Other' },
+    ];
+
     return (
       <div style={{ padding: 40, color: '#00212C', background: '#f5f7fa', minHeight: '100vh' }}>
         <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 24 }}>Mentor Request Questionnaire</h2>
@@ -673,95 +1484,132 @@ function RequestMentor() {
             <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#007CA6' }}>
               Major *
             </label>
-            <select
-              value={formData.major}
-              onChange={(e) => setFormData({...formData, major: e.target.value})}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: 8,
-                border: '1px solid #ddd',
-                fontSize: 16
+            <Select
+              isMulti
+              name="major"
+              options={majorOptions}
+              value={majorOptions.filter(opt => (formData.major || []).includes(opt.value))}
+              onChange={selectedOptions => {
+                setFormData({ ...formData, major: selectedOptions ? selectedOptions.map(opt => opt.value) : [] });
               }}
-            >
-              <option value="">Select your major</option>
-              <option value="Computer Science">Computer Science</option>
-              <option value="Engineering">Engineering</option>
-              <option value="Business">Business</option>
-              <option value="Mathematics">Mathematics</option>
-              <option value="Physics">Physics</option>
-              <option value="Chemistry">Chemistry</option>
-              <option value="Biology">Biology</option>
-              <option value="Psychology">Psychology</option>
-              <option value="Economics">Economics</option>
-              <option value="Other">Other</option>
-            </select>
+              classNamePrefix="react-select"
+              placeholder="Select major..."
+              styles={{
+                control: (provided) => ({
+                  ...provided,
+                  borderRadius: 8,
+                  border: '1px solid #ddd',
+                  fontSize: 16,
+                  minHeight: '48px'
+                }),
+                menu: (provided) => ({
+                  ...provided,
+                  zIndex: 9999
+                })
+              }}
+            />
+            <div style={{fontSize: '0.95rem', color: '#888', marginTop: 4}}>You can select multiple majors.</div>
           </div>
 
           <div style={{ marginBottom: 20 }}>
             <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#007CA6' }}>
               Industry *
             </label>
-            <select
-              value={formData.industry}
-              onChange={(e) => setFormData({...formData, industry: [e.target.value]})}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: 8,
-                border: '1px solid #ddd',
-                fontSize: 16
+            <Select
+              isMulti
+              name="industry"
+              options={industryOptions}
+              value={industryOptions.filter(opt => (formData.industry || []).includes(opt.value))}
+              onChange={selectedOptions => {
+                setFormData({ ...formData, industry: selectedOptions ? selectedOptions.map(opt => opt.value) : [] });
               }}
-            >
-              <option value="">Select your industry</option>
-              <option value="Information Technology">Information Technology</option>
-              <option value="Finance">Finance</option>
-              <option value="Healthcare">Healthcare</option>
-              <option value="Education">Education</option>
-              <option value="Engineering">Engineering</option>
-              <option value="Business">Business</option>
-              <option value="Science">Science</option>
-              <option value="Arts">Arts</option>
-              <option value="Other">Other</option>
-            </select>
+              classNamePrefix="react-select"
+              placeholder="Select industry..."
+              styles={{
+                control: (provided) => ({
+                  ...provided,
+                  borderRadius: 8,
+                  border: '1px solid #ddd',
+                  fontSize: 16,
+                  minHeight: '48px'
+                }),
+                menu: (provided) => ({
+                  ...provided,
+                  zIndex: 9999
+                })
+              }}
+            />
+            <div style={{fontSize: '0.95rem', color: '#888', marginTop: 4}}>You can select multiple industries.</div>
           </div>
 
           <div style={{ marginBottom: 20 }}>
             <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#007CA6' }}>
               Help Wanted *
             </label>
-            <input
-              type="text"
-              value={formData.serviceLookingFor}
-              onChange={(e) => setFormData({...formData, serviceLookingFor: e.target.value})}
-              placeholder="e.g., Career guidance, Technical skills, Interview prep"
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: 8,
-                border: '1px solid #ddd',
-                fontSize: 16
+            <Select
+              isMulti
+              name="serviceLookingFor"
+              options={[
+                { value: 'Career advice', label: 'Career advice' },
+                { value: 'Resume review', label: 'Resume review' },
+                { value: 'Interview prep', label: 'Interview prep' }
+              ]}
+              value={[
+                { value: 'Career advice', label: 'Career advice' },
+                { value: 'Resume review', label: 'Resume review' },
+                { value: 'Interview prep', label: 'Interview prep' }
+              ].filter(opt => (formData.serviceLookingFor || []).includes(opt.value))}
+              onChange={selectedOptions => {
+                setFormData({ ...formData, serviceLookingFor: selectedOptions ? selectedOptions.map(opt => opt.value) : [] });
+              }}
+              classNamePrefix="react-select"
+              placeholder="Select services..."
+              styles={{
+                control: (provided) => ({
+                  ...provided,
+                  borderRadius: 8,
+                  border: '1px solid #ddd',
+                  fontSize: 16,
+                  minHeight: '48px'
+                }),
+                menu: (provided) => ({
+                  ...provided,
+                  zIndex: 9999
+                })
               }}
             />
+            <div style={{fontSize: '0.95rem', color: '#888', marginTop: 4}}>You can select multiple services.</div>
           </div>
 
           <div style={{ marginBottom: 20 }}>
             <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#007CA6' }}>
               Skills Looking For *
             </label>
-            <input
-              type="text"
-              value={formData.skillsToLearn}
-              onChange={(e) => setFormData({...formData, skillsToLearn: [e.target.value]})}
-              placeholder="e.g., Python, Leadership, Data Analysis"
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: 8,
-                border: '1px solid #ddd',
-                fontSize: 16
+            <Select
+              isMulti
+              name="skillsToLearn"
+              options={skillsToLearnOptions}
+              value={skillsToLearnOptions.filter(opt => (formData.skillsToLearn || []).includes(opt.value))}
+              onChange={selectedOptions => {
+                setFormData({ ...formData, skillsToLearn: selectedOptions ? selectedOptions.map(opt => opt.value) : [] });
+              }}
+              classNamePrefix="react-select"
+              placeholder="Select skills you want to learn..."
+              styles={{
+                control: (provided) => ({
+                  ...provided,
+                  borderRadius: 8,
+                  border: '1px solid #ddd',
+                  fontSize: 16,
+                  minHeight: '48px'
+                }),
+                menu: (provided) => ({
+                  ...provided,
+                  zIndex: 9999
+                })
               }}
             />
+            <div style={{fontSize: '0.95rem', color: '#888', marginTop: 4}}>You can select multiple skills. This helps us match you with the best mentors.</div>
           </div>
 
           {error && (
@@ -773,7 +1621,7 @@ function RequestMentor() {
           <div style={{ display: 'flex', gap: 12 }}>
             <button 
               onClick={handleSubmit}
-              disabled={submitting || !formData.major || !formData.industry || !formData.serviceLookingFor || !formData.skillsToLearn}
+              disabled={submitting || !formData.major || !formData.major.length || !formData.industry || !formData.industry.length || !formData.serviceLookingFor || !formData.serviceLookingFor.length || !formData.skillsToLearn || !formData.skillsToLearn.length}
               style={{
                 padding: '12px 24px',
                 borderRadius: 8,

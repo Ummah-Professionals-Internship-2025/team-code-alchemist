@@ -727,4 +727,23 @@ app.post('/api/meetings/move-expired', async (req, res) => {
   }
 });
 
+// Test endpoint to check date parsing (for debugging)
+app.post('/api/meetings/test-date-parsing', async (req, res) => {
+  try {
+    const { meetingDate, meetingTime } = req.body;
+    const { isMeetingEnded } = require('./meetingStatusManager');
+    
+    const result = isMeetingEnded(meetingDate, meetingTime);
+    res.json({ 
+      success: true, 
+      meetingDate, 
+      meetingTime, 
+      isEnded: result 
+    });
+  } catch (error) {
+    console.error('Error testing date parsing:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 app.listen(3003, () => console.log('Userportal backend server running on port 3003')); 

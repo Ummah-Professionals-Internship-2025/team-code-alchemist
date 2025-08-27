@@ -12,7 +12,50 @@ const db = admin.firestore();
 
 // Function to check if a meeting has ended
 function isMeetingEnded(meetingDate, meetingTime) {
-  const meetingDateObj = new Date(meetingDate);
+  console.log('Checking if meeting ended:', { meetingDate, meetingTime });
+  
+  // Parse meeting date - handle different formats
+  let meetingDateObj;
+  
+  // Handle different date formats
+  if (meetingDate.includes(' ')) {
+    // Format like "Sep 02" or "September 2"
+    const currentYear = new Date().getFullYear();
+    const nextYear = currentYear + 1;
+    
+    // Try current year first
+    meetingDateObj = new Date(`${meetingDate} ${currentYear}`);
+    
+    // If the date is in the past, try next year
+    if (meetingDateObj < new Date()) {
+      meetingDateObj = new Date(`${meetingDate} ${nextYear}`);
+    }
+  } else if (meetingDate.includes('-')) {
+    // Format like "2025-09-02"
+    meetingDateObj = new Date(meetingDate);
+  } else {
+    // Try parsing as full date
+    meetingDateObj = new Date(meetingDate);
+  }
+  
+  // Check if date parsing failed
+  if (isNaN(meetingDateObj.getTime())) {
+    console.log('Invalid meeting date format:', meetingDate);
+    return false; // Don't move meetings with invalid dates
+  }
+  
+  // Safety check: if the parsed date is more than 2 years in the future, 
+  // it's likely a parsing error, so don't move the meeting
+  const twoYearsFromNow = new Date();
+  twoYearsFromNow.setFullYear(twoYearsFromNow.getFullYear() + 2);
+  
+  if (meetingDateObj > twoYearsFromNow) {
+    console.log('Meeting date is too far in the future, likely a parsing error:', meetingDateObj);
+    return false;
+  }
+  
+  console.log('Parsed meeting date:', meetingDateObj);
+  
   let endTime;
   
   // Parse meeting time to get end time
@@ -48,7 +91,13 @@ function isMeetingEnded(meetingDate, meetingTime) {
   }
   
   const now = new Date();
-  return now > endDateTime;
+  const isEnded = now > endDateTime;
+  
+  console.log('Meeting end time:', endDateTime);
+  console.log('Current time:', now);
+  console.log('Meeting ended:', isEnded);
+  
+  return isEnded;
 }
 
 // Function to move expired meetings from confirmedMeeting to endMeeting
@@ -62,7 +111,14 @@ async function moveExpiredMeetings() {
     
     confirmedMeetingsSnapshot.forEach(doc => {
       const meetingData = doc.data();
+      console.log(`Checking meeting ${doc.id}:`, {
+        meetingDate: meetingData.meetingDate,
+        meetingTime: meetingData.meetingTime,
+        status: meetingData.status
+      });
+      
       if (isMeetingEnded(meetingData.meetingDate, meetingData.meetingTime)) {
+        console.log(`Meeting ${doc.id} is expired, moving to endMeeting`);
         expiredMeetings.push({
           id: doc.id,
           data: {
@@ -71,6 +127,8 @@ async function moveExpiredMeetings() {
             completedAt: new Date()
           }
         });
+      } else {
+        console.log(`Meeting ${doc.id} is not expired yet`);
       }
     });
     
