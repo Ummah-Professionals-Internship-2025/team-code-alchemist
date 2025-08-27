@@ -13,6 +13,7 @@ const DEFAULT_AVATAR = "https://www.gravatar.com/avatar/?d=mp&f=y";
 
 function Dashboard() {
   const [pendingMeetings, setPendingMeetings] = useState([]);
+  const [mentorDetails, setMentorDetails] = useState({});
   const [loading, setLoading] = useState(true);
   const [showReschedule, setShowReschedule] = useState(false);
   const [activeMeeting, setActiveMeeting] = useState(null);
@@ -27,6 +28,43 @@ function Dashboard() {
       
       if (data.success) {
         setPendingMeetings(data.meetings);
+        
+        // Fetch mentor details from mentors collection
+        const mentorIds = [...new Set(data.meetings.map(meeting => meeting.mentorId).filter(Boolean))];
+        const mentorDetailsMap = {};
+        
+        console.log('Mentor IDs found in meetings:', mentorIds);
+        
+        // Fetch all mentors first, then match by ID
+        try {
+          const allMentorsResponse = await fetch('http://localhost:3001/api/mentors');
+          console.log('All mentors response status:', allMentorsResponse.status);
+          
+          if (allMentorsResponse.ok) {
+            const allMentorsData = await allMentorsResponse.json();
+            console.log('All mentors data:', allMentorsData);
+            
+            if (allMentorsData.success && allMentorsData.mentors) {
+              // Match each mentorId with the corresponding mentor from the collection
+              mentorIds.forEach(mentorId => {
+                const foundMentor = allMentorsData.mentors.find(mentor => mentor.id === mentorId);
+                if (foundMentor) {
+                  mentorDetailsMap[mentorId] = foundMentor;
+                  console.log(`Found mentor for ID ${mentorId}:`, foundMentor.name);
+                } else {
+                  console.log(`No mentor found for ID: ${mentorId}`);
+                }
+              });
+            }
+          } else {
+            console.log('Failed to fetch all mentors:', allMentorsResponse.status);
+          }
+        } catch (error) {
+          console.error('Error fetching all mentors:', error);
+        }
+        
+        console.log('Final mentor details map:', mentorDetailsMap);
+        setMentorDetails(mentorDetailsMap);
       }
     } catch (error) {
       console.error('Error fetching pending meetings:', error);
@@ -45,9 +83,26 @@ function Dashboard() {
       if (res.status === 404) {
         res = await fetch(`http://localhost:3001/api/meetings/${meetingId}/accept`, { method: 'POST' });
       }
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        if (data.movedToConfirmed) {
+          const emailMessage = data.emailStatus === 'sent' 
+            ? 'Confirmation emails have been sent to both mentor and mentee.'
+            : 'Meeting confirmed, but there was an issue sending confirmation emails.';
+          window.alert(`Meeting accepted! ${emailMessage}`);
+        } else {
+          window.alert('Meeting accepted! Waiting for mentor approval.');
+        }
+      } else {
+        window.alert(`Failed to accept meeting: ${data.error || 'Unknown error'}`);
+      }
+      
       await fetchPendingMeetings();
     } catch (e) {
       console.error('Accept meeting failed', e);
+      window.alert('Failed to accept meeting. Please try again.');
     }
   };
 
@@ -112,18 +167,20 @@ function Dashboard() {
           {loading ? (
             <div style={{ color: '#666', fontSize: 16 }}>Loading...</div>
           ) : pendingMeetings.length === 0 ? (
-            <div style={{ color: '#666', fontSize: 16 }}>No pending meetings</div>
+            <div style={{ color: '#666', fontSize: 16 }}>No meetings</div>
           ) : (
             <div style={{ width: '100%' }}>
               {pendingMeetings.map((meeting, index) => {
                 const statusInfo = getMeetingStatus(meeting);
+                const isConfirmed = meeting.status === 'confirmed';
+                
                 return (
                   <div key={meeting.id} style={{ 
                     border: '1px solid #e0e0e0', 
                     borderRadius: 8, 
                     padding: 16, 
                     marginBottom: index < pendingMeetings.length - 1 ? 12 : 0,
-                    background: '#f9f9f9'
+                    background: isConfirmed ? '#e8f5e8' : '#f9f9f9'
                   }}>
                     <div style={{ marginBottom: 8 }}>
                       <strong style={{ color: '#007CA6' }}>With:</strong> {meeting.mentorName}
@@ -139,14 +196,32 @@ function Dashboard() {
                         return `${dateStr ? dateStr + ' ' : ''}${meeting.meetingTime || ''}`.trim();
                       })()}
                     </div>
+                    {isConfirmed && meeting.meetLink && (
+                      <div style={{ marginBottom: 8 }}>
+                        <strong style={{ color: '#007CA6' }}>Google Meet:</strong>
+                        <a 
+                          href={meeting.meetLink} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ 
+                            color: '#4caf50', 
+                            textDecoration: 'none', 
+                            marginLeft: 8,
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          Join Meeting
+                        </a>
+                      </div>
+                    )}
                     <div style={{ 
-                      color: statusInfo.color, 
+                      color: isConfirmed ? '#4caf50' : statusInfo.color, 
                       fontWeight: 600, 
                       fontSize: 14 
                     }}>
-                      {statusInfo.status}
+                      {isConfirmed ? 'Confirmed' : statusInfo.status}
                     </div>
-                    {(!meeting.menteeApproved && meeting.mentorApproved) && (
+                    {!isConfirmed && (!meeting.menteeApproved && meeting.mentorApproved) && (
                       <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
                         <button onClick={() => acceptMeeting(meeting.id)} style={{ background: '#4caf50', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>Accept</button>
                         <button onClick={() => proposeMeeting(meeting)} style={{ background: '#FDBB37', color: '#00212C', border: 'none', padding: '8px 12px', borderRadius: 6, cursor: 'pointer', fontWeight: 700 }}>Propose new time</button>
@@ -164,17 +239,134 @@ function Dashboard() {
           onSubmit={handleRescheduleSubmit}
           meeting={activeMeeting}
         />
-        {/* Calendar Box */}
+        {/* Information Box */}
         <div style={{ background: '#FFFFFF', borderRadius: 20, boxShadow: '0 4px 24px rgba(138,203,219,0.18)', border: '2px solid #8ACBDB', padding: 32, minWidth: 320, color: '#00212C', margin: 16, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-          <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 8 }}>Calendar</h2>
-          <div style={{ color: '#FDBB37', fontWeight: 700, fontSize: 20 }}>Calendar coming soon.</div>
-        </div>
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        {/* Placeholder Box */}
-        <div style={{ background: '#FFFFFF', borderRadius: 20, boxShadow: '0 4px 24px rgba(138,203,219,0.18)', border: '2px solid #8ACBDB', padding: 32, minWidth: 672, color: '#00212C', margin: 16, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-          <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 8 }}>Placeholder</h2>
-          <div style={{ color: '#FDBB37', fontWeight: 700, fontSize: 20 }}>More features coming soon.</div>
+          <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 8 }}>Information</h2>
+          {loading ? (
+            <div style={{ color: '#666', fontSize: 16 }}>Loading...</div>
+          ) : pendingMeetings.length === 0 ? (
+            <div style={{ color: '#666', fontSize: 16 }}>No meetings scheduled</div>
+          ) : (
+            <div style={{ width: '100%' }}>
+              {pendingMeetings.map((meeting, index) => {
+                const mentorDetail = mentorDetails[meeting.mentorId];
+                console.log(`Meeting ${meeting.id}: mentorId=${meeting.mentorId}, mentorDetail=`, mentorDetail);
+                console.log('Skills type:', typeof mentorDetail?.skills, 'Skills value:', mentorDetail?.skills);
+                console.log('Certifications type:', typeof mentorDetail?.certifications, 'Certifications value:', mentorDetail?.certifications);
+                return (
+                  <div key={meeting.id} style={{ 
+                    border: '1px solid #e0e0e0', 
+                    borderRadius: 8, 
+                    padding: 16, 
+                    marginBottom: index < pendingMeetings.length - 1 ? 12 : 0,
+                    background: '#f9f9f9'
+                  }}>
+                                      <div style={{ marginBottom: 8 }}>
+                    <strong style={{ color: '#007CA6' }}>Mentor:</strong> {meeting.mentorName}
+                  </div>
+
+                  {/* Show mentor details from API or fallback to meeting data */}
+                  {(mentorDetail?.company || meeting.mentorCompany) && (
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: '#007CA6' }}>Company:</strong> {mentorDetail?.company || meeting.mentorCompany}
+                    </div>
+                  )}
+                  {(mentorDetail?.position || meeting.mentorPosition) && (
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: '#007CA6' }}>Position:</strong> {mentorDetail?.position || meeting.mentorPosition}
+                    </div>
+                  )}
+                  {mentorDetail?.yearsOfExperience && (
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: '#007CA6' }}>Experience:</strong> {mentorDetail.yearsOfExperience} years
+                    </div>
+                  )}
+                  {mentorDetail?.university && (
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: '#007CA6' }}>University:</strong> {mentorDetail.university}
+                    </div>
+                  )}
+                  {mentorDetail?.major && (
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: '#007CA6' }}>Major:</strong> {mentorDetail.major}
+                    </div>
+                  )}
+                  {mentorDetail?.skills && Array.isArray(mentorDetail.skills) && mentorDetail.skills.length > 0 && (
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: '#007CA6' }}>Skills:</strong>
+                      <div style={{ fontSize: 14, color: '#666', marginTop: 4 }}>
+                        {mentorDetail.skills.join(', ')}
+                      </div>
+                    </div>
+                  )}
+                  {mentorDetail?.industry && (
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: '#007CA6' }}>Industry:</strong> {mentorDetail.industry}
+                    </div>
+                  )}
+                  {mentorDetail?.graduationYear && (
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: '#007CA6' }}>Graduation Year:</strong> {mentorDetail.graduationYear}
+                    </div>
+                  )}
+                  {mentorDetail?.certifications && Array.isArray(mentorDetail.certifications) && mentorDetail.certifications.length > 0 && (
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: '#007CA6' }}>Certifications:</strong>
+                      <div style={{ fontSize: 14, color: '#666', marginTop: 4 }}>
+                        {mentorDetail.certifications.join(', ')}
+                      </div>
+                    </div>
+                  )}
+                    {mentorDetail?.linkedin && (
+                      <div style={{ marginBottom: 8 }}>
+                        <strong style={{ color: '#007CA6' }}>LinkedIn:</strong>
+                        <a 
+                          href={mentorDetail.linkedin} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ 
+                            color: '#007CA6', 
+                            textDecoration: 'none', 
+                            marginLeft: 8,
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          View Profile
+                        </a>
+                      </div>
+                    )}
+                    {meeting.meetLink && (
+                      <div style={{ marginBottom: 8 }}>
+                        <strong style={{ color: '#007CA6' }}>Google Meet:</strong>
+                        <a 
+                          href={meeting.meetLink} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ 
+                            color: '#4caf50', 
+                            textDecoration: 'none', 
+                            marginLeft: 8,
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          Join Meeting
+                        </a>
+                      </div>
+                    )}
+                                         {(meeting.mentorBio || mentorDetail?.bio) && (
+                       <div style={{ marginBottom: 8 }}>
+                         <strong style={{ color: '#007CA6' }}>About:</strong>
+                         <div style={{ fontSize: 14, color: '#666', marginTop: 4 }}>
+                           {mentorDetail?.bio || meeting.mentorBio}
+                           {(mentorDetail?.bio || meeting.mentorBio)?.length > 100 && '...'}
+                         </div>
+                       </div>
+                     )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -273,7 +465,7 @@ function App() {
   else if (activePage === 'dashboard') mainContent = <Dashboard />;
   else if (activePage === 'request') mainContent = <RequestMentor />;
   else if (activePage === 'feedback') mainContent = <Feedback />;
-  else if (activePage === 'calendar') mainContent = <div style={{ padding: 40, color: '#fff' }}><h2>Calendar</h2><div>Feature coming soon.</div></div>;
+  else if (activePage === 'information') mainContent = <Dashboard />; // Information is now part of the dashboard
   else mainContent = <Dashboard />;
 
   return (

@@ -15,7 +15,12 @@ export function getMeetingStatus(meeting) {
 export default function Rescheduling({ open, onClose, onSubmit, meeting }) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState('');
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = now.getDate() - day;
+    return new Date(now.getFullYear(), now.getMonth(), diff);
+  });
   const [availability, setAvailability] = useState(null);
   const [loadingAvail, setLoadingAvail] = useState(false);
 
@@ -52,34 +57,45 @@ export default function Rescheduling({ open, onClose, onSubmit, meeting }) {
 
   if (!open) return null;
 
-  const getDaysInMonth = (date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDay = firstDay.getDay();
-    return { daysInMonth, startingDay };
+  // Calendar functions - Week view
+  const getCurrentWeekStart = (date) => {
+    const day = date.getDay();
+    const diff = date.getDate() - day;
+    return new Date(date.getFullYear(), date.getMonth(), diff);
   };
 
-  const getMonthName = (date) => {
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const getWeekDays = (weekStart) => {
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      days.push(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + i));
+    }
+    return days;
   };
 
-  const navigateMonth = (direction) => {
+  const getWeekDisplayName = (weekStart) => {
+    const weekEnd = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 6);
+    return `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  };
+
+  const navigateWeek = (direction) => {
     setCurrentMonth(prev => {
-      const newMonth = new Date(prev);
-      newMonth.setMonth(prev.getMonth() + direction);
+      const newWeek = new Date(prev);
+      newWeek.setDate(prev.getDate() + (direction * 7));
+      
+      // Limit navigation to current week and next week only
       const currentDate = new Date();
-      const currentMonthNum = currentDate.getMonth();
-      const currentYear = currentDate.getFullYear();
-      if (newMonth.getMonth() < currentMonthNum && newMonth.getFullYear() <= currentYear) {
-        return new Date(currentYear, currentMonthNum, 1);
+      const currentWeekStart = getCurrentWeekStart(currentDate);
+      const nextWeekStart = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), currentWeekStart.getDate() + 7);
+      
+      if (newWeek < currentWeekStart) {
+        return currentWeekStart;
       }
-      if (newMonth.getMonth() > currentMonthNum + 1 && newMonth.getFullYear() >= currentYear) {
-        return new Date(currentYear, currentMonthNum + 1, 1);
+      
+      if (newWeek >= nextWeekStart) {
+        return nextWeekStart;
       }
-      return newMonth;
+      
+      return newWeek;
     });
   };
 
@@ -126,19 +142,60 @@ export default function Rescheduling({ open, onClose, onSubmit, meeting }) {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <button 
-                onClick={() => navigateMonth(-1)}
-                style={{ background: '#f0f0f0', border: 'none', padding: '8px 12px', borderRadius: 4, cursor: 'pointer' }}
+                onClick={() => navigateWeek(-1)}
+                disabled={(() => {
+                  const currentDate = new Date();
+                  const currentWeekStart = getCurrentWeekStart(currentDate);
+                  return currentMonth.getTime() <= currentWeekStart.getTime();
+                })()}
+                style={{ 
+                  background: (() => {
+                    const currentDate = new Date();
+                    const currentWeekStart = getCurrentWeekStart(currentDate);
+                    return currentMonth.getTime() <= currentWeekStart.getTime() ? '#ccc' : '#f0f0f0';
+                  })(),
+                  border: 'none', 
+                  padding: '8px 12px', 
+                  borderRadius: 4, 
+                  cursor: (() => {
+                    const currentDate = new Date();
+                    const currentWeekStart = getCurrentWeekStart(currentDate);
+                    return currentMonth.getTime() <= currentWeekStart.getTime() ? 'not-allowed' : 'pointer';
+                  })()
+                }}
               >
-                ←
+                ← Previous Week
               </button>
               <h5 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
-                {getMonthName(currentMonth)}
+                {getWeekDisplayName(currentMonth)}
               </h5>
               <button 
-                onClick={() => navigateMonth(1)}
-                style={{ background: '#f0f0f0', border: 'none', padding: '8px 12px', borderRadius: 4, cursor: 'pointer' }}
+                onClick={() => navigateWeek(1)}
+                disabled={(() => {
+                  const currentDate = new Date();
+                  const currentWeekStart = getCurrentWeekStart(currentDate);
+                  const nextWeekStart = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), currentWeekStart.getDate() + 7);
+                  return currentMonth.getTime() >= nextWeekStart.getTime();
+                })()}
+                style={{ 
+                  background: (() => {
+                    const currentDate = new Date();
+                    const currentWeekStart = getCurrentWeekStart(currentDate);
+                    const nextWeekStart = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), currentWeekStart.getDate() + 7);
+                    return currentMonth.getTime() >= nextWeekStart.getTime() ? '#ccc' : '#f0f0f0';
+                  })(),
+                  border: 'none', 
+                  padding: '8px 12px', 
+                  borderRadius: 4, 
+                  cursor: (() => {
+                    const currentDate = new Date();
+                    const currentWeekStart = getCurrentWeekStart(currentDate);
+                    const nextWeekStart = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), currentWeekStart.getDate() + 7);
+                    return currentMonth.getTime() >= nextWeekStart.getTime() ? 'not-allowed' : 'pointer';
+                  })()
+                }}
               >
-                →
+                Next Week →
               </button>
             </div>
 
@@ -150,24 +207,23 @@ export default function Rescheduling({ open, onClose, onSubmit, meeting }) {
                 <div key={day} style={{ background: '#f5f5f5', padding: '8px 4px', textAlign: 'center', fontSize: '12px', fontWeight: 600, borderBottom: '1px solid #ddd' }}>{day}</div>
               ))}
               {(() => {
-                const { daysInMonth, startingDay } = getDaysInMonth(currentMonth);
+                const weekDays = getWeekDays(currentMonth);
                 const cells = [];
-                for (let i = 0; i < startingDay; i++) cells.push(<div key={`e-${i}`} style={{ padding: '8px 4px' }} />);
-                for (let d = 1; d <= daysInMonth; d++) {
-                  const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), d);
+                
+                weekDays.forEach((date, index) => {
                   const now = new Date();
                   const isAvailable = isDateAvailable(date);
                   const isToday = date.toDateString() === now.toDateString();
                   const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
                   const isPastDate = date < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                  
                   cells.push(
                     <div
-                      key={d}
+                      key={index}
                       onClick={() => {
                         if (isAvailable && !isPastDate) {
                           setSelectedDate(date);
-                          const times = getAvailableTimesForDate(date);
-                          if (times.length > 0) setSelectedTime(times[0]);
+                          setSelectedTime(''); // Clear previous time selection
                         }
                       }}
                       style={{
@@ -180,10 +236,11 @@ export default function Rescheduling({ open, onClose, onSubmit, meeting }) {
                         fontWeight: isSelected ? 700 : isToday ? 600 : 400
                       }}
                     >
-                      {d}
+                      {date.getDate()}
                     </div>
                   );
-                }
+                });
+                
                 return cells;
               })()}
             </div>

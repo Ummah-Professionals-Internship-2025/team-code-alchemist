@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaBars, FaUser, FaHome, FaCalendarAlt, FaCommentDots, FaSignOutAlt } from 'react-icons/fa';
+import { FaBars, FaUser, FaHome, FaInfoCircle, FaCommentDots, FaSignOutAlt } from 'react-icons/fa';
 import './Sidebar.css';
 
 const navLinks = [
@@ -7,7 +7,7 @@ const navLinks = [
   { label: 'Profile', icon: <FaUser />, key: 'profile' },
   { label: 'Request a Mentor', icon: <FaCommentDots />, key: 'request' },
   { label: 'Feedback', icon: <FaCommentDots />, key: 'feedback' },
-  { label: 'Calendar', icon: <FaCalendarAlt />, key: 'calendar' },
+  { label: 'Information', icon: <FaInfoCircle />, key: 'information' },
 ];
 
 export default function Sidebar({ collapsed, onToggle, onNavigate, activeKey, user, onLogout }) {

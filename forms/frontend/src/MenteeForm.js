@@ -7,6 +7,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import MentorMatchesModal from './MentorMatchesModal.js';
 import AvailabilityForm from './AvailibilityForm.jsx';
+import GoogleOAuth from './GoogleOAuth';
 
 const industryOptions = [
   { value: 'Business', label: 'Business' },
@@ -483,6 +484,11 @@ function MenteeForm() {
       setPasswordError('Please select at least one available time slot.');
       return;
     }
+    // Validate that Google Calendar access has been granted
+    if (!form.hasCalendarAccess) {
+      setPasswordError('Please grant Google Calendar access to continue. This is required to ensure you receive calendar invitations for mentoring sessions.');
+      return;
+    }
     setPasswordError('');
     setLoading(true);
     
@@ -806,6 +812,26 @@ function MenteeForm() {
             </div>
           )}
           {passwordError && <div style={{color: 'red', marginBottom: 16}}>{passwordError}</div>}
+
+          {/* Google Calendar OAuth Integration */}
+          <div style={{marginTop: 24, marginBottom: 24}}>
+            <label>Google Calendar Access <span style={{color: 'red'}}>*</span></label>
+            <p style={{fontSize: '0.95rem', color: '#666', marginBottom: 16}}>
+              We need access to your Google Calendar to automatically add mentoring sessions when meetings are confirmed. This ensures you never miss a session.
+            </p>
+            <GoogleOAuth 
+              userId={form.email} // Use email as the identifier for OAuth
+              userEmail={form.email}
+              onAuthSuccess={(userId) => {
+                console.log('Mentee calendar access granted for user:', userId);
+                setForm(prev => ({ ...prev, hasCalendarAccess: true }));
+              }}
+              onAuthError={(error) => {
+                console.log('Mentee calendar access failed:', error);
+                setForm(prev => ({ ...prev, hasCalendarAccess: false }));
+              }}
+            />
+          </div>
 
           <button className="btn" type="submit" disabled={loading}>
             {loading ? 'Processing...' : 'Continue'}

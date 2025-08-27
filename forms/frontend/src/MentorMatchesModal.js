@@ -9,7 +9,12 @@ const MentorMatchesModal = ({ menteeData, onClose, onSubmit }) => {
   const [loading, setLoading] = useState(false);
   const [mentors, setMentors] = useState([]);
   const [loadingMentors, setLoadingMentors] = useState(true);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = now.getDate() - day;
+    return new Date(now.getFullYear(), now.getMonth(), diff);
+  });
 
   // Fetch mentors on component mount
   useEffect(() => {
@@ -99,41 +104,45 @@ const MentorMatchesModal = ({ menteeData, onClose, onSubmit }) => {
     return Math.round((score / total) * 100);
   };
 
-  // Calendar functions
-  const getDaysInMonth = (date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDay = firstDay.getDay();
-    
-    return { daysInMonth, startingDay };
+  // Calendar functions - Week view
+  const getCurrentWeekStart = (date) => {
+    const day = date.getDay();
+    const diff = date.getDate() - day;
+    return new Date(date.getFullYear(), date.getMonth(), diff);
   };
 
-  const getMonthName = (date) => {
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const getWeekDays = (weekStart) => {
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      days.push(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + i));
+    }
+    return days;
   };
 
-  const navigateMonth = (direction) => {
+  const getWeekDisplayName = (weekStart) => {
+    const weekEnd = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 6);
+    return `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  };
+
+  const navigateWeek = (direction) => {
     setCurrentMonth(prev => {
-      const newMonth = new Date(prev);
-      newMonth.setMonth(prev.getMonth() + direction);
+      const newWeek = new Date(prev);
+      newWeek.setDate(prev.getDate() + (direction * 7));
       
-      // Limit navigation to current month and next month only
+      // Limit navigation to current week and next week only
       const currentDate = new Date();
-      const currentMonthNum = currentDate.getMonth();
-      const currentYear = currentDate.getFullYear();
+      const currentWeekStart = getCurrentWeekStart(currentDate);
+      const nextWeekStart = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), currentWeekStart.getDate() + 7);
       
-      if (newMonth.getMonth() < currentMonthNum && newMonth.getFullYear() <= currentYear) {
-        return new Date(currentYear, currentMonthNum, 1);
+      if (newWeek < currentWeekStart) {
+        return currentWeekStart;
       }
       
-      if (newMonth.getMonth() > currentMonthNum + 1 && newMonth.getFullYear() >= currentYear) {
-        return new Date(currentYear, currentMonthNum + 1, 1);
+      if (newWeek >= nextWeekStart) {
+        return nextWeekStart;
       }
       
-      return newMonth;
+      return newWeek;
     });
   };
 
@@ -321,67 +330,64 @@ const MentorMatchesModal = ({ menteeData, onClose, onSubmit }) => {
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigateMonth(-1);
+                          navigateWeek(-1);
                         }}
                         disabled={(() => {
                           const currentDate = new Date();
-                          const currentMonthNum = currentDate.getMonth();
-                          const currentYear = currentDate.getFullYear();
-                          return currentMonth.getMonth() <= currentMonthNum && currentMonth.getFullYear() <= currentYear;
+                          const currentWeekStart = getCurrentWeekStart(currentDate);
+                          return currentMonth.getTime() <= currentWeekStart.getTime();
                         })()}
                         style={{
                           background: (() => {
                             const currentDate = new Date();
-                            const currentMonthNum = currentDate.getMonth();
-                            const currentYear = currentDate.getFullYear();
-                            return currentMonth.getMonth() <= currentMonthNum && currentMonth.getFullYear() <= currentYear ? '#ccc' : '#f0f0f0';
+                            const currentWeekStart = getCurrentWeekStart(currentDate);
+                            return currentMonth.getTime() <= currentWeekStart.getTime() ? '#ccc' : '#f0f0f0';
                           })(),
                           border: 'none',
                           padding: '8px 12px',
                           borderRadius: 4,
                           cursor: (() => {
                             const currentDate = new Date();
-                            const currentMonthNum = currentDate.getMonth();
-                            const currentYear = currentDate.getFullYear();
-                            return currentMonth.getMonth() <= currentMonthNum && currentMonth.getFullYear() <= currentYear ? 'not-allowed' : 'pointer';
+                            const currentWeekStart = getCurrentWeekStart(currentDate);
+                            return currentMonth.getTime() <= currentWeekStart.getTime() ? 'not-allowed' : 'pointer';
                           })()
                         }}
                       >
-                        ←
+                        ← Previous Week
                       </button>
                       <h5 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
-                        {getMonthName(currentMonth)}
+                        {getWeekDisplayName(currentMonth)}
                       </h5>
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigateMonth(1);
+                          navigateWeek(1);
                         }}
                         disabled={(() => {
                           const currentDate = new Date();
-                          const currentMonthNum = currentDate.getMonth();
-                          const currentYear = currentDate.getFullYear();
-                          return currentMonth.getMonth() >= currentMonthNum + 1 && currentMonth.getFullYear() >= currentYear;
+                          const currentWeekStart = getCurrentWeekStart(currentDate);
+                          const nextWeekStart = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), currentWeekStart.getDate() + 7);
+                          return currentMonth.getTime() >= nextWeekStart.getTime();
                         })()}
                         style={{
                           background: (() => {
                             const currentDate = new Date();
-                            const currentMonthNum = currentDate.getMonth();
-                            const currentYear = currentDate.getFullYear();
-                            return currentMonth.getMonth() >= currentMonthNum + 1 && currentMonth.getFullYear() >= currentYear ? '#ccc' : '#f0f0f0';
+                            const currentWeekStart = getCurrentWeekStart(currentDate);
+                            const nextWeekStart = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), currentWeekStart.getDate() + 7);
+                            return currentMonth.getTime() >= nextWeekStart.getTime() ? '#ccc' : '#f0f0f0';
                           })(),
                           border: 'none',
                           padding: '8px 12px',
                           borderRadius: 4,
                           cursor: (() => {
                             const currentDate = new Date();
-                            const currentMonthNum = currentDate.getMonth();
-                            const currentYear = currentDate.getFullYear();
-                            return currentMonth.getMonth() >= currentMonthNum + 1 && currentMonth.getFullYear() >= currentYear ? 'not-allowed' : 'pointer';
+                            const currentWeekStart = getCurrentWeekStart(currentDate);
+                            const nextWeekStart = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), currentWeekStart.getDate() + 7);
+                            return currentMonth.getTime() >= nextWeekStart.getTime() ? 'not-allowed' : 'pointer';
                           })()
                         }}
                       >
-                        →
+                        Next Week →
                       </button>
                     </div>
 
@@ -409,19 +415,12 @@ const MentorMatchesModal = ({ menteeData, onClose, onSubmit }) => {
                         </div>
                       ))}
                       
-                      {/* Calendar days */}
+                      {/* Calendar days - Week view */}
                       {(() => {
-                        const { daysInMonth, startingDay } = getDaysInMonth(currentMonth);
+                        const weekDays = getWeekDays(currentMonth);
                         const days = [];
                         
-                        // Add empty cells for days before the month starts
-                        for (let i = 0; i < startingDay; i++) {
-                          days.push(<div key={`empty-${i}`} style={{ padding: '8px 4px' }} />);
-                        }
-                        
-                        // Add days of the month
-                        for (let day = 1; day <= daysInMonth; day++) {
-                          const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+                        weekDays.forEach((date, index) => {
                           const currentDate = new Date();
                           const isAvailable = isDateAvailable(date);
                           const isToday = date.toDateString() === currentDate.toDateString();
@@ -430,15 +429,12 @@ const MentorMatchesModal = ({ menteeData, onClose, onSubmit }) => {
                           
                           days.push(
                             <div 
-                              key={day}
+                              key={index}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (isAvailable && !isPastDate) {
                                   setSelectedDate(date);
-                                  const times = getAvailableTimesForDate(date);
-                                  if (times.length > 0) {
-                                    setSelectedTime(times[0]);
-                                  }
+                                  setSelectedTime(''); // Clear previous time selection
                                 }
                               }}
                               style={{
@@ -453,30 +449,72 @@ const MentorMatchesModal = ({ menteeData, onClose, onSubmit }) => {
                                 fontWeight: isSelected ? 700 : isToday ? 600 : 400
                               }}
                             >
-                              {day}
+                              {date.getDate()}
                             </div>
                           );
-                        }
+                        });
                         
                         return days;
                       })()}
                     </div>
 
-                    {/* Selected date and time display */}
-                    {selectedDate && selectedTime && (
-                      <div style={{ 
-                        background: '#e8f5e8', 
-                        padding: '12px', 
-                        borderRadius: '6px', 
-                        border: '1px solid #4caf50',
-                        marginTop: '12px'
-                      }}>
-                        <strong>Selected Meeting:</strong> {selectedDate.toLocaleDateString('en-US', { 
-                          weekday: 'long', 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
-                        })} at {selectedTime}
+                    {/* Available times for selected date */}
+                    {selectedDate && (
+                      <div style={{ marginTop: '12px' }}>
+                        <h5 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, color: '#333' }}>
+                          Available Times for {selectedDate.toLocaleDateString('en-US', { 
+                            weekday: 'long', 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })}:
+                        </h5>
+                        <div style={{ 
+                          display: 'grid', 
+                          gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', 
+                          gap: '8px',
+                          marginBottom: '12px'
+                        }}>
+                          {getAvailableTimesForDate(selectedDate).map((time, index) => (
+                            <button
+                              key={index}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedTime(time);
+                              }}
+                              style={{
+                                background: selectedTime === time ? '#007CA6' : '#f0f0f0',
+                                color: selectedTime === time ? '#fff' : '#333',
+                                border: '1px solid #ddd',
+                                padding: '8px 12px',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                fontWeight: selectedTime === time ? 600 : 400,
+                                transition: 'all 0.2s'
+                              }}
+                            >
+                              {time}
+                            </button>
+                          ))}
+                        </div>
+                        
+                        {/* Selected meeting display */}
+                        {selectedTime && (
+                          <div style={{ 
+                            background: '#e8f5e8', 
+                            padding: '12px', 
+                            borderRadius: '6px', 
+                            border: '1px solid #4caf50'
+                          }}>
+                            <strong>Selected Meeting:</strong> {selectedDate.toLocaleDateString('en-US', { 
+                              weekday: 'long', 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric' 
+                            })} at {selectedTime}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
