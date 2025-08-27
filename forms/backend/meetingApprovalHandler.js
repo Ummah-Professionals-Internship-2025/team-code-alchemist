@@ -415,35 +415,21 @@ async function sendEmailJSV2(templateId, templateParams) {
   }
 
   console.log('Making EmailJS V2 API request...');
+  const resp = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
   
-  try {
-    const resp = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    
-    console.log('EmailJS V2 response status:', resp.status);
-    
-    if (!resp.ok) {
-      const txt = await resp.text();
-      console.error('EmailJS V2 error response:', txt);
-      
-      // Check if it's the "non-browser applications" error
-      if (txt.includes('non-browser applications') || txt.includes('403')) {
-        console.error('EmailJS V2 does not support server-side calls. This is expected behavior.');
-        console.error('Consider using a different email service like SendGrid, Nodemailer, or moving email sending to client-side.');
-        throw new Error('EmailJS V2 server-side calls are not supported. Use client-side email sending or switch to a server-side email service.');
-      }
-      
-      throw new Error(`EmailJS V2 request failed: ${resp.status} ${txt}`);
-    }
-    
-    console.log('EmailJS V2 request successful');
-  } catch (error) {
-    console.error('EmailJS V2 error:', error.message);
-    throw error;
+  console.log('EmailJS V2 response status:', resp.status);
+  
+  if (!resp.ok) {
+    const txt = await resp.text();
+    console.error('EmailJS V2 error response:', txt);
+    throw new Error(`EmailJS V2 request failed: ${resp.status} ${txt}`);
   }
+  
+  console.log('EmailJS V2 request successful');
 }
 
 // Handle mentee approval

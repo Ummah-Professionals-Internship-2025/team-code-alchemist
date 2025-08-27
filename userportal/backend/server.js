@@ -11,9 +11,6 @@ app.use(cors());
 
 // Email sending is now handled client-side using EmailJS V2
 
-// Import meeting status manager
-const { moveExpiredMeetings, getMeetingsWithStatus } = require('./meetingStatusManager');
-
 // Initialize Firebase Admin SDK using environment variables
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -33,6 +30,9 @@ if (!admin.apps.length) {
   });
 }
 const db = admin.firestore();
+
+// Import meeting status manager after Firebase is initialized
+const { moveExpiredMeetings, getMeetingsWithStatus } = require('./meetingStatusManager');
 
 // Accept JSON
 app.use(express.json());
