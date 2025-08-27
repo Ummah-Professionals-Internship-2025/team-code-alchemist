@@ -8,6 +8,8 @@ import './Sidebar.css';
 import Rescheduling, { getMeetingStatus } from './Rescheduling';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
+import { sendMeetingConfirmationEmails, sendNewTimeProposalEmails } from './emailService';
+import Information from './Information';
 
 const DEFAULT_AVATAR = "https://www.gravatar.com/avatar/?d=mp&f=y";
 
@@ -88,10 +90,18 @@ function Dashboard() {
       
       if (data.success) {
         if (data.movedToConfirmed) {
-          const emailMessage = data.emailStatus === 'sent' 
-            ? 'Confirmation emails have been sent to both mentor and mentee.'
-            : 'Meeting confirmed, but there was an issue sending confirmation emails.';
-          window.alert(`Meeting accepted! ${emailMessage}`);
+          // Send confirmation emails from client-side
+          try {
+            const emailResult = await sendMeetingConfirmationEmails(data.meetingData, data.meetLink);
+            if (emailResult.success) {
+              window.alert('Meeting accepted! Confirmation emails have been sent to both mentor and mentee.');
+            } else {
+              window.alert(`Meeting accepted! However, there was an issue sending confirmation emails: ${emailResult.error}`);
+            }
+          } catch (emailError) {
+            console.error('Email sending failed:', emailError);
+            window.alert('Meeting accepted! However, there was an issue sending confirmation emails.');
+          }
         } else {
           window.alert('Meeting accepted! Waiting for mentor approval.');
         }
@@ -105,6 +115,8 @@ function Dashboard() {
       window.alert('Failed to accept meeting. Please try again.');
     }
   };
+
+
 
   const proposeMeeting = (meeting) => {
     if (meeting && meeting.id) {
@@ -144,7 +156,20 @@ function Dashboard() {
         window.alert(`Could not schedule new time. ${data.error || 'Unknown error'}`);
         return;
       }
-      window.alert('New meeting scheduled.');
+      
+      // Send new time proposal emails from client-side
+      try {
+        const emailResult = await sendNewTimeProposalEmails(activeMeeting);
+        if (emailResult.success) {
+          window.alert('New meeting scheduled. Notification emails have been sent to both mentor and mentee.');
+        } else {
+          window.alert(`New meeting scheduled. However, there was an issue sending notification emails: ${emailResult.error}`);
+        }
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        window.alert('New meeting scheduled. However, there was an issue sending notification emails.');
+      }
+      
       setShowReschedule(false);
       setActiveMeeting(null);
       await fetchPendingMeetings();
@@ -359,8 +384,8 @@ function Dashboard() {
                          <div style={{ fontSize: 14, color: '#666', marginTop: 4 }}>
                            {mentorDetail?.bio || meeting.mentorBio}
                            {(mentorDetail?.bio || meeting.mentorBio)?.length > 100 && '...'}
-                         </div>
-                       </div>
+        </div>
+      </div>
                      )}
                   </div>
                 );
@@ -374,7 +399,449 @@ function Dashboard() {
 }
 
 function RequestMentor() {
-  return <div style={{ padding: 40, color: '#fff' }}><h2>Request a Mentor</h2><div>Feature coming soon.</div></div>;
+  const [currentMeetings, setCurrentMeetings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [menteeData, setMenteeData] = useState(null);
+  const [formData, setFormData] = useState({
+    major: '',
+    industry: [],
+    serviceLookingFor: '',
+    skillsToLearn: []
+  });
+  const [showMatches, setShowMatches] = useState(false);
+  const [mentorMatches, setMentorMatches] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Check for current meetings on component mount
+  useEffect(() => {
+    checkCurrentMeetings();
+  }, []);
+
+  const checkCurrentMeetings = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const response = await fetch(`http://localhost:3003/api/meetings/mentee/${user.uid}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        const current = data.meetings.filter(meeting => 
+          meeting.status === 'pending' || meeting.status === 'confirmed'
+        );
+        setCurrentMeetings(current);
+        
+        if (current.length > 0) {
+          setError('You have a current meeting. Please finish that one first before requesting a new mentor.');
+        } else {
+          // Load mentee data for pre-filling
+          await loadMenteeData();
+        }
+      }
+    } catch (error) {
+      console.error('Error checking current meetings:', error);
+      setError('Error checking current meetings. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadMenteeData = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const docRef = doc(db, 'mentees', user.uid);
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setMenteeData(data);
+        setFormData({
+          major: data.major || '',
+          industry: data.industry || [],
+          serviceLookingFor: data.serviceLookingFor || '',
+          skillsToLearn: data.skillsToLearn || []
+        });
+      }
+    } catch (error) {
+      console.error('Error loading mentee data:', error);
+    }
+  };
+
+  const handleStartQuestionnaire = () => {
+    setShowQuestionnaire(true);
+    setError('');
+  };
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      // Get all mentors
+      const mentorsResponse = await fetch('http://localhost:3001/api/mentors');
+      const mentorsData = await mentorsResponse.json();
+      
+      if (!mentorsData.success) {
+        throw new Error('Failed to fetch mentors');
+      }
+
+      // Calculate matches using the same logic as initial pairing
+      const { findTopMentors } = await import('./initialPairing.js');
+      
+      // Create mentee object for matching
+      const menteeForMatching = {
+        major: formData.major,
+        industry: formData.industry,
+        serviceLookingFor: formData.serviceLookingFor,
+        skillsToLearn: formData.skillsToLearn
+      };
+
+      // Get all matches with scores
+      const allMatches = mentorsData.mentors.map(mentor => {
+        const match = findTopMentors(menteeForMatching, [mentor], 1)[0];
+        return match;
+      }).filter(match => match && match.totalScore > 0);
+
+      // Sort by score (highest first)
+      allMatches.sort((a, b) => b.totalScore - a.totalScore);
+
+      // Apply score threshold
+      let threshold = 0.3; // 30%
+      if (allMatches.length > 8) {
+        threshold = 0.5; // 50%
+      }
+
+      const filteredMatches = allMatches.filter(match => 
+        match.totalScore / 100 > threshold // Convert to percentage
+      );
+
+      setMentorMatches(filteredMatches);
+      setShowMatches(true);
+      setShowQuestionnaire(false);
+
+    } catch (error) {
+      console.error('Error submitting questionnaire:', error);
+      setError('Error processing your request. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ padding: 40, color: '#00212C', background: '#f5f7fa', minHeight: '100vh' }}>
+        <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 24 }}>Request a Mentor</h2>
+        <div style={{ color: '#666', fontSize: 16 }}>Loading...</div>
+      </div>
+    );
+  }
+
+  if (error && !showQuestionnaire) {
+    return (
+      <div style={{ padding: 40, color: '#00212C', background: '#f5f7fa', minHeight: '100vh' }}>
+        <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 24 }}>Request a Mentor</h2>
+        <div style={{ 
+          background: 'white', 
+          borderRadius: 12, 
+          padding: 24, 
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          marginBottom: 32 
+        }}>
+          <div style={{ color: '#d32f2f', fontSize: 16, marginBottom: 16 }}>
+            {error}
+          </div>
+          <button 
+            onClick={() => window.location.reload()}
+            style={{
+              padding: '12px 24px',
+              borderRadius: 8,
+              background: '#007CA6',
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: 16,
+              fontWeight: 600
+            }}
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (showMatches) {
+    return (
+      <div style={{ padding: 40, color: '#00212C', background: '#f5f7fa', minHeight: '100vh' }}>
+        <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 24 }}>Mentor Matches</h2>
+        <div style={{ 
+          background: 'white', 
+          borderRadius: 12, 
+          padding: 24, 
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          marginBottom: 32 
+        }}>
+          {mentorMatches.length > 0 ? (
+            <div>
+              <h3 style={{ color: '#007CA6', fontWeight: 700, fontSize: 20, marginBottom: 16 }}>
+                Found {mentorMatches.length} matching mentors
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {mentorMatches.map((match, index) => (
+                  <div key={match.mentor.id} style={{ 
+                    border: '1px solid #e0e0e0', 
+                    borderRadius: 8, 
+                    padding: 16, 
+                    background: '#f9f9f9'
+                  }}>
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: '#007CA6' }}>Name:</strong> {match.mentor.name}
+                    </div>
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: '#007CA6' }}>Experience:</strong> {match.mentor.yearsOfExperience} years
+                    </div>
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: '#007CA6' }}>Major:</strong> {match.mentor.major}
+                    </div>
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: '#007CA6' }}>Industry:</strong> {match.mentor.industry}
+                    </div>
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: '#007CA6' }}>Skills:</strong> {Array.isArray(match.mentor.skills) ? match.mentor.skills.join(', ') : match.mentor.skills}
+                    </div>
+                    <div style={{ marginBottom: 8 }}>
+                      <strong style={{ color: '#007CA6' }}>Help In:</strong> {match.mentor.helpIn}
+                    </div>
+                    <div style={{ 
+                      color: '#4caf50', 
+                      fontWeight: 600, 
+                      fontSize: 14 
+                    }}>
+                      Match Score: {Math.round(match.totalScore)}%
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div style={{ color: '#666', fontSize: 16 }}>
+              No mentors found matching your criteria. Please try adjusting your preferences.
+            </div>
+          )}
+          <button 
+            onClick={() => {
+              setShowMatches(false);
+              setShowQuestionnaire(false);
+              setError('');
+            }}
+            style={{
+              marginTop: 16,
+              padding: '12px 24px',
+              borderRadius: 8,
+              background: '#007CA6',
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: 16,
+              fontWeight: 600
+            }}
+          >
+            Start Over
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (showQuestionnaire) {
+    return (
+      <div style={{ padding: 40, color: '#00212C', background: '#f5f7fa', minHeight: '100vh' }}>
+        <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 24 }}>Mentor Request Questionnaire</h2>
+        <div style={{ 
+          background: 'white', 
+          borderRadius: 12, 
+          padding: 24, 
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          marginBottom: 32 
+        }}>
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#007CA6' }}>
+              Major *
+            </label>
+            <select
+              value={formData.major}
+              onChange={(e) => setFormData({...formData, major: e.target.value})}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: 8,
+                border: '1px solid #ddd',
+                fontSize: 16
+              }}
+            >
+              <option value="">Select your major</option>
+              <option value="Computer Science">Computer Science</option>
+              <option value="Engineering">Engineering</option>
+              <option value="Business">Business</option>
+              <option value="Mathematics">Mathematics</option>
+              <option value="Physics">Physics</option>
+              <option value="Chemistry">Chemistry</option>
+              <option value="Biology">Biology</option>
+              <option value="Psychology">Psychology</option>
+              <option value="Economics">Economics</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#007CA6' }}>
+              Industry *
+            </label>
+            <select
+              value={formData.industry}
+              onChange={(e) => setFormData({...formData, industry: [e.target.value]})}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: 8,
+                border: '1px solid #ddd',
+                fontSize: 16
+              }}
+            >
+              <option value="">Select your industry</option>
+              <option value="Information Technology">Information Technology</option>
+              <option value="Finance">Finance</option>
+              <option value="Healthcare">Healthcare</option>
+              <option value="Education">Education</option>
+              <option value="Engineering">Engineering</option>
+              <option value="Business">Business</option>
+              <option value="Science">Science</option>
+              <option value="Arts">Arts</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#007CA6' }}>
+              Help Wanted *
+            </label>
+            <input
+              type="text"
+              value={formData.serviceLookingFor}
+              onChange={(e) => setFormData({...formData, serviceLookingFor: e.target.value})}
+              placeholder="e.g., Career guidance, Technical skills, Interview prep"
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: 8,
+                border: '1px solid #ddd',
+                fontSize: 16
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#007CA6' }}>
+              Skills Looking For *
+            </label>
+            <input
+              type="text"
+              value={formData.skillsToLearn}
+              onChange={(e) => setFormData({...formData, skillsToLearn: [e.target.value]})}
+              placeholder="e.g., Python, Leadership, Data Analysis"
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: 8,
+                border: '1px solid #ddd',
+                fontSize: 16
+              }}
+            />
+          </div>
+
+          {error && (
+            <div style={{ color: '#d32f2f', fontSize: 14, marginBottom: 16 }}>
+              {error}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button 
+              onClick={handleSubmit}
+              disabled={submitting || !formData.major || !formData.industry || !formData.serviceLookingFor || !formData.skillsToLearn}
+              style={{
+                padding: '12px 24px',
+                borderRadius: 8,
+                background: submitting ? '#ccc' : '#007CA6',
+                color: 'white',
+                border: 'none',
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                fontSize: 16,
+                fontWeight: 600
+              }}
+            >
+              {submitting ? 'Finding Matches...' : 'Find Mentors'}
+            </button>
+            <button 
+              onClick={() => {
+                setShowQuestionnaire(false);
+                setError('');
+              }}
+              style={{
+                padding: '12px 24px',
+                borderRadius: 8,
+                background: '#666',
+                color: 'white',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 16,
+                fontWeight: 600
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: 40, color: '#00212C', background: '#f5f7fa', minHeight: '100vh' }}>
+      <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 24 }}>Request a Mentor</h2>
+      <div style={{ 
+        background: 'white', 
+        borderRadius: 12, 
+        padding: 24, 
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        marginBottom: 32 
+      }}>
+        <p style={{ fontSize: 16, color: '#666', marginBottom: 20 }}>
+          Ready to find your next mentor? Let's get started with a quick questionnaire to find the best matches for you.
+        </p>
+        <button 
+          onClick={handleStartQuestionnaire}
+          style={{
+            padding: '12px 24px',
+            borderRadius: 8,
+            background: '#007CA6',
+            color: 'white',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: 16,
+            fontWeight: 600
+          }}
+        >
+          Start Questionnaire
+        </button>
+      </div>
+    </div>
+  );
 }
 function Feedback() {
   return <div style={{ padding: 40, color: '#fff' }}><h2>Feedback</h2><div>Feature coming soon.</div></div>;
@@ -465,7 +932,7 @@ function App() {
   else if (activePage === 'dashboard') mainContent = <Dashboard />;
   else if (activePage === 'request') mainContent = <RequestMentor />;
   else if (activePage === 'feedback') mainContent = <Feedback />;
-  else if (activePage === 'information') mainContent = <Dashboard />; // Information is now part of the dashboard
+  else if (activePage === 'information') mainContent = <Information />;
   else mainContent = <Dashboard />;
 
   return (

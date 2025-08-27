@@ -767,11 +767,20 @@ async function sendEmailJSV2(templateId, templateParams) {
 
 // Generate a Google Meet link using Google Calendar API with OAuth
 async function generateGoogleMeetLink(meetingData) {
+  console.log('generateGoogleMeetLink called with:', meetingData);
+  console.log('Meeting data keys:', Object.keys(meetingData));
+  console.log('Mentor ID:', meetingData.mentorId);
+  console.log('Mentor Email:', meetingData.mentorEmail);
+  console.log('Mentee ID:', meetingData.menteeId);
+  console.log('Mentee Email:', meetingData.menteeEmail);
+  console.log('Meeting Date:', meetingData.meetingDate);
+  console.log('Meeting Time:', meetingData.meetingTime);
+  
   try {
     let meetLink = null;
     let eventId = null;
 
-    // Try to create event in mentor's calendar first
+    // First try to create event in mentor's calendar with Meet link (mentor as host)
     try {
       const mentorToken = await getOAuthToken(meetingData.mentorId);
       
@@ -789,40 +798,153 @@ async function generateGoogleMeetLink(meetingData) {
 
       const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
       
-      // Create event in mentor's calendar
-      const event = await createCalendarEvent(calendar, meetingData);
+      // Create event in mentor's calendar with Meet link
+      const event = await createCalendarEvent(calendar, meetingData, true);
       meetLink = event.hangoutLink;
       eventId = event.id;
       
-      console.log('Event created in mentor calendar:', eventId);
+      console.log('Event created in mentor calendar with Meet link:', eventId);
     } catch (mentorError) {
       console.error('Failed to create event in mentor calendar:', mentorError);
+      
+      // Try by email if ID failed
+      try {
+        const mentorToken = await getOAuthToken(meetingData.mentorEmail);
+        
+        // Check if token is expired and refresh if needed
+        const now = Date.now();
+        if (mentorToken.expiry_date && now > mentorToken.expiry_date) {
+          await refreshOAuthToken(meetingData.mentorEmail, mentorToken.refresh_token);
+        }
+
+        // Set OAuth credentials for mentor
+        oauth2Client.setCredentials({
+          access_token: mentorToken.access_token,
+          refresh_token: mentorToken.refresh_token
+        });
+
+        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+        
+        // Create event in mentor's calendar with Meet link
+        const event = await createCalendarEvent(calendar, meetingData, true);
+        meetLink = event.hangoutLink;
+        eventId = event.id;
+        
+        console.log('Event created in mentor calendar with Meet link (by email):', eventId);
+      } catch (emailError) {
+        console.error('Failed to create event in mentor calendar by email:', emailError);
+      }
     }
 
-    // Try to create event in mentee's calendar if they have OAuth token
-    try {
-      const menteeToken = await getOAuthToken(meetingData.menteeId);
-      
-      // Check if token is expired and refresh if needed
-      const now = Date.now();
-      if (menteeToken.expiry_date && now > menteeToken.expiry_date) {
-        await refreshOAuthToken(meetingData.menteeId, menteeToken.refresh_token);
+    // If mentor OAuth failed, try mentee's OAuth as fallback
+    if (!meetLink) {
+      try {
+        const menteeToken = await getOAuthToken(meetingData.menteeId);
+        
+        // Check if token is expired and refresh if needed
+        const now = Date.now();
+        if (menteeToken.expiry_date && now > menteeToken.expiry_date) {
+          await refreshOAuthToken(meetingData.menteeId, menteeToken.refresh_token);
+        }
+
+        // Set OAuth credentials for mentee
+        oauth2Client.setCredentials({
+          access_token: menteeToken.access_token,
+          refresh_token: menteeToken.refresh_token
+        });
+
+        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+        
+        // Create event in mentee's calendar with Meet link (fallback)
+        const menteeEvent = await createCalendarEvent(calendar, meetingData, true);
+        meetLink = menteeEvent.hangoutLink;
+        
+        console.log('Event created in mentee calendar with Meet link (fallback):', menteeEvent.id);
+      } catch (menteeError) {
+        console.error('Failed to create event in mentee calendar:', menteeError);
+        
+        // Try by email if ID failed
+        try {
+          const menteeToken = await getOAuthToken(meetingData.menteeEmail);
+          
+          // Check if token is expired and refresh if needed
+          const now = Date.now();
+          if (menteeToken.expiry_date && now > menteeToken.expiry_date) {
+            await refreshOAuthToken(meetingData.menteeEmail, menteeToken.refresh_token);
+          }
+
+          // Set OAuth credentials for mentee
+          oauth2Client.setCredentials({
+            access_token: menteeToken.access_token,
+            refresh_token: menteeToken.refresh_token
+          });
+
+          const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+          
+          // Create event in mentee's calendar with Meet link (fallback)
+          const menteeEvent = await createCalendarEvent(calendar, meetingData, true);
+          meetLink = menteeEvent.hangoutLink;
+          
+          console.log('Event created in mentee calendar with Meet link (fallback by email):', menteeEvent.id);
+        } catch (emailError) {
+          console.error('Failed to create event in mentee calendar by email:', emailError);
+        }
       }
+    }
 
-      // Set OAuth credentials for mentee
-      oauth2Client.setCredentials({
-        access_token: menteeToken.access_token,
-        refresh_token: menteeToken.refresh_token
-      });
+    // If we got a meet link, also try to create calendar events for both parties
+    if (meetLink) {
+      // Try to create calendar event for mentee (without Meet link to avoid conflicts)
+      try {
+        const menteeToken = await getOAuthToken(meetingData.menteeId);
+        
+        // Check if token is expired and refresh if needed
+        const now = Date.now();
+        if (menteeToken.expiry_date && now > menteeToken.expiry_date) {
+          await refreshOAuthToken(meetingData.menteeId, menteeToken.refresh_token);
+        }
 
-      const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-      
-      // Create event in mentee's calendar (without Meet link to avoid conflicts)
-      const menteeEvent = await createCalendarEvent(calendar, meetingData, false);
-      
-      console.log('Event created in mentee calendar:', menteeEvent.id);
-    } catch (menteeError) {
-      console.error('Failed to create event in mentee calendar:', menteeError);
+        // Set OAuth credentials for mentee
+        oauth2Client.setCredentials({
+          access_token: menteeToken.access_token,
+          refresh_token: menteeToken.refresh_token
+        });
+
+        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+        
+        // Create event in mentee's calendar (without Meet link to avoid conflicts)
+        const menteeEvent = await createCalendarEvent(calendar, meetingData, false);
+        
+        console.log('Calendar event created for mentee:', menteeEvent.id);
+      } catch (menteeError) {
+        console.error('Failed to create calendar event for mentee:', menteeError);
+        
+        // Try by email
+        try {
+          const menteeToken = await getOAuthToken(meetingData.menteeEmail);
+          
+          // Check if token is expired and refresh if needed
+          const now = Date.now();
+          if (menteeToken.expiry_date && now > menteeToken.expiry_date) {
+            await refreshOAuthToken(meetingData.menteeEmail, menteeToken.refresh_token);
+          }
+
+          // Set OAuth credentials for mentee
+          oauth2Client.setCredentials({
+            access_token: menteeToken.access_token,
+            refresh_token: menteeToken.refresh_token
+          });
+
+          const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+          
+          // Create event in mentee's calendar (without Meet link to avoid conflicts)
+          const menteeEvent = await createCalendarEvent(calendar, meetingData, false);
+          
+          console.log('Calendar event created for mentee (by email):', menteeEvent.id);
+        } catch (emailError) {
+          console.error('Failed to create calendar event for mentee by email:', emailError);
+        }
+      }
     }
 
     // Return Meet link from mentor's calendar, or fallback
@@ -843,8 +965,8 @@ async function generateGoogleMeetLink(meetingData) {
 
 // Helper function to create calendar event
 async function createCalendarEvent(calendar, meetingData, includeMeetLink = true) {
-  // Parse meeting date and time
-  const meetingDate = new Date(meetingData.meetingDate);
+    // Parse meeting date and time
+    const meetingDate = new Date(meetingData.meetingDate);
   
   // Safety check for meeting time
   if (!meetingData.meetingTime) {
@@ -902,9 +1024,9 @@ async function createCalendarEvent(calendar, meetingData, includeMeetLink = true
     
     return { hour, minute };
   }
-  
-  // Create start and end times
-  const startDateTime = new Date(meetingDate);
+    
+    // Create start and end times
+    const startDateTime = new Date(meetingDate);
   const startTime24 = parseTimeTo24Hour(startTime);
   startDateTime.setHours(startTime24.hour, startTime24.minute, 0, 0);
   
@@ -918,38 +1040,38 @@ async function createCalendarEvent(calendar, meetingData, includeMeetLink = true
   }
 
   // Create calendar event
-  const event = {
-    summary: `Mentoring Session: ${meetingData.menteeName} & ${meetingData.mentorName}`,
-    description: `Mentoring session between ${meetingData.menteeName} and ${meetingData.mentorName}`,
-    start: {
-      dateTime: startDateTime.toISOString(),
-      timeZone: 'UTC',
-    },
-    end: {
-      dateTime: endDateTime.toISOString(),
-      timeZone: 'UTC',
-    },
-    attendees: [
-      { email: meetingData.menteeEmail },
-      { email: meetingData.mentorEmail },
-    ],
+    const event = {
+      summary: `Mentoring Session: ${meetingData.menteeName} & ${meetingData.mentorName}`,
+      description: `Mentoring session between ${meetingData.menteeName} and ${meetingData.mentorName}`,
+      start: {
+        dateTime: startDateTime.toISOString(),
+        timeZone: 'UTC',
+      },
+      end: {
+        dateTime: endDateTime.toISOString(),
+        timeZone: 'UTC',
+      },
+      attendees: [
+        { email: meetingData.menteeEmail },
+        { email: meetingData.mentorEmail },
+      ],
   };
 
   // Only add Meet link to the primary event (mentor's calendar)
   if (includeMeetLink) {
     event.conferenceData = {
-      createRequest: {
-        requestId: `meeting-${Date.now()}`,
-        conferenceSolutionKey: {
-          type: 'hangoutsMeet',
+        createRequest: {
+          requestId: `meeting-${Date.now()}`,
+          conferenceSolutionKey: {
+            type: 'hangoutsMeet',
         },
       },
     };
   }
 
-  const response = await calendar.events.insert({
-    calendarId: 'primary',
-    resource: event,
+    const response = await calendar.events.insert({
+      calendarId: 'primary',
+      resource: event,
     conferenceDataVersion: includeMeetLink ? 1 : 0,
   });
 

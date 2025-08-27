@@ -9,79 +9,10 @@ const fetch = require('node-fetch');
 const app = express();
 app.use(cors());
 
-// ---------------- EmailJS V2 (server-side) -----------------
-async function sendEmailJSV2(templateId, templateParams) {
-  console.log('sendEmailJSV2 called with:', { templateId, templateParams });
-  
-  const payload = {
-    service_id: process.env.EMAILJSV2_SERVICE_ID,
-    template_id: templateId,
-    user_id: process.env.EMAILJSV2_PUBLIC_KEY, // public key
-    accessToken: process.env.EMAILJSV2_PRIVATE_KEY, // private key
-    template_params: templateParams
-  };
+// Email sending is now handled client-side using EmailJS V2
 
-  console.log('EmailJS V2 payload:', payload);
-
-  if (!payload.service_id || !payload.template_id || !payload.user_id || !payload.accessToken) {
-    console.error('Missing EmailJS V2 env configuration:', {
-      service_id: !!payload.service_id,
-      template_id: !!payload.template_id,
-      user_id: !!payload.user_id,
-      accessToken: !!payload.accessToken
-    });
-    throw new Error('Missing EmailJS V2 env configuration');
-  }
-
-  console.log('Making EmailJS V2 API request...');
-  const resp = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  
-  console.log('EmailJS V2 response status:', resp.status);
-  
-  if (!resp.ok) {
-    const txt = await resp.text();
-    console.error('EmailJS V2 error response:', txt);
-    throw new Error(`EmailJS V2 request failed: ${resp.status} ${txt}`);
-  }
-  
-  console.log('EmailJS V2 request successful');
-}
-
-// Send confirmation emails with Google Meet link
-async function sendConfirmedMeetingEmails(meetingData, meetLink) {
-  console.log('sendConfirmedMeetingEmails called with:', { meetingData, meetLink });
-  
-  const common = {
-    meeting_date: meetingData.meetingDate,
-    meeting_time: meetingData.meetingTime,
-    meet_link: meetLink,
-    mentor_name: meetingData.mentorName,
-    mentee_name: meetingData.menteeName
-  };
-  
-  console.log('Common template params:', common);
-  console.log('Template ID:', process.env.EMAILJSV2_TEMPLATE_MEETING_CONFIRMED);
-  
-  // Send email to mentee
-  console.log('Sending email to mentee:', meetingData.menteeEmail);
-  await sendEmailJSV2(process.env.EMAILJSV2_TEMPLATE_MEETING_CONFIRMED, {
-    to_email: meetingData.menteeEmail,
-    to_name: meetingData.menteeName,
-    ...common
-  });
-  
-  // Send email to mentor
-  console.log('Sending email to mentor:', meetingData.mentorEmail);
-  await sendEmailJSV2(process.env.EMAILJSV2_TEMPLATE_MEETING_CONFIRMED, {
-    to_email: meetingData.mentorEmail,
-    to_name: meetingData.mentorName,
-    ...common
-  });
-}
+// Import meeting status manager
+const { moveExpiredMeetings, getMeetingsWithStatus } = require('./meetingStatusManager');
 
 // Initialize Firebase Admin SDK using environment variables
 if (!admin.apps.length) {
@@ -210,50 +141,22 @@ app.get('/api/mentors/:id', async (req, res) => {
   }
 });
 
-// Get all meetings (pending and confirmed) for a mentee
+// Get all meetings (pending, confirmed, and done) for a mentee
 app.get('/api/meetings/mentee/:menteeId', async (req, res) => {
   try {
     const { menteeId } = req.params;
-    const meetings = [];
     
-    // Fetch pending meetings
-    const pendingSnapshot = await db.collection('pendingMeetings')
-      .where('menteeId', '==', menteeId)
-      .get();
+    // First, move any expired meetings
+    await moveExpiredMeetings();
     
-    pendingSnapshot.forEach(doc => {
-      meetings.push({ 
-        id: doc.id, 
-        ...doc.data(), 
-        status: 'pending',
-        collection: 'pendingMeetings'
-      });
-    });
+    // Then get all meetings with updated status
+    const result = await getMeetingsWithStatus(menteeId);
     
-    // Fetch confirmed meetings
-    const confirmedSnapshot = await db.collection('confirmedMeeting')
-      .where('menteeId', '==', menteeId)
-      .get();
-    
-    confirmedSnapshot.forEach(doc => {
-      meetings.push({ 
-        id: doc.id, 
-        ...doc.data(), 
-        status: 'confirmed',
-        collection: 'confirmedMeeting'
-      });
-    });
-    
-    // Sort all meetings by date (newest first)
-    meetings.sort((a, b) => {
-      const dateA = a.confirmedAt ? new Date(a.confirmedAt.seconds * 1000) : 
-                   a.createdAt ? new Date(a.createdAt.seconds * 1000) : new Date(0);
-      const dateB = b.confirmedAt ? new Date(b.confirmedAt.seconds * 1000) : 
-                   b.createdAt ? new Date(b.createdAt.seconds * 1000) : new Date(0);
-      return dateB - dateA; // Most recent first
-    });
-    
-    res.json({ success: true, meetings });
+    if (result.success) {
+      res.json({ success: true, meetings: result.meetings });
+    } else {
+      res.status(500).json({ error: result.error });
+    }
   } catch (err) {
     console.error('Get meetings API Error:', err);
     res.status(500).json({ error: err.message });
@@ -337,27 +240,16 @@ app.post('/api/meetings/:id/accept', async (req, res) => {
         meetLink: meetLink
       });
       
-      // Send confirmation emails with meet link
-      let emailStatus = 'sent';
-      try {
-        console.log('Attempting to send confirmation emails...');
-        console.log('Meeting data:', updatedMeeting);
-        console.log('Meet link:', meetLink);
-        await sendConfirmedMeetingEmails(updatedMeeting, meetLink);
-        console.log('Confirmation emails sent with meet link for meeting:', id);
-      } catch (e) {
-        console.error('Failed to send confirmation emails:', e.message);
-        console.error('Full error:', e);
-        emailStatus = 'failed';
-      }
+             // Email sending is now handled client-side
+       console.log('Meeting confirmed with meet link:', meetLink);
       
       await meetingRef.delete();
-      return res.json({ 
-        success: true, 
-        movedToConfirmed: true, 
-        meetLink: meetLink,
-        emailStatus: emailStatus
-      });
+             return res.json({ 
+         success: true, 
+         movedToConfirmed: true, 
+         meetLink: meetLink,
+         meetingData: updatedMeeting
+       });
     }
 
     return res.json({ success: true, movedToConfirmed: false });
@@ -424,13 +316,8 @@ app.post('/api/meetings/:id/mentor-approve', async (req, res) => {
         meetLink: meetLink
       });
       
-      // Send confirmation emails with meet link
-      try {
-        await sendConfirmedMeetingEmails(updatedMeeting, meetLink);
-        console.log('Confirmation emails sent with meet link for meeting:', id);
-      } catch (e) {
-        console.warn('Failed to send confirmation emails:', e.message);
-      }
+             // Email sending is now handled client-side
+       console.log('Meeting confirmed with meet link:', meetLink);
       
       await meetingRef.delete();
       return res.json({ success: true, movedToConfirmed: true, meetLink: meetLink });
@@ -655,9 +542,9 @@ async function createCalendarEvent(userId, meetingData, includeMeetLink = false)
           requestId: `meeting-${Date.now()}`,
           conferenceSolutionKey: {
             type: 'hangoutsMeet',
-          },
         },
-      };
+      },
+    };
     }
 
     console.log(`Creating calendar event for ${userId}:`, event);
@@ -685,33 +572,89 @@ async function createCalendarEvent(userId, meetingData, includeMeetLink = false)
 async function generateGoogleMeetLink(meetingData) {
   console.log('generateGoogleMeetLink called with:', meetingData);
   console.log('Meeting data keys:', Object.keys(meetingData));
+  console.log('Mentor ID:', meetingData.mentorId);
+  console.log('Mentor Email:', meetingData.mentorEmail);
   console.log('Mentee ID:', meetingData.menteeId);
   console.log('Mentee Email:', meetingData.menteeEmail);
   console.log('Meeting Date:', meetingData.meetingDate);
   console.log('Meeting Time:', meetingData.meetingTime);
   
   try {
-    // Only use mentee's OAuth token to create calendar event with Meet link
+    let meetLink = null;
+    
+    // First try to create event in mentor's calendar with Meet link (mentor as host)
     try {
-      console.log('Creating event in mentee calendar with Meet link...');
-      const menteeResult = await createCalendarEvent(meetingData.menteeId, meetingData, true);
-      console.log('Meet link from mentee calendar:', menteeResult.meetLink);
-      return menteeResult.meetLink;
-    } catch (menteeError) {
-      console.error('Failed to create event in mentee calendar by ID:', menteeError);
-      console.error('Error details:', menteeError.message);
+      console.log('Creating event in mentor calendar with Meet link...');
+      const mentorResult = await createCalendarEvent(meetingData.mentorId, meetingData, true);
+      console.log('Meet link from mentor calendar:', mentorResult.meetLink);
+      meetLink = mentorResult.meetLink;
+    } catch (mentorError) {
+      console.error('Failed to create event in mentor calendar by ID:', mentorError);
+      console.error('Error details:', mentorError.message);
       
       // Try by email if ID failed
       try {
-        console.log('Trying mentee by email...');
-        const menteeResult = await createCalendarEvent(meetingData.menteeEmail, meetingData, true);
-        console.log('Meet link from mentee calendar (by email):', menteeResult.meetLink);
-        return menteeResult.meetLink;
+        console.log('Trying mentor by email...');
+        const mentorResult = await createCalendarEvent(meetingData.mentorEmail, meetingData, true);
+        console.log('Meet link from mentor calendar (by email):', mentorResult.meetLink);
+        meetLink = mentorResult.meetLink;
       } catch (emailError) {
-        console.error('Failed to create event in mentee calendar by email:', emailError);
+        console.error('Failed to create event in mentor calendar by email:', emailError);
         console.error('Email error details:', emailError.message);
-        throw emailError;
       }
+    }
+    
+    // If mentor OAuth failed, try mentee's OAuth as fallback
+    if (!meetLink) {
+      try {
+        console.log('Creating event in mentee calendar with Meet link (fallback)...');
+        const menteeResult = await createCalendarEvent(meetingData.menteeId, meetingData, true);
+        console.log('Meet link from mentee calendar:', menteeResult.meetLink);
+        meetLink = menteeResult.meetLink;
+      } catch (menteeError) {
+        console.error('Failed to create event in mentee calendar by ID:', menteeError);
+        console.error('Error details:', menteeError.message);
+        
+        // Try by email if ID failed
+        try {
+          console.log('Trying mentee by email...');
+          const menteeResult = await createCalendarEvent(meetingData.menteeEmail, meetingData, true);
+          console.log('Meet link from mentee calendar (by email):', menteeResult.meetLink);
+          meetLink = menteeResult.meetLink;
+        } catch (emailError) {
+          console.error('Failed to create event in mentee calendar by email:', emailError);
+          console.error('Email error details:', emailError.message);
+        }
+      }
+    }
+    
+    // If we got a meet link, also try to create calendar events for both parties
+    if (meetLink) {
+      // Try to create calendar event for mentee (without Meet link to avoid conflicts)
+      try {
+        console.log('Creating calendar event for mentee...');
+        await createCalendarEvent(meetingData.menteeId, meetingData, false);
+        console.log('Calendar event created for mentee');
+      } catch (menteeError) {
+        console.error('Failed to create calendar event for mentee:', menteeError);
+        // Try by email
+        try {
+          await createCalendarEvent(meetingData.menteeEmail, meetingData, false);
+          console.log('Calendar event created for mentee (by email)');
+        } catch (emailError) {
+          console.error('Failed to create calendar event for mentee by email:', emailError);
+        }
+      }
+    }
+    
+    if (meetLink) {
+      return meetLink;
+    } else {
+      // Fallback to simple link generation if OAuth fails
+      const meetingId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const fallbackLink = `https://meet.google.com/${meetingId}`;
+      console.log('Using fallback meet link:', fallbackLink);
+      return fallbackLink;
     }
   } catch (error) {
     console.error('Error creating Google Calendar event:', error);
@@ -738,5 +681,50 @@ async function sendConfirmedMeetingEmails(meetingData, meetLink) {
   // TODO: Implement actual email sending with your preferred service
   // You can use EmailJS, SendGrid, or any other email service
 }
+
+// Get only past meetings from endMeeting collection
+app.get('/api/meetings/mentee/:menteeId/past', async (req, res) => {
+  try {
+    const { menteeId } = req.params;
+    
+    // Get completed meetings from endMeeting collection
+    const endMeetingsSnapshot = await db.collection('endMeeting')
+      .where('menteeId', '==', menteeId)
+      .get();
+    
+    const meetings = [];
+    endMeetingsSnapshot.forEach(doc => {
+      meetings.push({ 
+        id: doc.id, 
+        ...doc.data(), 
+        status: 'done',
+        collection: 'endMeeting'
+      });
+    });
+    
+    // Sort by completion date (newest first)
+    meetings.sort((a, b) => {
+      const dateA = a.completedAt ? new Date(a.completedAt.seconds * 1000) : new Date(0);
+      const dateB = b.completedAt ? new Date(b.completedAt.seconds * 1000) : new Date(0);
+      return dateB - dateA; // Most recent first
+    });
+    
+    res.json({ success: true, meetings });
+  } catch (err) {
+    console.error('Get past meetings API Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Manual endpoint to move expired meetings (for testing)
+app.post('/api/meetings/move-expired', async (req, res) => {
+  try {
+    const result = await moveExpiredMeetings();
+    res.json(result);
+  } catch (err) {
+    console.error('Move expired meetings API Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.listen(3003, () => console.log('Userportal backend server running on port 3003')); 

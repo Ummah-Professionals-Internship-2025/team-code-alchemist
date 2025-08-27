@@ -263,33 +263,89 @@ async function createCalendarEvent(userId, meetingData, includeMeetLink = false)
 async function generateGoogleMeetLink(meetingData) {
   console.log('generateGoogleMeetLink called with:', meetingData);
   console.log('Meeting data keys:', Object.keys(meetingData));
+  console.log('Mentor ID:', meetingData.mentorId);
+  console.log('Mentor Email:', meetingData.mentorEmail);
   console.log('Mentee ID:', meetingData.menteeId);
   console.log('Mentee Email:', meetingData.menteeEmail);
   console.log('Meeting Date:', meetingData.meetingDate);
   console.log('Meeting Time:', meetingData.meetingTime);
   
   try {
-    // Only use mentee's OAuth token to create calendar event with Meet link
+    let meetLink = null;
+    
+    // First try to create event in mentor's calendar with Meet link (mentor as host)
     try {
-      console.log('Creating event in mentee calendar with Meet link...');
-      const menteeResult = await createCalendarEvent(meetingData.menteeId, meetingData, true);
-      console.log('Meet link from mentee calendar:', menteeResult.meetLink);
-      return menteeResult.meetLink;
-    } catch (menteeError) {
-      console.error('Failed to create event in mentee calendar by ID:', menteeError);
-      console.error('Error details:', menteeError.message);
+      console.log('Creating event in mentor calendar with Meet link...');
+      const mentorResult = await createCalendarEvent(meetingData.mentorId, meetingData, true);
+      console.log('Meet link from mentor calendar:', mentorResult.meetLink);
+      meetLink = mentorResult.meetLink;
+    } catch (mentorError) {
+      console.error('Failed to create event in mentor calendar by ID:', mentorError);
+      console.error('Error details:', mentorError.message);
       
       // Try by email if ID failed
       try {
-        console.log('Trying mentee by email...');
-        const menteeResult = await createCalendarEvent(meetingData.menteeEmail, meetingData, true);
-        console.log('Meet link from mentee calendar (by email):', menteeResult.meetLink);
-        return menteeResult.meetLink;
+        console.log('Trying mentor by email...');
+        const mentorResult = await createCalendarEvent(meetingData.mentorEmail, meetingData, true);
+        console.log('Meet link from mentor calendar (by email):', mentorResult.meetLink);
+        meetLink = mentorResult.meetLink;
       } catch (emailError) {
-        console.error('Failed to create event in mentee calendar by email:', emailError);
+        console.error('Failed to create event in mentor calendar by email:', emailError);
         console.error('Email error details:', emailError.message);
-        throw emailError;
       }
+    }
+    
+    // If mentor OAuth failed, try mentee's OAuth as fallback
+    if (!meetLink) {
+      try {
+        console.log('Creating event in mentee calendar with Meet link (fallback)...');
+        const menteeResult = await createCalendarEvent(meetingData.menteeId, meetingData, true);
+        console.log('Meet link from mentee calendar:', menteeResult.meetLink);
+        meetLink = menteeResult.meetLink;
+      } catch (menteeError) {
+        console.error('Failed to create event in mentee calendar by ID:', menteeError);
+        console.error('Error details:', menteeError.message);
+        
+        // Try by email if ID failed
+        try {
+          console.log('Trying mentee by email...');
+          const menteeResult = await createCalendarEvent(meetingData.menteeEmail, meetingData, true);
+          console.log('Meet link from mentee calendar (by email):', menteeResult.meetLink);
+          meetLink = menteeResult.meetLink;
+        } catch (emailError) {
+          console.error('Failed to create event in mentee calendar by email:', emailError);
+          console.error('Email error details:', emailError.message);
+        }
+      }
+    }
+    
+    // If we got a meet link, also try to create calendar events for both parties
+    if (meetLink) {
+      // Try to create calendar event for mentee (without Meet link to avoid conflicts)
+      try {
+        console.log('Creating calendar event for mentee...');
+        await createCalendarEvent(meetingData.menteeId, meetingData, false);
+        console.log('Calendar event created for mentee');
+      } catch (menteeError) {
+        console.error('Failed to create calendar event for mentee:', menteeError);
+        // Try by email
+        try {
+          await createCalendarEvent(meetingData.menteeEmail, meetingData, false);
+          console.log('Calendar event created for mentee (by email)');
+        } catch (emailError) {
+          console.error('Failed to create calendar event for mentee by email:', emailError);
+        }
+      }
+    }
+    
+    if (meetLink) {
+      return meetLink;
+    } else {
+      // Fallback to simple link generation if OAuth fails
+      const meetingId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const fallbackLink = `https://meet.google.com/${meetingId}`;
+      console.log('Using fallback meet link:', fallbackLink);
+      return fallbackLink;
     }
   } catch (error) {
     console.error('Error creating Google Calendar event:', error);
@@ -359,21 +415,35 @@ async function sendEmailJSV2(templateId, templateParams) {
   }
 
   console.log('Making EmailJS V2 API request...');
-  const resp = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
   
-  console.log('EmailJS V2 response status:', resp.status);
-  
-  if (!resp.ok) {
-    const txt = await resp.text();
-    console.error('EmailJS V2 error response:', txt);
-    throw new Error(`EmailJS V2 request failed: ${resp.status} ${txt}`);
+  try {
+    const resp = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    
+    console.log('EmailJS V2 response status:', resp.status);
+    
+    if (!resp.ok) {
+      const txt = await resp.text();
+      console.error('EmailJS V2 error response:', txt);
+      
+      // Check if it's the "non-browser applications" error
+      if (txt.includes('non-browser applications') || txt.includes('403')) {
+        console.error('EmailJS V2 does not support server-side calls. This is expected behavior.');
+        console.error('Consider using a different email service like SendGrid, Nodemailer, or moving email sending to client-side.');
+        throw new Error('EmailJS V2 server-side calls are not supported. Use client-side email sending or switch to a server-side email service.');
+      }
+      
+      throw new Error(`EmailJS V2 request failed: ${resp.status} ${txt}`);
+    }
+    
+    console.log('EmailJS V2 request successful');
+  } catch (error) {
+    console.error('EmailJS V2 error:', error.message);
+    throw error;
   }
-  
-  console.log('EmailJS V2 request successful');
 }
 
 // Handle mentee approval
