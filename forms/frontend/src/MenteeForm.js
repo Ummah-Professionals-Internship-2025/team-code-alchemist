@@ -632,9 +632,7 @@ function MenteeForm() {
 
   return (
     <div className="container">
-      <div className="header">ummah professionals</div>
       <div className="form-card scrollable-form">
-        <button className="btn" style={{marginBottom: 24, width: 'auto', maxWidth: 120}} type="button" onClick={() => navigate('/')}>{'< Back'}</button>
         <h2>Mentee Application</h2>
         <form onSubmit={handleContinue}>
           <label>First Name <span style={{color: 'red'}}>*</span></label>
