@@ -29,7 +29,7 @@ function MentorProfile() {
   }, [userId]);
 
   return (
-    <div className="header">
+    <div className="profile-header">
       <div className="profile-section">
         <div className="avatar"></div>
         <div className="profile-info">

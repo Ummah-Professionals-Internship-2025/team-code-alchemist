@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import LoginStyle from "../LoginStyle";
-import UPLogo from "../UPLogo.svg";
+import LoginStyle from "./LoginStyle";
 
 function AdminLogin({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -17,7 +16,11 @@ function AdminLogin({ onLogin }) {
     setError("");
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
 
       const userDoc = await getDoc(doc(db, "adminUsers", user.uid));
@@ -42,19 +45,19 @@ function AdminLogin({ onLogin }) {
   return (
     <div
       style={{
-      width: "100vw",
-      height: "100vh",
-      display: "flex",
-      justifyContent: "center", 
-      alignItems: "flex-start",     
-      paddingTop: "100px",           
-      background: "#f0f2f5",
-    }}
+        width: "100vw",
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        paddingTop: "100px",
+        background: "#f0f2f5",
+      }}
     >
       <div style={LoginStyle.base}>
         <img
           alt="logo"
-          src={UPLogo}
+          src={""}
           width="200px"
           style={{
             display: "block",
@@ -63,13 +66,25 @@ function AdminLogin({ onLogin }) {
           }}
         />
 
-        <h2 style={{ marginBottom: "20px", textAlign: "center" }}>Admin Login</h2>
+        <h2 style={{ marginBottom: "20px", textAlign: "center" }}>
+          Admin Login
+        </h2>
 
-        {error && <p style={{ color: "red", marginBottom: "15px", textAlign: "center" }}>{error}</p>}
+        {error && (
+          <p
+            style={{ color: "red", marginBottom: "15px", textAlign: "center" }}
+          >
+            {error}
+          </p>
+        )}
 
         <form
           onSubmit={handleLogin}
-          style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
         >
           <input
             type="text"

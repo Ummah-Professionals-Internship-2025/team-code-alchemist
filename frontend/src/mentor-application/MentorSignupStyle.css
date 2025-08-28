@@ -1,22 +1,14 @@
 /* Mentor Application Form Styles - Scoped to avoid conflicts */
 
-<<<<<<< HEAD
 .mentor-form-container {
-  max-width: 1000px;
+  scroll-behavior: smooth;
+  max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
   background-color: #f8f9fa;
   min-height: 100vh;
-=======
-body {
-  background: #ffffff !important;
-  min-height: 100vh;
-  display: block !important;
-  margin: 0;
-  padding: 0;
->>>>>>> aa0688470b0db8c6963013fda003eb4a7a3bd91d
 }
 
 .mentor-form-title {
@@ -61,7 +53,7 @@ body {
   font-weight: 700;
   margin-bottom: 2rem;
   text-align: center;
-  border-bottom: 3px solid #057a9b;
+  border-bottom: 3px solid #667eea;
   padding-bottom: 0.5rem;
 }
 

@@ -661,21 +661,22 @@ function MenteeForm() {
   const handleMeetingSubmit = async (meetingData) => {
     try {
       console.log("Submitting meeting data:", meetingData);
-      
+
       const response = await axios.post(
         "http://localhost:3001/api/meetings",
         meetingData
       );
 
       console.log("Meeting submission response:", response.data);
-      
+
       if (response.data.success) {
         console.log("Meeting successfully saved to database");
         setSubmitted(true);
         setTimeout(() => navigate("/mentee-dashboard"), 10000);
       } else {
         setPasswordError(
-          "Error scheduling meeting: " + (response.data.error || "Unknown error")
+          "Error scheduling meeting: " +
+            (response.data.error || "Unknown error")
         );
       }
     } catch (error) {
@@ -764,488 +765,507 @@ function MenteeForm() {
   ];
 
   return (
-    <div className="container">
-      <div className="form-card scrollable-form">
-        <h2>Mentee Application</h2>
-        <form onSubmit={handleContinue}>
-          <label>
-            First Name <span style={{ color: "red" }}>*</span>
-          </label>
-          <input
-            name="firstName"
-            value={form.firstName}
-            onChange={handleChange}
-            required
-          />
-
-          <label>Middle Name</label>
-          <input
-            name="middleName"
-            value={form.middleName}
-            onChange={handleChange}
-          />
-
-          <label>
-            Last Name <span style={{ color: "red" }}>*</span>
-          </label>
-          <input
-            name="lastName"
-            value={form.lastName}
-            onChange={handleChange}
-            required
-          />
-
-          <label>
-            Email <span style={{ color: "red" }}>*</span>
-          </label>
-          <input
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            required
-          />
-
-          <label>
-            Phone number <span style={{ color: "red" }}>*</span>
-          </label>
-          <input
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-            required
-          />
-
-          <label>
-            Industry <span style={{ color: "red" }}>*</span>
-          </label>
-          <Select
-            isMulti
-            name="industry"
-            options={industryOptions}
-            value={industryOptions.filter((opt) =>
-              form.industry.includes(opt.value)
-            )}
-            onChange={handleIndustryChange}
-            classNamePrefix="react-select"
-            placeholder="Select industry..."
-            required
-          />
-          <div style={{ fontSize: "0.95rem", color: "#888", marginBottom: 12 }}>
-            You can select multiple industries.
-          </div>
-
-          <label>
-            Major <span style={{ color: "red" }}>*</span>
-          </label>
-          <Select
-            name="major"
-            options={majorOptions}
-            value={majorOptions.find((opt) => opt.value === form.major) || null}
-            onChange={(selected) =>
-              setForm({ ...form, major: selected ? selected.value : "" })
-            }
-            classNamePrefix="react-select"
-            placeholder="Select major..."
-            isClearable
-            required
-          />
-
-          <label>
-            Current grade <span style={{ color: "red" }}>*</span>
-          </label>
-          <select
-            name="currentGrade"
-            value={form.currentGrade}
-            onChange={handleChange}
-            required
-          >
-            <option value="" disabled>
-              Select your current grade
-            </option>
-            <option value="Highschooler">Highschooler</option>
-            <option value="Freshman in college">Freshman in college</option>
-            <option value="Sophomore in college">Sophomore in college</option>
-            <option value="Junior in college">Junior in college</option>
-            <option value="Senior in college">Senior in college</option>
-            <option value="Graduated">Graduated</option>
-          </select>
-
-          <label>
-            What service are you looking for?{" "}
-            <span style={{ color: "red" }}>*</span>
-          </label>
-          <select
-            name="serviceLookingFor"
-            value={form.serviceLookingFor}
-            onChange={handleChange}
-            required
-          >
-            <option value="" disabled>
-              Select a service
-            </option>
-            <option value="Career advice">Career advice</option>
-            <option value="Resume review">Resume review</option>
-            <option value="Interview prep">Interview prep</option>
-          </select>
-
-          <label>
-            What skills do you want to learn from your mentor?{" "}
-            <span style={{ color: "red" }}>*</span>
-          </label>
-          <Select
-            isMulti
-            name="skillsToLearn"
-            options={skillsToLearnOptions}
-            value={skillsToLearnOptions.filter((opt) =>
-              (form.skillsToLearn || []).includes(opt.value)
-            )}
-            onChange={(selectedOptions) => {
-              setForm({
-                ...form,
-                skillsToLearn: selectedOptions
-                  ? selectedOptions.map((opt) => opt.value)
-                  : [],
-              });
-            }}
-            classNamePrefix="react-select"
-            placeholder="Select skills you want to learn..."
-            required
-          />
-          <div style={{ fontSize: "0.95rem", color: "#888", marginBottom: 12 }}>
-            You can select multiple skills. This helps us match you with the
-            best mentors.
-          </div>
-
-          <label>
-            What company size would you prefer to work for?{" "}
-            <span style={{ color: "red" }}>*</span>
-          </label>
-          <Select
-            isMulti
-            name="companySizePreference"
-            options={companySizeOptions}
-            value={companySizeOptions.filter((opt) =>
-              (form.companySizePreference || []).includes(opt.value)
-            )}
-            onChange={(selectedOptions) => {
-              setForm({
-                ...form,
-                companySizePreference: selectedOptions
-                  ? selectedOptions.map((opt) => opt.value)
-                  : [],
-              });
-            }}
-            classNamePrefix="react-select"
-            placeholder="Select company size preferences..."
-            required
-          />
-          <div style={{ fontSize: "0.95rem", color: "#888", marginBottom: 12 }}>
-            You can select multiple preferences. This helps us match you with
-            mentors from your preferred company types.
-          </div>
-
-          {/* General Availability Section */}
-          <div style={{ margin: "16px 0 8px 0" }}>
-            <label
-              style={{
-                fontWeight: "bold",
-                fontSize: "1em",
-                color: "#007399",
-                marginBottom: 2,
-                display: "inline-block",
-              }}
-            >
-              General Availability <span style={{ color: "red" }}>*</span>
+    <div className="mentee-form">
+      <div className="container">
+        <div className="form-card scrollable-form">
+          <h2>Mentee Application</h2>
+          <form onSubmit={handleContinue}>
+            <label>
+              First Name <span style={{ color: "red" }}>*</span>
             </label>
-            <div
-              style={{
-                background: "#ededed",
-                border: "1px solid #ccc",
-                borderRadius: 8,
-                padding: "16px",
-                marginTop: 4,
-              }}
-            >
-              <AvailabilityForm
-                selectedSlots={convertGroupedToAvailabilitySet(
-                  form.generalAvailability
-                )}
-                onAvailabilityChange={handleAvailabilityChange}
-              />
-            </div>
-          </div>
-
-          <label>GitHub (optional)</label>
-          <input
-            name="github"
-            value={form.github || ""}
-            onChange={handleChange}
-            placeholder="GitHub profile URL"
-          />
-
-          <label>LinkedIn (optional)</label>
-          <input
-            name="linkedin"
-            value={form.linkedin || ""}
-            onChange={handleChange}
-            placeholder="LinkedIn profile URL"
-          />
-
-          <label>Time zone (optional)</label>
-          <input
-            name="timeZone"
-            value={form.timeZone || ""}
-            onChange={handleChange}
-            placeholder="e.g. EST, PST, GMT+3"
-          />
-
-          <label>Country (optional)</label>
-          <input
-            name="country"
-            value={form.country || ""}
-            onChange={handleChange}
-            placeholder="Country"
-          />
-
-          <label>University (optional)</label>
-          <input
-            name="university"
-            value={form.university || ""}
-            onChange={handleChange}
-            placeholder="University name"
-          />
-
-          <label>
-            Resume <span style={{ color: "red" }}>*</span>
-          </label>
-          <input
-            name="resume"
-            type="file"
-            accept=".pdf,.doc,.docx"
-            onChange={handleChange}
-            required
-          />
-          {form.resume && (
-            <div style={{ marginBottom: 16, fontSize: "1.1rem" }}>
-              Selected file: {form.resume.name}
-            </div>
-          )}
-
-          <label>
-            Password <span style={{ color: "red" }}>*</span>
-          </label>
-          <div
-            style={{ display: "flex", alignItems: "center", marginBottom: 8 }}
-          >
             <input
-              name="password"
-              type={showPassword ? "text" : "password"}
-              value={form.password}
+              name="firstName"
+              value={form.firstName}
               onChange={handleChange}
               required
-              style={{ flex: 1 }}
-              onFocus={() => setShowPasswordFeedback(true)}
-              onBlur={() => setShowPasswordFeedback(false)}
             />
-            <button
-              type="button"
-              style={{
-                marginLeft: 8,
-                border: "none",
-                background: "none",
-                cursor: "pointer",
-              }}
-              onClick={() => setShowPassword((v) => !v)}
+
+            <label>Middle Name</label>
+            <input
+              name="middleName"
+              value={form.middleName}
+              onChange={handleChange}
+            />
+
+            <label>
+              Last Name <span style={{ color: "red" }}>*</span>
+            </label>
+            <input
+              name="lastName"
+              value={form.lastName}
+              onChange={handleChange}
+              required
+            />
+
+            <label>
+              Email <span style={{ color: "red" }}>*</span>
+            </label>
+            <input
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
+
+            <label>
+              Phone number <span style={{ color: "red" }}>*</span>
+            </label>
+            <input
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              required
+            />
+
+            <label>
+              Industry <span style={{ color: "red" }}>*</span>
+            </label>
+            <Select
+              isMulti
+              name="industry"
+              options={industryOptions}
+              value={industryOptions.filter((opt) =>
+                form.industry.includes(opt.value)
+              )}
+              onChange={handleIndustryChange}
+              classNamePrefix="react-select"
+              placeholder="Select industry..."
+              required
+            />
+            <div
+              style={{ fontSize: "0.95rem", color: "#888", marginBottom: 12 }}
             >
-              <span role="img" aria-label="Show password">
-                {showPassword ? "🙈" : "👁️"}
-              </span>
-            </button>
-          </div>
-          {/* Password Strength Bar and Requirements */}
-          {showPasswordFeedback && (
-            <div style={{ marginBottom: 12 }}>
-              <div
+              You can select multiple industries.
+            </div>
+
+            <label>
+              Major <span style={{ color: "red" }}>*</span>
+            </label>
+            <Select
+              name="major"
+              options={majorOptions}
+              value={
+                majorOptions.find((opt) => opt.value === form.major) || null
+              }
+              onChange={(selected) =>
+                setForm({ ...form, major: selected ? selected.value : "" })
+              }
+              classNamePrefix="react-select"
+              placeholder="Select major..."
+              isClearable
+              required
+            />
+
+            <label>
+              Current grade <span style={{ color: "red" }}>*</span>
+            </label>
+            <select
+              name="currentGrade"
+              value={form.currentGrade}
+              onChange={handleChange}
+              required
+            >
+              <option value="" disabled>
+                Select your current grade
+              </option>
+              <option value="Highschooler">Highschooler</option>
+              <option value="Freshman in college">Freshman in college</option>
+              <option value="Sophomore in college">Sophomore in college</option>
+              <option value="Junior in college">Junior in college</option>
+              <option value="Senior in college">Senior in college</option>
+              <option value="Graduated">Graduated</option>
+            </select>
+
+            <label>
+              What service are you looking for?{" "}
+              <span style={{ color: "red" }}>*</span>
+            </label>
+            <select
+              name="serviceLookingFor"
+              value={form.serviceLookingFor}
+              onChange={handleChange}
+              required
+            >
+              <option value="" disabled>
+                Select a service
+              </option>
+              <option value="Career advice">Career advice</option>
+              <option value="Resume review">Resume review</option>
+              <option value="Interview prep">Interview prep</option>
+            </select>
+
+            <label>
+              What skills do you want to learn from your mentor?{" "}
+              <span style={{ color: "red" }}>*</span>
+            </label>
+            <Select
+              isMulti
+              name="skillsToLearn"
+              options={skillsToLearnOptions}
+              value={skillsToLearnOptions.filter((opt) =>
+                (form.skillsToLearn || []).includes(opt.value)
+              )}
+              onChange={(selectedOptions) => {
+                setForm({
+                  ...form,
+                  skillsToLearn: selectedOptions
+                    ? selectedOptions.map((opt) => opt.value)
+                    : [],
+                });
+              }}
+              classNamePrefix="react-select"
+              placeholder="Select skills you want to learn..."
+              required
+            />
+            <div
+              style={{ fontSize: "0.95rem", color: "#888", marginBottom: 12 }}
+            >
+              You can select multiple skills. This helps us match you with the
+              best mentors.
+            </div>
+
+            <label>
+              What company size would you prefer to work for?{" "}
+              <span style={{ color: "red" }}>*</span>
+            </label>
+            <Select
+              isMulti
+              name="companySizePreference"
+              options={companySizeOptions}
+              value={companySizeOptions.filter((opt) =>
+                (form.companySizePreference || []).includes(opt.value)
+              )}
+              onChange={(selectedOptions) => {
+                setForm({
+                  ...form,
+                  companySizePreference: selectedOptions
+                    ? selectedOptions.map((opt) => opt.value)
+                    : [],
+                });
+              }}
+              classNamePrefix="react-select"
+              placeholder="Select company size preferences..."
+              required
+            />
+            <div
+              style={{ fontSize: "0.95rem", color: "#888", marginBottom: 12 }}
+            >
+              You can select multiple preferences. This helps us match you with
+              mentors from your preferred company types.
+            </div>
+
+            {/* General Availability Section */}
+            <div style={{ margin: "16px 0 8px 0" }}>
+              <label
                 style={{
-                  height: 8,
-                  background: "#eee",
-                  borderRadius: 4,
-                  marginBottom: 4,
+                  fontWeight: "bold",
+                  fontSize: "1em",
+                  color: "#007399",
+                  marginBottom: 2,
+                  display: "inline-block",
                 }}
               >
+                General Availability <span style={{ color: "red" }}>*</span>
+              </label>
+              <div
+                style={{
+                  background: "#ededed",
+                  border: "1px solid #ccc",
+                  borderRadius: 8,
+                  padding: "16px",
+                  marginTop: 4,
+                }}
+              >
+                <AvailabilityForm
+                  selectedSlots={convertGroupedToAvailabilitySet(
+                    form.generalAvailability
+                  )}
+                  onAvailabilityChange={handleAvailabilityChange}
+                />
+              </div>
+            </div>
+
+            <label>GitHub (optional)</label>
+            <input
+              name="github"
+              value={form.github || ""}
+              onChange={handleChange}
+              placeholder="GitHub profile URL"
+            />
+
+            <label>LinkedIn (optional)</label>
+            <input
+              name="linkedin"
+              value={form.linkedin || ""}
+              onChange={handleChange}
+              placeholder="LinkedIn profile URL"
+            />
+
+            <label>Time zone (optional)</label>
+            <input
+              name="timeZone"
+              value={form.timeZone || ""}
+              onChange={handleChange}
+              placeholder="e.g. EST, PST, GMT+3"
+            />
+
+            <label>Country (optional)</label>
+            <input
+              name="country"
+              value={form.country || ""}
+              onChange={handleChange}
+              placeholder="Country"
+            />
+
+            <label>University (optional)</label>
+            <input
+              name="university"
+              value={form.university || ""}
+              onChange={handleChange}
+              placeholder="University name"
+            />
+
+            <label>
+              Resume <span style={{ color: "red" }}>*</span>
+            </label>
+            <input
+              name="resume"
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={handleChange}
+              required
+            />
+            {form.resume && (
+              <div style={{ marginBottom: 16, fontSize: "1.1rem" }}>
+                Selected file: {form.resume.name}
+              </div>
+            )}
+
+            <label>
+              Password <span style={{ color: "red" }}>*</span>
+            </label>
+            <div
+              style={{ display: "flex", alignItems: "center", marginBottom: 8 }}
+            >
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={form.password}
+                onChange={handleChange}
+                required
+                style={{ flex: 1 }}
+                onFocus={() => setShowPasswordFeedback(true)}
+                onBlur={() => setShowPasswordFeedback(false)}
+              />
+              <button
+                type="button"
+                style={{
+                  marginLeft: 8,
+                  border: "none",
+                  background: "none",
+                  cursor: "pointer",
+                }}
+                onClick={() => setShowPassword((v) => !v)}
+              >
+                <span role="img" aria-label="Show password">
+                  {showPassword ? "🙈" : "👁️"}
+                </span>
+              </button>
+            </div>
+            {/* Password Strength Bar and Requirements */}
+            {showPasswordFeedback && (
+              <div style={{ marginBottom: 12 }}>
                 <div
                   style={{
-                    width: `${(passwordStrength.score / 5) * 100}%`,
-                    height: "100%",
+                    height: 8,
+                    background: "#eee",
                     borderRadius: 4,
-                    background:
+                    marginBottom: 4,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${(passwordStrength.score / 5) * 100}%`,
+                      height: "100%",
+                      borderRadius: 4,
+                      background:
+                        passwordStrength.label === "Strong"
+                          ? "#4caf50"
+                          : passwordStrength.label === "Medium"
+                            ? "#ff9800"
+                            : "#f44336",
+                      transition: "width 0.3s",
+                    }}
+                  ></div>
+                </div>
+                <div
+                  style={{
+                    fontWeight: "bold",
+                    color:
                       passwordStrength.label === "Strong"
                         ? "#4caf50"
                         : passwordStrength.label === "Medium"
                           ? "#ff9800"
                           : "#f44336",
-                    transition: "width 0.3s",
                   }}
-                ></div>
-              </div>
-              <div
-                style={{
-                  fontWeight: "bold",
-                  color:
-                    passwordStrength.label === "Strong"
-                      ? "#4caf50"
-                      : passwordStrength.label === "Medium"
-                        ? "#ff9800"
+                >
+                  {passwordStrength.label} password
+                </div>
+                <ul
+                  style={{
+                    fontSize: "0.95rem",
+                    margin: "8px 0 0 0",
+                    paddingLeft: 18,
+                  }}
+                >
+                  <li
+                    style={{
+                      color: passwordStrength.requirements.length
+                        ? "#4caf50"
                         : "#f44336",
-                }}
-              >
-                {passwordStrength.label} password
+                    }}
+                  >
+                    At least 8 characters
+                  </li>
+                  <li
+                    style={{
+                      color: passwordStrength.requirements.upper
+                        ? "#4caf50"
+                        : "#f44336",
+                    }}
+                  >
+                    At least one uppercase letter
+                  </li>
+                  <li
+                    style={{
+                      color: passwordStrength.requirements.lower
+                        ? "#4caf50"
+                        : "#f44336",
+                    }}
+                  >
+                    At least one lowercase letter
+                  </li>
+                  <li
+                    style={{
+                      color: passwordStrength.requirements.special
+                        ? "#4caf50"
+                        : "#f44336",
+                    }}
+                  >
+                    At least one special character
+                  </li>
+                </ul>
               </div>
-              <ul
-                style={{
-                  fontSize: "0.95rem",
-                  margin: "8px 0 0 0",
-                  paddingLeft: 18,
-                }}
-              >
-                <li
-                  style={{
-                    color: passwordStrength.requirements.length
-                      ? "#4caf50"
-                      : "#f44336",
-                  }}
-                >
-                  At least 8 characters
-                </li>
-                <li
-                  style={{
-                    color: passwordStrength.requirements.upper
-                      ? "#4caf50"
-                      : "#f44336",
-                  }}
-                >
-                  At least one uppercase letter
-                </li>
-                <li
-                  style={{
-                    color: passwordStrength.requirements.lower
-                      ? "#4caf50"
-                      : "#f44336",
-                  }}
-                >
-                  At least one lowercase letter
-                </li>
-                <li
-                  style={{
-                    color: passwordStrength.requirements.special
-                      ? "#4caf50"
-                      : "#f44336",
-                  }}
-                >
-                  At least one special character
-                </li>
-              </ul>
-            </div>
-          )}
+            )}
 
-          <label>
-            Confirm Password <span style={{ color: "red" }}>*</span>
-          </label>
-          <div
-            style={{ display: "flex", alignItems: "center", marginBottom: 16 }}
-          >
-            <input
-              name="confirmPassword"
-              type={showConfirmPassword ? "text" : "password"}
-              value={form.confirmPassword}
-              onChange={handleChange}
-              required
-              style={{ flex: 1 }}
-              onFocus={() => {
-                setConfirmPasswordTouched(true);
-                setConfirmPasswordFocused(true);
-              }}
-              onBlur={() => setConfirmPasswordFocused(false)}
-            />
-            <button
-              type="button"
-              style={{
-                marginLeft: 8,
-                border: "none",
-                background: "none",
-                cursor: "pointer",
-              }}
-              onClick={() => setShowConfirmPassword((v) => !v)}
-            >
-              <span role="img" aria-label="Show password">
-                {showConfirmPassword ? "🙈" : "👁️"}
-              </span>
-            </button>
-          </div>
-          {confirmPasswordFocused && form.confirmPassword && (
+            <label>
+              Confirm Password <span style={{ color: "red" }}>*</span>
+            </label>
             <div
               style={{
-                color:
-                  form.password === form.confirmPassword
-                    ? "#4caf50"
-                    : "#f44336",
-                marginBottom: 12,
-                fontWeight: "bold",
+                display: "flex",
+                alignItems: "center",
+                marginBottom: 16,
               }}
             >
-              {form.password === form.confirmPassword
-                ? "Passwords match"
-                : "Passwords do not match"}
+              <input
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                value={form.confirmPassword}
+                onChange={handleChange}
+                required
+                style={{ flex: 1 }}
+                onFocus={() => {
+                  setConfirmPasswordTouched(true);
+                  setConfirmPasswordFocused(true);
+                }}
+                onBlur={() => setConfirmPasswordFocused(false)}
+              />
+              <button
+                type="button"
+                style={{
+                  marginLeft: 8,
+                  border: "none",
+                  background: "none",
+                  cursor: "pointer",
+                }}
+                onClick={() => setShowConfirmPassword((v) => !v)}
+              >
+                <span role="img" aria-label="Show password">
+                  {showConfirmPassword ? "🙈" : "👁️"}
+                </span>
+              </button>
             </div>
-          )}
-          {passwordError && (
-            <div style={{ color: "red", marginBottom: 16 }}>
-              {passwordError}
+            {confirmPasswordFocused && form.confirmPassword && (
+              <div
+                style={{
+                  color:
+                    form.password === form.confirmPassword
+                      ? "#4caf50"
+                      : "#f44336",
+                  marginBottom: 12,
+                  fontWeight: "bold",
+                }}
+              >
+                {form.password === form.confirmPassword
+                  ? "Passwords match"
+                  : "Passwords do not match"}
+              </div>
+            )}
+            {passwordError && (
+              <div style={{ color: "red", marginBottom: 16 }}>
+                {passwordError}
+              </div>
+            )}
+
+            {/* Google Calendar OAuth Integration */}
+            <div style={{ marginTop: 24, marginBottom: 24 }}>
+              <label>
+                Google Calendar Access <span style={{ color: "red" }}>*</span>
+              </label>
+              <p
+                style={{ fontSize: "0.95rem", color: "#666", marginBottom: 16 }}
+              >
+                We need access to your Google Calendar to automatically add
+                mentoring sessions when meetings are confirmed. This ensures you
+                never miss a session.
+              </p>
+              <GoogleOAuth
+                userId={form.email} // Use email as the identifier for OAuth
+                userEmail={form.email}
+                onAuthSuccess={(userId) => {
+                  console.log(
+                    "Mentee calendar access granted for user:",
+                    userId
+                  );
+                  setForm((prev) => ({ ...prev, hasCalendarAccess: true }));
+                }}
+                onAuthError={(error) => {
+                  console.log("Mentee calendar access failed:", error);
+                  setForm((prev) => ({ ...prev, hasCalendarAccess: false }));
+                }}
+              />
             </div>
-          )}
 
-          {/* Google Calendar OAuth Integration */}
-          <div style={{ marginTop: 24, marginBottom: 24 }}>
-            <label>
-              Google Calendar Access <span style={{ color: "red" }}>*</span>
-            </label>
-            <p style={{ fontSize: "0.95rem", color: "#666", marginBottom: 16 }}>
-              We need access to your Google Calendar to automatically add
-              mentoring sessions when meetings are confirmed. This ensures you
-              never miss a session.
-            </p>
-            <GoogleOAuth
-              userId={form.email} // Use email as the identifier for OAuth
-              userEmail={form.email}
-              onAuthSuccess={(userId) => {
-                console.log("Mentee calendar access granted for user:", userId);
-                setForm((prev) => ({ ...prev, hasCalendarAccess: true }));
-              }}
-              onAuthError={(error) => {
-                console.log("Mentee calendar access failed:", error);
-                setForm((prev) => ({ ...prev, hasCalendarAccess: false }));
-              }}
-            />
-          </div>
+            <button className="btn" type="submit" disabled={loading}>
+              {loading ? "Processing..." : "Continue"}
+            </button>
+          </form>
+        </div>
 
-          <button className="btn" type="submit" disabled={loading}>
-            {loading ? "Processing..." : "Continue"}
-          </button>
-        </form>
+        {/* Mentor Matches Modal */}
+        {showMentorMatches && menteeData && (
+          <MentorMatchesModal
+            menteeData={menteeData}
+            onClose={() => {
+              setShowMentorMatches(false);
+              setSubmitted(true);
+              setTimeout(() => navigate("/mentee-dashboard"), 10000);
+            }}
+            onSubmit={handleMeetingSubmit}
+          />
+        )}
       </div>
-
-      {/* Mentor Matches Modal */}
-      {showMentorMatches && menteeData && (
-        <MentorMatchesModal
-          menteeData={menteeData}
-          onClose={() => {
-            setShowMentorMatches(false);
-            setSubmitted(true);
-            setTimeout(() => navigate("/mentee-dashboard"), 10000);
-          }}
-          onSubmit={handleMeetingSubmit}
-        />
-      )}
     </div>
   );
 }

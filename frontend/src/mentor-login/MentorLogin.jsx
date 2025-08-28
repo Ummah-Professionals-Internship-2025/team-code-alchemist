@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import styles from "./MentorLogin.module.css";
+import styles from "./MentorLogin.css";
 import { doSignInWithEmailAndPassword } from "../Auth";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";

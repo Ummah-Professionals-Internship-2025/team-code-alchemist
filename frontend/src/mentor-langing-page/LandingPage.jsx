@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 const LandingPage = () => {
   const navigate = useNavigate();
   return (
-    <div>
+    <div className="landing-page">
       <nav class="navbar">
         <img class="navy" src="../navy.png" alt="logo" />
         <ul>
