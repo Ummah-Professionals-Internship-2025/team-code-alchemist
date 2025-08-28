@@ -76,7 +76,7 @@ const Calendar = () => {
 
   return (
     <Box m="20px">
-      <Header title="CALENDAR" subtitle="Calendar and Events" />
+      <Header title="Calendar" subtitle="Calendar and Events" />
 
       <Box display="flex" justifyContent="space-between">
         {/* EVENTS SIDEBAR */}
@@ -95,7 +95,7 @@ const Calendar = () => {
           }}
         >
           <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, color: "black" }}>
-            Events
+            Meetings
           </Typography>
           {currentEvents.length === 0 && (
             <Typography sx={{ color: "black" }}>No upcoming meetings.</Typography>
@@ -130,9 +130,11 @@ const Calendar = () => {
           flex="1 1 100%"
           ml="15px"
           sx={{
-            "& .fc-toolbar-title": { color: "black" },              
-            "& .fc-col-header-cell-cushion": { color: "black" },      
-            "& .fc-button": {                                   
+            "& .fc-toolbar-title": { color: "black" },
+            "& .fc-col-header-cell-cushion": { color: "black" },
+            "& .fc-event": { color: "black" }, 
+
+            "& .fc .fc-button": {
               backgroundColor: "#E8F0FA",
               color: "#03527C",
               border: "2px solid #03527C",
@@ -140,10 +142,21 @@ const Calendar = () => {
               fontWeight: "bold",
               "&:hover": {
                 backgroundColor: "#03527C",
-                color: "white",
-              }
+                color: "#E8F0FA",
+              },
             },
-            "& .fc-scrollgrid": { border: "2px solid #03527C", borderRadius: "20px" } 
+
+            "& .fc .fc-button.fc-button-active": {
+              backgroundColor: "#03527C",
+              color: "#E8F0FA",
+              border: "2px solid #03527C",
+              "&:hover": {
+                backgroundColor: "#03527C",
+                color: "#E8F0FA",
+              },
+            },
+
+            "& .fc-scrollgrid": { border: "2px solid #03527C", borderRadius: "20px" },
           }}
         >
           <FullCalendar
@@ -152,7 +165,7 @@ const Calendar = () => {
             headerToolbar={{
               left: "prev,next today",
               center: "title",
-              right: "dayGridMonth,timeGridWeek,timeGridDay,listMonth"
+              right: "dayGridMonth,timeGridWeek,timeGridDay,listMonth",
             }}
             initialView="dayGridMonth"
             editable={true}
@@ -164,7 +177,7 @@ const Calendar = () => {
             events={currentEvents}
             eventBackgroundColor="#FFD700"
             eventBorderColor="#000000"
-            eventTextColor="black" 
+            eventTextColor="black"
             dayCellContent={(cellInfo) => (
               <span style={{ color: "black" }}>{cellInfo.dayNumberText}</span>
             )}
