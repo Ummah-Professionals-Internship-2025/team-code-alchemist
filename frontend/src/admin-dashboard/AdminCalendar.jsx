@@ -5,9 +5,8 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
-import { Box, Typography, useTheme } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import Header from "./Header";
-import { tokens } from "./theme";
 
 import { getFirestore, collection, onSnapshot } from "firebase/firestore";
 import app from "../firebase";
@@ -15,8 +14,6 @@ import app from "../firebase";
 const db = getFirestore(app);
 
 const Calendar = () => {
-  const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
   const [currentEvents, setCurrentEvents] = useState([]);
 
   useEffect(() => {
@@ -27,7 +24,6 @@ const Calendar = () => {
 
         if (data.meetingDate) {
           const dateObj = new Date(data.meetingDate);
-
           if (data.meetingTime) {
             const [time, modifier] = data.meetingTime.split(" ");
             let [hours, minutes] = time.split(":").map(Number);
@@ -35,7 +31,6 @@ const Calendar = () => {
             if (modifier === "AM" && hours === 12) hours = 0;
             dateObj.setHours(hours, minutes, 0, 0);
           }
-
           startDate = dateObj;
         }
 
@@ -46,7 +41,6 @@ const Calendar = () => {
           allDay: !data.meetingTime,
         };
       });
-
       setCurrentEvents(events);
     });
 
@@ -54,7 +48,7 @@ const Calendar = () => {
   }, []);
 
   const handleDateClick = (selected) => {
-    const title = prompt("Please enter a new title for your event");
+    const title = prompt("Enter a new title for the event");
     const calendarApi = selected.view.calendar;
     calendarApi.unselect();
 
@@ -69,18 +63,26 @@ const Calendar = () => {
   };
 
   const handleEventClick = (selected) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete the event '${selected.event.title}'`
-      )
-    ) {
+    if (window.confirm(`Delete event '${selected.event.title}'?`)) {
       selected.event.remove();
     }
   };
 
   return (
-    <Box m="20px">
-      <Header title="Calendar" subtitle="Calendar and Events" />
+    <Box
+      sx={{
+        backgroundColor: "#E8F0FA", 
+        minHeight: "100vh",
+        width: "100%",
+        color: "black",
+        p: 2,
+        "& *": { backgroundColor: "#E8F0FA", color: "black" }, 
+      }}
+    >
+      <Header 
+        title="Calendar"  
+        subtitle={<span style={{ color: "#03527C" }}>Calendar and Events</span>} 
+      />
 
       <Box display="flex" justifyContent="space-between">
         {/* EVENTS SIDEBAR */}
@@ -91,31 +93,23 @@ const Calendar = () => {
             flexDirection: "column",
             backgroundColor: "#E8F0FA",
             border: "2px solid #03527C",
-            color: "black",
             borderRadius: "20px",
-            padding: 2,
+            p: 2,
             maxHeight: "75vh",
             overflowY: "auto",
           }}
         >
-          <Typography
-            variant="h5"
-            sx={{ fontWeight: "bold", mb: 2, color: "black" }}
-          >
+          <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2 }}>
             Meetings
           </Typography>
-          {currentEvents.length === 0 && (
-            <Typography sx={{ color: "black" }}>
-              No upcoming meetings.
-            </Typography>
-          )}
+          {currentEvents.length === 0 && <Typography>No upcoming meetings.</Typography>}
           {currentEvents.map((event) => (
             <Box
               key={event.id}
               sx={{
                 display: "flex",
                 flexDirection: "column",
-                padding: 1,
+                p: 1,
                 mb: 1,
                 borderBottom: "1px solid #03527C",
               }}
@@ -139,10 +133,11 @@ const Calendar = () => {
           flex="1 1 100%"
           ml="15px"
           sx={{
+            "& .fc": { backgroundColor: "#E8F0FA", color: "black" },
             "& .fc-toolbar-title": { color: "black" },
             "& .fc-col-header-cell-cushion": { color: "black" },
             "& .fc-event": { color: "black" },
-
+            "& .fc-daygrid-day-number": { color: "black" },
             "& .fc .fc-button": {
               backgroundColor: "#E8F0FA",
               color: "#03527C",
@@ -154,7 +149,6 @@ const Calendar = () => {
                 color: "#E8F0FA",
               },
             },
-
             "& .fc .fc-button.fc-button-active": {
               backgroundColor: "#03527C",
               color: "#E8F0FA",
@@ -164,31 +158,26 @@ const Calendar = () => {
                 color: "#E8F0FA",
               },
             },
-
             "& .fc-scrollgrid": {
               border: "2px solid #03527C",
               borderRadius: "20px",
+              backgroundColor: "#E8F0FA",
             },
           }}
         >
           <FullCalendar
             height="75vh"
-            plugins={[
-              dayGridPlugin,
-              timeGridPlugin,
-              interactionPlugin,
-              listPlugin,
-            ]}
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
             headerToolbar={{
               left: "prev,next today",
               center: "title",
               right: "dayGridMonth,timeGridWeek,timeGridDay,listMonth",
             }}
             initialView="dayGridMonth"
-            editable={true}
-            selectable={true}
-            selectMirror={true}
-            dayMaxEvents={true}
+            editable
+            selectable
+            selectMirror
+            dayMaxEvents
             select={handleDateClick}
             eventClick={handleEventClick}
             events={currentEvents}
