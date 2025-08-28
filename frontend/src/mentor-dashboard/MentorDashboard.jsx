@@ -1,5 +1,5 @@
 import React from "react";
-import MentorProfile from "./MentorProfile";
+import MentorProfile from "./mentorProfile";
 import MentorHome from "./MentorHome";
 import UP_fullLogo from "../Images/UP_fullLogo.png";
 import { auth } from "../firebase";

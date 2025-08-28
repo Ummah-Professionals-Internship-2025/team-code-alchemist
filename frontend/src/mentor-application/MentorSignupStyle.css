@@ -6,12 +6,11 @@
 }
 
 body {
-  background: linear-gradient(45deg, #f8fafc, #54708b);
+  background: #ffffff !important;
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
+  display: block !important;
+  margin: 0;
+  padding: 0;
 }
 
 /* Required field indicator */

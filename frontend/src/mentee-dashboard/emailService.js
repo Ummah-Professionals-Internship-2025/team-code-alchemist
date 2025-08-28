@@ -12,21 +12,21 @@ const EMAILJS_CONFIG = {
 // EmailJS V2 Configuration for dashboard emails
 const EMAILJS_V2_CONFIG = {
   publicKey: process.env.REACT_APP_EMAILJSV2_PUBLIC_KEY,
-  serviceId: process.env.REACT_APP_EMAILJSV2_SERVICE_ID,
+  gmailServiceId: process.env.REACT_APP_EMAILJSV2_SERVICE_ID,
+  outlookServiceId: process.env.REACT_APP_EMAILJSV2_SERVICE_ID, // Using same service for now
   meetingConfirmedTemplateId:
     process.env.REACT_APP_EMAILJSV2_TEMPLATE_MEETING_CONFIRMED,
   newTimeProposedTemplateId:
     process.env.REACT_APP_EMAILJSV2_TEMPLATE_NEW_TIME_PROPOSED,
 };
 
-// Initialize EmailJS only if the key is present
-if (EMAILJS_CONFIG.publicKey) {
-  emailjs.init(EMAILJS_CONFIG.publicKey);
-}
-
-// Initialize EmailJS V2 only if the key is present
+// Initialize EmailJS V2 only for dashboard functionality
+// Note: Regular EmailJS is initialized by the mentee application
 if (EMAILJS_V2_CONFIG.publicKey) {
+  console.log("MENTEE DASHBOARD - Initializing EmailJS V2 with key:", EMAILJS_V2_CONFIG.publicKey);
   emailjs.init(EMAILJS_V2_CONFIG.publicKey);
+} else {
+  console.error("MENTEE DASHBOARD - EmailJS V2 public key not found!");
 }
 
 // Helper: choose service by domain; default to gmail service id
@@ -47,19 +47,36 @@ const getEmailService = (emailAddress) => {
   return EMAILJS_CONFIG.gmailServiceId;
 };
 
+// Helper: choose EmailJS V2 service by domain
+const getEmailJSV2Service = (emailAddress) => {
+  const domain = emailAddress.toLowerCase();
+
+  // Use Outlook service for Microsoft domains
+  if (
+    domain.includes("outlook.com") ||
+    domain.includes("hotmail.com") ||
+    domain.includes("live.com") ||
+    domain.includes("msn.com")
+  ) {
+    return EMAILJS_V2_CONFIG.outlookServiceId;
+  }
+
+  // Use Gmail service for Gmail and other domains
+  return EMAILJS_V2_CONFIG.gmailServiceId;
+};
+
 // Send meeting confirmation emails (for RequestMentor functionality)
 export const sendMeetingEmails = async (meetingData, selectedDate) => {
-  // Verify configuration
+  // Verify configuration - use EmailJS V2 for dashboard functionality
   if (
-    !EMAILJS_CONFIG.publicKey ||
-    (!EMAILJS_CONFIG.gmailServiceId && !EMAILJS_CONFIG.outlookServiceId) ||
-    !EMAILJS_CONFIG.menteeTemplateId ||
-    !EMAILJS_CONFIG.mentorTemplateId
+    !EMAILJS_V2_CONFIG.publicKey ||
+    (!EMAILJS_V2_CONFIG.gmailServiceId && !EMAILJS_V2_CONFIG.outlookServiceId) ||
+    !EMAILJS_V2_CONFIG.meetingConfirmedTemplateId
   ) {
     return {
       success: false,
       error:
-        "Missing EmailJS configuration. Ensure REACT_APP_EMAILJS_* env vars are set.",
+        "Missing EmailJS V2 configuration. Ensure REACT_APP_EMAILJSV2_* env vars are set.",
     };
   }
 
@@ -84,34 +101,48 @@ export const sendMeetingEmails = async (meetingData, selectedDate) => {
   const errors = [];
   let mentee = null;
   let mentor = null;
+  
+  console.log("MENTEE DASHBOARD - Sending meeting emails using EmailJS V2");
+  
   try {
     mentee = await emailjs.send(
-      getEmailService(meetingData.menteeEmail),
-      EMAILJS_CONFIG.menteeTemplateId,
+      getEmailJSV2Service(meetingData.menteeEmail),
+      EMAILJS_V2_CONFIG.meetingConfirmedTemplateId,
       {
+        email: meetingData.menteeEmail,
+        to_name: meetingData.menteeName,
         mentee_name: meetingData.menteeName,
         mentor_name: meetingData.mentorName,
         meeting_date: formattedDate,
         meeting_time: meetingData.meetingTime,
         mentee_email: meetingData.menteeEmail,
-      }
-    );
-  } catch (e) {
-    errors.push(`mentee: ${e?.text || e?.message || "unknown error"}`);
-  }
-  try {
-    mentor = await emailjs.send(
-      getEmailService(meetingData.mentorEmail),
-      EMAILJS_CONFIG.mentorTemplateId,
-      {
-        mentor_name: meetingData.mentorName,
-        mentee_name: meetingData.menteeName,
-        meeting_date: formattedDate,
-        meeting_time: meetingData.meetingTime,
         mentor_email: meetingData.mentorEmail,
       }
     );
+    console.log("MENTEE DASHBOARD - Mentee email sent successfully");
   } catch (e) {
+    console.error("MENTEE DASHBOARD - Mentee email error:", e);
+    errors.push(`mentee: ${e?.text || e?.message || "unknown error"}`);
+  }
+  
+  try {
+    mentor = await emailjs.send(
+      getEmailJSV2Service(meetingData.mentorEmail),
+      EMAILJS_V2_CONFIG.meetingConfirmedTemplateId,
+      {
+        email: meetingData.mentorEmail,
+        to_name: meetingData.mentorName,
+        mentee_name: meetingData.menteeName,
+        mentor_name: meetingData.mentorName,
+        meeting_date: formattedDate,
+        meeting_time: meetingData.meetingTime,
+        mentee_email: meetingData.menteeEmail,
+        mentor_email: meetingData.mentorEmail,
+      }
+    );
+    console.log("MENTEE DASHBOARD - Mentor email sent successfully");
+  } catch (e) {
+    console.error("MENTEE DASHBOARD - Mentor email error:", e);
     errors.push(`mentor: ${e?.text || e?.message || "unknown error"}`);
   }
 
@@ -126,7 +157,7 @@ export const sendMeetingConfirmationEmails = async (meetingData, meetLink) => {
   // Verify configuration
   if (
     !EMAILJS_V2_CONFIG.publicKey ||
-    !EMAILJS_V2_CONFIG.serviceId ||
+    (!EMAILJS_V2_CONFIG.gmailServiceId && !EMAILJS_V2_CONFIG.outlookServiceId) ||
     !EMAILJS_V2_CONFIG.meetingConfirmedTemplateId
   ) {
     return {
@@ -159,7 +190,7 @@ export const sendMeetingConfirmationEmails = async (meetingData, meetLink) => {
   try {
     // Send email to mentee
     menteeEmail = await emailjs.send(
-      EMAILJS_V2_CONFIG.serviceId,
+      getEmailJSV2Service(meetingData.menteeEmail),
       EMAILJS_V2_CONFIG.meetingConfirmedTemplateId,
       {
         email: meetingData.menteeEmail, // Changed to match template variable {{email}}
@@ -180,7 +211,7 @@ export const sendMeetingConfirmationEmails = async (meetingData, meetLink) => {
   try {
     // Send email to mentor
     mentorEmail = await emailjs.send(
-      EMAILJS_V2_CONFIG.serviceId,
+      getEmailJSV2Service(meetingData.mentorEmail),
       EMAILJS_V2_CONFIG.meetingConfirmedTemplateId,
       {
         email: meetingData.mentorEmail, // Changed to match template variable {{email}}
@@ -214,7 +245,7 @@ export const sendNewTimeProposalEmails = async (meetingData) => {
   // Verify configuration
   if (
     !EMAILJS_V2_CONFIG.publicKey ||
-    !EMAILJS_V2_CONFIG.serviceId ||
+    (!EMAILJS_V2_CONFIG.gmailServiceId && !EMAILJS_V2_CONFIG.outlookServiceId) ||
     !EMAILJS_V2_CONFIG.newTimeProposedTemplateId
   ) {
     return {
@@ -246,7 +277,7 @@ export const sendNewTimeProposalEmails = async (meetingData) => {
   try {
     // Send email to mentee
     menteeEmail = await emailjs.send(
-      EMAILJS_V2_CONFIG.serviceId,
+      getEmailJSV2Service(meetingData.menteeEmail),
       EMAILJS_V2_CONFIG.newTimeProposedTemplateId,
       {
         email: meetingData.menteeEmail, // Changed to match template variable {{email}}
@@ -267,7 +298,7 @@ export const sendNewTimeProposalEmails = async (meetingData) => {
   try {
     // Send email to mentor
     mentorEmail = await emailjs.send(
-      EMAILJS_V2_CONFIG.serviceId,
+      getEmailJSV2Service(meetingData.mentorEmail),
       EMAILJS_V2_CONFIG.newTimeProposedTemplateId,
       {
         email: meetingData.mentorEmail, // Changed to match template variable {{email}}

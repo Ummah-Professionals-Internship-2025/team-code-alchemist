@@ -611,16 +611,8 @@ app.post("/api/meetings", async (req, res) => {
       createdAt: new Date(),
     });
 
-    // Attempt server-side email notification via EmailJS REST API (non-blocking)
-    try {
-      await sendMeetingEmailsServer(meetingData);
-      console.log(
-        "Server email notifications sent for meeting:",
-        meetingRef.id
-      );
-    } catch (e) {
-      console.warn("EmailJS server notification failed:", e.message);
-    }
+    // Note: Email sending is handled by the frontend using EmailJS
+    console.log("Meeting saved to database:", meetingRef.id);
 
     res.json({
       success: true,

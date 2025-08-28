@@ -323,16 +323,32 @@ function Dashboard() {
         boxSizing: "border-box",
       }}
     >
-      <h1
-        style={{
-          color: "#007CA6",
-          fontSize: "38px",
-          fontWeight: "800",
-          marginBottom: "8px",
-        }}
-      >
-        DASHBOARD
-      </h1>
+      {/* Logo */}
+      <div style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        marginBottom: "24px",
+        gap: "16px"
+      }}>
+        <img
+          src="/logo.png"
+          alt="Ummah Professionals Logo"
+          style={{
+            height: "60px",
+            width: "auto"
+          }}
+        />
+        <h1
+          style={{
+            color: "#007CA6",
+            fontSize: "38px",
+            fontWeight: "800",
+            margin: "0"
+          }}
+        >
+          DASHBOARD
+        </h1>
+      </div>
       <div style={{ color: "#007CA6", fontSize: "20px", marginBottom: "16px" }}>
         Current requests
       </div>
@@ -2726,28 +2742,28 @@ function App() {
       {/* Top Header Bar */}
       <div
         style={{
-          height: "70px",
+          height: "100px",
           background: "#E7E8EE",
           borderBottom: "1px solid #e0e0e0",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "0 24px",
+          padding: "0 40px",
           boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
           zIndex: 100,
         }}
       >
         {/* Left side - Logo and Title */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           <img
             src="/logo.png"
             alt="Logo"
-            style={{ width: "32px", height: "32px", objectFit: "contain" }}
+            style={{ width: "48px", height: "48px", objectFit: "contain" }}
           />
           <span
             style={{
-              fontSize: "1.2rem",
-              fontWeight: "600",
+              fontSize: "1.8rem",
+              fontWeight: "700",
               color: "#333333",
               letterSpacing: "0.5px",
             }}
@@ -2757,14 +2773,15 @@ function App() {
         </div>
 
         {/* Right side - Navigation and Logout */}
-        <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
-          <div style={{ display: "flex", gap: "16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
+          <div style={{ display: "flex", gap: "24px" }}>
             <a
               href="#"
               style={{
                 color: "#666666",
                 textDecoration: "none",
-                fontSize: "0.9rem",
+                fontSize: "1.2rem",
+                fontWeight: "500",
               }}
             >
               home
@@ -2774,7 +2791,8 @@ function App() {
               style={{
                 color: "#666666",
                 textDecoration: "none",
-                fontSize: "0.9rem",
+                fontSize: "1.2rem",
+                fontWeight: "500",
               }}
             >
               about
@@ -2784,7 +2802,8 @@ function App() {
               style={{
                 color: "#666666",
                 textDecoration: "none",
-                fontSize: "0.9rem",
+                fontSize: "1.2rem",
+                fontWeight: "500",
               }}
             >
               get involved ▼
@@ -2794,7 +2813,8 @@ function App() {
               style={{
                 color: "#666666",
                 textDecoration: "none",
-                fontSize: "0.9rem",
+                fontSize: "1.2rem",
+                fontWeight: "500",
               }}
             >
               events
@@ -2804,7 +2824,8 @@ function App() {
               style={{
                 color: "#666666",
                 textDecoration: "none",
-                fontSize: "0.9rem",
+                fontSize: "1.2rem",
+                fontWeight: "500",
               }}
             >
               contact us
@@ -2816,9 +2837,9 @@ function App() {
               background: "#FDBB37",
               color: "#ffffff",
               border: "none",
-              padding: "8px 16px",
-              borderRadius: "4px",
-              fontSize: "0.9rem",
+              padding: "12px 24px",
+              borderRadius: "6px",
+              fontSize: "1.2rem",
               fontWeight: "600",
               cursor: "pointer",
               transition: "background 0.2s",
