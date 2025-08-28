@@ -183,3 +183,57 @@ html, body {
     padding: 0 10px;
   }
 }
+
+/* Main content responsive adjustments */
+.main-content {
+  transition: margin-left 0.2s;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 220px !important;
+  }
+  .main-content.sidebar-collapsed {
+    margin-left: 56px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    margin-left: 200px !important;
+  }
+  .main-content.sidebar-collapsed {
+    margin-left: 56px !important;
+  }
+}
+
+/* Responsive input fields for Profile page */
+@media (max-width: 768px) {
+  input[type="text"], input[type="email"], input[type="tel"] {
+    font-size: 14px !important;
+    padding: 8px !important;
+  }
+  
+  .react-select__control {
+    min-height: 40px !important;
+  }
+  
+  .react-select__value-container {
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  input[type="text"], input[type="email"], input[type="tel"] {
+    font-size: 12px !important;
+    padding: 6px !important;
+  }
+  
+  .react-select__control {
+    min-height: 36px !important;
+  }
+  
+  .react-select__value-container {
+    font-size: 12px !important;
+  }
+}

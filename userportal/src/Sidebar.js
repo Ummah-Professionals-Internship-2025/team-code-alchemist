@@ -14,7 +14,10 @@ export default function Sidebar({ collapsed, onToggle, onNavigate, activeKey, us
   return (
     <div className={`sidebar${collapsed ? ' collapsed' : ''}`}>  
       <div className="sidebar-header">
-        <span className="sidebar-title">UMMAH PROFESSIONALS</span>
+        <div className="sidebar-logo-section">
+          <img src="/logo.png" alt="Logo" className="sidebar-logo" />
+          <span className="sidebar-title">UMMAH PROFESSIONALS</span>
+        </div>
         <button className="sidebar-toggle" onClick={onToggle}><FaBars /></button>
       </div>
       {!collapsed && (

@@ -1,5 +1,5 @@
 .sidebar {
-  width: 260px;
+  width: 300px;
   background: #00212C;
   color: #E7E8EE;
   height: 100vh;
@@ -19,18 +19,34 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 18px 12px 18px;
+  padding: 20px 18px 16px 18px;
   font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: 1px;
   border-bottom: 1px solid #003F55;
+  min-height: 80px;
 }
-.sidebar-title {
+.sidebar-logo-section {
+  display: flex;
+  align-items: center;
   flex: 1;
+  gap: 12px;
+}
+
+.sidebar-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.sidebar-title {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   color: #007CA6;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 .sidebar-toggle {
   background: none;
@@ -89,7 +105,7 @@
   font-size: 1.2em;
   margin-right: 16px;
 }
-.sidebar.collapsed .sidebar-title,
+.sidebar.collapsed .sidebar-logo-section,
 .sidebar.collapsed .sidebar-avatar-section,
 .sidebar.collapsed .sidebar-nav-label {
   display: none;
@@ -125,6 +141,96 @@
     width: 64px;
   }
   .sidebar:not(.collapsed) {
+    width: 240px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 64px;
+  }
+  .sidebar:not(.collapsed) {
     width: 220px;
+  }
+  .sidebar-header {
+    padding: 16px 12px 12px 12px;
+    font-size: 0.9rem;
+    min-height: 70px;
+  }
+  .sidebar-logo {
+    width: 28px;
+    height: 28px;
+  }
+  .sidebar-title {
+    font-size: 0.9rem;
+  }
+  .sidebar-avatar {
+    width: 60px;
+    height: 60px;
+  }
+  .sidebar-user-name {
+    font-size: 1rem;
+  }
+  .sidebar-user-role {
+    font-size: 0.9rem;
+  }
+  .sidebar-nav-link {
+    padding: 10px 16px;
+    font-size: 1rem;
+  }
+  .sidebar-nav-icon {
+    font-size: 1.1em;
+    margin-right: 12px;
+  }
+  .sidebar-logout-btn {
+    margin: 24px 16px 0 16px;
+    padding: 10px 0;
+    width: calc(100% - 32px);
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 56px;
+  }
+  .sidebar:not(.collapsed) {
+    width: 200px;
+  }
+  .sidebar-header {
+    padding: 12px 8px 8px 8px;
+    font-size: 0.8rem;
+    min-height: 60px;
+  }
+  .sidebar-logo {
+    width: 24px;
+    height: 24px;
+  }
+  .sidebar-title {
+    font-size: 0.8rem;
+  }
+  .sidebar-avatar {
+    width: 50px;
+    height: 50px;
+  }
+  .sidebar-user-name {
+    font-size: 0.9rem;
+  }
+  .sidebar-user-role {
+    font-size: 0.8rem;
+  }
+  .sidebar-nav-link {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+  .sidebar-nav-icon {
+    font-size: 1em;
+    margin-right: 8px;
+  }
+  .sidebar-logout-btn {
+    margin: 16px 12px 0 12px;
+    padding: 8px 0;
+    width: calc(100% - 24px);
+    font-size: 0.9rem;
   }
 } 

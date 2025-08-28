@@ -90,8 +90,16 @@ function Dashboard() {
       if (data.success) {
         // Store all meetings
         setAllMeetings(data.meetings);
+        
+        // Debug: Log all meetings and their statuses
+        console.log('All meetings from API:', data.meetings);
+        data.meetings.forEach(meeting => {
+          console.log(`Meeting ${meeting.id}: status=${meeting.status}, date=${meeting.meetingDate}, time=${meeting.meetingTime}`);
+        });
+        
         // Filter out 'done' meetings from current meetings display
         const currentMeetings = data.meetings.filter(meeting => meeting.status !== 'done');
+        console.log('Current meetings after filtering:', currentMeetings);
         setPendingMeetings(currentMeetings);
         
         // Fetch mentor details from mentors collection
@@ -140,6 +148,15 @@ function Dashboard() {
 
   useEffect(() => {
     fetchPendingMeetings();
+    
+    // Set up periodic refresh every 2 minutes to check for expired meetings
+    const refreshInterval = setInterval(() => {
+      console.log('Refreshing meetings data...');
+      fetchPendingMeetings();
+    }, 2 * 60 * 1000); // 2 minutes
+    
+    // Cleanup interval on component unmount
+    return () => clearInterval(refreshInterval);
   }, []);
 
   const acceptMeeting = async (meetingId) => {
@@ -1892,7 +1909,16 @@ function App() {
         user={user}
         onLogout={handleLogout}
       />
-      <div style={{ marginLeft: sidebarCollapsed ? 64 : 260, flex: 1, transition: 'margin-left 0.2s', background: '#00212C', minHeight: '100vh' }}>
+      <div 
+        className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}
+        style={{ 
+          marginLeft: sidebarCollapsed ? 64 : 280, 
+          flex: 1, 
+          transition: 'margin-left 0.2s', 
+          background: '#00212C', 
+          minHeight: '100vh'
+        }}
+      >
         {mainContent}
       </div>
     </div>
