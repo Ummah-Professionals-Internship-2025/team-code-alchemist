@@ -16,7 +16,7 @@
     font-family: Poppins;
 }
 
-.navbar-mentor ul {
+.navbar-desktop ul {
     list-style-type: none;
     padding: 0px;
     margin: 0px;
@@ -34,14 +34,14 @@
     right: 0;
 }
 
-.navbar-mentor a {
+.navbar-desktop a {
     color: #003F55;
     text-decoration: none;
     padding: 15px;
     text-align: center;
 }
 
-.navbar-mentor li {
+.navbar-desktop li {
     float: left;
     text-align: center;
     display: flex;
@@ -57,12 +57,12 @@
     object-fit: cover;
 }
 
-.login-mentor hover:a {
+.login hover:a {
     text-decoration: underline;
     background-color: none;
 }
 
-.title-mentor {
+.title-student {
     color: #fbfbfc;
     font-size: 42px;
     text-align: left;
@@ -91,12 +91,12 @@ a:visited {
         display: none;
     }
     
-    .navbar a:hover li {
+    .navbar-desktop a:hover li {
         background-color: #003F55;
         color: #E7E8EE;
     }
     
-    .navbar-mentor li {
+    .navbar-desktop li {
         text-align: center;
     }
     
@@ -142,12 +142,12 @@ a:visited {
         padding-bottom: 4px;
     }
     
-    .mentor:hover {
+    .student:hover {
         background-color: #E7E8EE;
         color: #003F55;
     }
     
-    .mentor {
+    .student {
         position: relative;
         top: 200px;
         left: 150px;
@@ -171,7 +171,7 @@ a:visited {
         flex-shrink: 0;
     }
     
-    .subtitle-mentor {
+    .subtitle-student {
         color: #fbfbfc;
         font-size: 21px;
         text-align: left;
@@ -187,7 +187,7 @@ a:visited {
         flex-shrink: 0;
     }
     
-    .login-mentor {
+    .login-student {
         color: white;
         font-size: 16px;
         font-family: Poppins;
@@ -197,7 +197,7 @@ a:visited {
         margin-top: 20px;
     }
     
-    .login-mentor a {
+    .login-student a {
         color: #00212c;
         padding: 0;
         text-decoration: underline;
@@ -219,7 +219,7 @@ a:visited {
         padding-left: 10px;
     }
     
-    .mentor {
+    .student {
         position: static;
         top: 200px;
         left: 150px;
@@ -247,11 +247,11 @@ a:visited {
         padding: 0 2rem 32px;
     }
 
-    .mentor:hover{
+    .student:hover{
       background-color: #e0a631;
     }
     
-    .title-mentor {
+    .title-student {
         font-family: Kollektif-Bold, sans-serif;
         font-size: 3rem;
         font-weight: 700;
@@ -260,7 +260,7 @@ a:visited {
         text-align: center;
     }
     
-    .subtitle-mentor {
+    .subtitle-student {
         color: #007CA6;
         font-size: 21px;
         font-weight: 300;
@@ -275,7 +275,7 @@ a:visited {
         padding: 0px 32px;
     }
     
-    .navbar-mentor {
+    .navbar-logo {
         display: none;
         background-color: #003F55;
     }
@@ -306,7 +306,7 @@ a:visited {
       background: linear-gradient(-40deg, rgba(138, 203, 219, 0), rgba(0, 124, 166, 0.8), rgb(0, 63, 85));;
     }
     
-    .login-mentor {
+    .login-student {
         color: #007CA6;
         font-size: 16px;
         font-family: Poppins;
@@ -316,7 +316,7 @@ a:visited {
         padding-right: 10px;
     }
     
-    .navbar-mentor a:hover {
+    .navbar-desktop a:hover {
         background-color: none;
         color: #E7E8EE;
     }
@@ -432,7 +432,7 @@ margin: 1rem 0px;
         width: 155.9px;
         height: 10vh 71.5px;
         align-items: center;
-        padding: 10px 0px 0px 27.2px;
+        padding: 0px 0px 0px 27.2px;
     }
     
     .mobile-container .navbar-logo a {

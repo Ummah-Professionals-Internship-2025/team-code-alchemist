@@ -16,7 +16,7 @@ const MentorLandingPage = () => {
   return (
     <div className="root">
       <div className="container-landing">
-        <nav className="navbar-mentor">
+        <nav className="navbar-desktop">
           <ul>
             <li>
               <div className="navbar-logo" alt="logo">
@@ -32,11 +32,11 @@ const MentorLandingPage = () => {
             <li className="contact-us"><a href="https://www.ummahprofessionals.com/contact">contact us</a></li>
             <li className="donate"><a href="https://www.ummahprofessionals.com/donate">donate</a></li>
           </ul>
-          <h1 className="title-mentor"><strong>mentor platform</strong></h1>
-          <p className="subtitle-mentor">Give personalized career advice to Muslim <br /> students and be the change to get them their first job.</p>
-          <p className="if-mentee"><i>if you are a student seeking mentorship, join our mentee platform <a href="">here.</a></i></p>
-          <button className="mentor">give career advice</button>
-          <p className="login-mentor"><i>already have an account? </i></p>
+          <h1 className="title-student"><strong>mentee platform</strong></h1>
+          <p className="subtitle-student">Want help getting that dream job? <br>Gain guidance, confidence, and skills with personalized mentoring<br>from Muslim professionals who understand your journey.</br></br></p>
+          <p className="if-mentee"><i>if you are a professional seeking to mentor students, join our mentor platform <a href="">here.</a></i></p>
+          <button className="student">get career advice</button>
+          <p className="login-student"><i>already have an account? onClick={() => navigate("/mentor-login")}</i></p>
         </nav>
       </div>
       
@@ -52,14 +52,14 @@ const MentorLandingPage = () => {
           </div>
           <div className="mobile-textBlockContainer">
             <div className="background-header">
-              <h1 className="title-mentor"><strong>mentor platform <br /></strong></h1>
+              <h1 className="title-student"><strong>mentee platform <br /></strong></h1>
             </div>
             <div className="white-to-blue">
-              <p className="subtitle-mentor">Give personalized career advice to Muslim students and be the change to get them their first job.</p>
-              <p className="if-mentee"><i>if you are a student seeking mentorship, join our mentee platform <a href="">here.</a></i></p>
-              <button className="mentor">give career advice</button>
+              <p className="subtitle-student">Want help getting that dream job? Gain guidance, confidence, and skills with personalized mentoring from Muslim professionals who understand your journey.</p>
+              <p className="if-mentee"><i>if you are a professional seeking to mentor students, join our mentor platform <a href="">here.</a></i></p>
+              <button className="student">get career advice</button>
               
-              <p className="login-mentor"><i>already have an account? <a href="">login here.</a></i></p>
+              <p className="login-student"><i>already have an account? <a href="">login here.</a></i></p>
             </div>
           </div>
         </div>
