@@ -18,28 +18,37 @@ const db = getFirestore(app);
 const Mentors = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const [pendingMentors, setPendingMentors] = useState([]);
+  const [mentors, setMentors] = useState([]);
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "pendingMentors"), (snapshot) => {
+    const unsub = onSnapshot(collection(db, "mentors"), (snapshot) => {
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,
         name: doc.data().name || "N/A",
         email: doc.data().email || "N/A",
         university: doc.data().university || "N/A",
+        industry: doc.data().industry || "N/A",
         major: doc.data().major || "N/A",
+        skills: doc.data().skills || "N/A",
       }));
-      setPendingMentors(data);
+      setMentors(data);
     });
     return () => unsub();
   }, []);
 
   const handleDelete = async (id) => {
+    const mentor = mentors.find((m) => m.id === id);
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete mentor '${mentor.name}'?`
+    );
+
+    if (!confirmDelete) return;
+
     try {
-      await deleteDoc(doc(db, "pendingMentors", id));
-      alert("Mentor deleted!");
+      await deleteDoc(doc(db, "mentors", id));
+      setMentors((prev) => prev.filter((m) => m.id !== id));
     } catch (error) {
-      console.error("Error deleting Mentor:", error);
+      console.error("Error deleting mentor:", error);
     }
   };
 
@@ -47,7 +56,9 @@ const Mentors = () => {
     { field: "name", headerName: "Name", flex: 1, headerAlign: "center", align: "center" },
     { field: "email", headerName: "Email", flex: 1, headerAlign: "center", align: "center" },
     { field: "university", headerName: "University", flex: 1, headerAlign: "center", align: "center" },
+    { field: "industry", headerName: "Industry", flex: 1, headerAlign: "center", align: "center" },
     { field: "major", headerName: "Major", flex: 1, headerAlign: "center", align: "center" },
+    { field: "skills", headerName: "Skills", flex: 1, headerAlign: "center", align: "center" },
     {
       field: "actions",
       headerName: "Actions",
@@ -55,10 +66,7 @@ const Mentors = () => {
       headerAlign: "center",
       align: "center",
       renderCell: (params) => (
-        <IconButton
-          color="error"
-          onClick={() => handleDelete(params.row.id)}
-        >
+        <IconButton color="error" onClick={() => handleDelete(params.row.id)}>
           <DeleteIcon />
         </IconButton>
       ),
@@ -100,7 +108,7 @@ const Mentors = () => {
           },
         }}
       >
-        <DataGrid rows={pendingMentors} columns={columns} />
+        <DataGrid rows={mentors} columns={columns} />
       </Box>
     </Box>
   );

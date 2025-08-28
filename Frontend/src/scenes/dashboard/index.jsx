@@ -1,21 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Card, CardContent, Typography } from "@mui/material";
 import {
-  getFirestore,
-  collection,
-  onSnapshot,
-  doc,
-  updateDoc,
-  deleteDoc,
-  getDocs,
-} from "firebase/firestore";
+  Box,
+  Button,
+  Typography,
+  useTheme
+} from "@mui/material";
+import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, getDocs } from "firebase/firestore";
 import { app } from "../../firebase";
 import emailjs from "emailjs-com";
+import { formatDate } from "@fullcalendar/core";
+import { tokens } from "../../theme";
 
 const db = getFirestore(app);
 
+emailjs.init(process.env.REACT_APP_EMAILJS_PUBLIC_KEY);
+
 const AdminDashboard = () => {
   const [pendingMentors, setPendingMentors] = useState([]);
+  const [confirmedMeeting, setConfirmedMeeting] = useState([]);
+
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
 
   useEffect(() => {
     const fixMissingStatusFields = async () => {
@@ -25,7 +30,6 @@ const AdminDashboard = () => {
         if (!data.status) {
           const docRef = doc(db, "pendingMentors", docSnap.id);
           await updateDoc(docRef, { status: "pending" });
-          console.log(`Set status: "pending" for ${data.email}`);
         }
       });
       await Promise.all(updates);
@@ -43,7 +47,38 @@ const AdminDashboard = () => {
     return () => unsub();
   }, []);
 
-  // ✅ integrated your handleApprove function here
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, "pendingMeetings"), (snapshot) => {
+      const events = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        let startDate = null;
+
+        if (data.meetingDate) {
+          const dateObj = new Date(data.meetingDate);
+          if (data.meetingTime) {
+            const [time, modifier] = data.meetingTime.split(" ");
+            let [hours, minutes] = time.split(":").map(Number);
+            if (modifier === "PM" && hours !== 12) hours += 12;
+            if (modifier === "AM" && hours === 12) hours = 0;
+            dateObj.setHours(hours, minutes, 0, 0);
+          }
+          startDate = dateObj;
+        }
+
+        return {
+          id: doc.id,
+          title: `${data.menteeName || "Mentee"} & ${data.mentorName || "Mentor"}`,
+          start: startDate,
+          allDay: !data.meetingTime
+        };
+      });
+
+      setConfirmedMeeting(events);
+    });
+
+    return () => unsub();
+  }, []);
+
   const handleApprove = async (mentor) => {
     const dbId = mentor.id;
     const signupLink = `${window.location.origin}/create-password?dbId=${dbId}&email=${mentor.email}`;
@@ -54,12 +89,17 @@ const AdminDashboard = () => {
       signup_link: signupLink,
     };
 
+    console.log(
+      "SERVICE:", process.env.REACT_APP_EMAILJS_SERVICE_ID,
+      "TEMPLATE:", process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
+      "KEY:", process.env.REACT_APP_EMAILJS_PUBLIC_KEY
+    );
+
     try {
       await emailjs.send(
         process.env.REACT_APP_EMAILJS_SERVICE_ID,
         process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
-        emailParams,
-        process.env.REACT_APP_EMAILJS_PUBLIC_KEY
+        emailParams
       );
 
       await updateDoc(doc(db, "pendingMentors", mentor.id), {
@@ -68,7 +108,7 @@ const AdminDashboard = () => {
 
       alert(`Approved & sent link to ${mentor.email}`);
     } catch (error) {
-      console.error("Error approving mentor:", error);
+      console.error(error);
       alert(`Failed to send email: ${error?.text || error?.message || error}`);
     }
   };
@@ -78,68 +118,115 @@ const AdminDashboard = () => {
       await deleteDoc(doc(db, "pendingMentors", user.id));
       alert(`Denied user: ${user.name}`);
     } catch (err) {
-      console.error("Deny failed:", err);
+      console.error(err);
       alert("Failed to deny user");
     }
   };
 
   return (
-    <Box sx={{ mt: 4, mx: "auto", maxWidth: 600, color: "#03527C" }}>
-      <Typography variant="h4" gutterBottom>
-        Pending Mentor Approvals
-      </Typography>
-      {pendingMentors.length === 0 && <Typography>No pending users.</Typography>}
-      {pendingMentors.map((user) => (
-        <Card key={user.id} sx={{ mb: 2 }}>
-          <CardContent>
+    <Box sx={{ px: 4, py: 4 }}>
+      <Box sx={{ mt: 4, mx: "auto", maxWidth: 600 }}>
+        <Typography variant="h4" gutterBottom sx={{ color: "black" }}>
+          Pending Mentor Approvals
+        </Typography>
+        {pendingMentors.length === 0 && (
+          <Typography sx={{ color: "black" }}>No pending users.</Typography>
+        )}
+        {pendingMentors.map((user) => (
+          <Box
+            key={user.id}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              backgroundColor: "#E8F0FA",
+              border: "2px solid #03527C",
+              borderRadius: "20px",
+              padding: 2,
+              width: "100%",
+              color: "black",
+              mb: 2
+            }}
+          >
+            <Typography>Name: {user.name}</Typography>
+            <Typography>Email: {user.email}</Typography>
+            <Typography>
+              University: {user.university}, Years of Experience: {user.yearsOfExperience}
+            </Typography>
+            <Typography>Industry: {user.industry}</Typography>
+            <Typography>Skills: {user.skills}</Typography>
+            <Typography>
+              Resume:{" "}
+              <a href={user.resumeURL} target="_blank" rel="noreferrer">
+                View Resume
+              </a>
+            </Typography>
+            <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => handleApprove(user)}
+              >
+                Approve
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={() => handleDeny(user)}
+              >
+                Deny
+              </Button>
+            </Box>
+          </Box>
+        ))}
+      </Box>
+
+      {/* Events Box */}
+      <Box mt={6} sx={{ maxWidth: 600, mx: "auto" }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: "#E8F0FA",
+            border: "2px solid #03527C",
+            borderRadius: "20px",
+            padding: 2,
+            width: "100%",
+            color: "black",
+            maxHeight: 300,
+            overflowY: "auto",
+          }}
+        >
+          <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, color: "black" }}>
+            Events
+          </Typography>
+          {confirmedMeeting.length === 0 && (
+            <Typography sx={{ color: "black" }}>No upcoming meetings.</Typography>
+          )}
+          {confirmedMeeting.map((event) => (
             <Box
+              key={event.id}
               sx={{
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "center",
-                backgroundColor: "#E8F0FA",
-                border: "1px solid #FDBB36",
-                padding: 2,
-                width: "100%",
-                color: "black",
-                boxShadow: "none",
+                padding: 1,
+                mb: 1,
+                borderBottom: "1px solid #03527C",
               }}
             >
-              <Typography>Email: {user.email}</Typography>
-              <Typography>Name: {user.name}</Typography>
-              <Typography>University: {user.university}</Typography>
+              <Typography sx={{ fontWeight: "bold" }}>{event.title}</Typography>
               <Typography>
-                Years of Experience: {user.yearsOfExperience}
+                {formatDate(event.start, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: event.allDay ? undefined : "2-digit",
+                  minute: event.allDay ? undefined : "2-digit",
+                })}
               </Typography>
-              <Typography>Industry: {user.industry}</Typography>
-              <Typography>Skills: {user.skills}</Typography>
-              <Typography>Availability: {user.availability}</Typography>
-              <Typography>
-                Resume:{" "}
-                <a href={user.resumeURL} target="_blank" rel="noreferrer">
-                  View Resume
-                </a>
-              </Typography>
-              <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-                <Button
-                  variant="contained"
-                  color="success"
-                  onClick={() => handleApprove(user)}
-                >
-                  Approve
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={() => handleDeny(user)}
-                >
-                  Deny
-                </Button>
-              </Box>
             </Box>
-          </CardContent>
-        </Card>
-      ))}
+          ))}
+        </Box>
+      </Box>
     </Box>
   );
 };

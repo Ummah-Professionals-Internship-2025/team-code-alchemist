@@ -122,7 +122,7 @@ const Sidebar = () => {
                                     variant="h6"
                                     sx={{ color: "#4a90e2" }}
                                 >
-                                    UP SDE
+                                    UP ADMIN
                                 </Typography>
                             </Box>
                         </Box>
@@ -131,6 +131,8 @@ const Sidebar = () => {
                     {/* MENU ITEMS */}
                     <Box
                         paddingLeft={isCollapsed ? undefined : "10%"}
+                        paddingRight={isCollapsed ? undefined : "10%"}
+
                         sx={{ display: "flex", flexDirection: "column", gap: 2 }}
                     >
                         <Item title="Dashboard" to="/" icon={<HomeOutlinedIcon />} selected={selected} setSelected={setSelected} />

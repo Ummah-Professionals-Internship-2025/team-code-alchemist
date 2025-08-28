@@ -31,15 +31,23 @@ const Mentees = () => {
       }));
       setMentees(data);
     });
+
     return () => unsub();
   }, []);
 
   const handleDelete = async (id) => {
+    const mentee = mentees.find((m) => m.id === id);
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete mentee '${mentee.firstName} ${mentee.lastName}'?`
+    );
+
+    if (!confirmDelete) return;
+
     try {
       await deleteDoc(doc(db, "mentees", id));
-      alert("Mentee deleted!");
+      setMentees((prev) => prev.filter((m) => m.id !== id));
     } catch (error) {
-      console.error("Error deleting Mentee:", error);
+      console.error("Error deleting mentee:", error);
     }
   };
 
@@ -55,10 +63,7 @@ const Mentees = () => {
       headerAlign: "center",
       align: "center",
       renderCell: (params) => (
-        <IconButton
-          color="error"
-          onClick={() => handleDelete(params.row.id)}
-        >
+        <IconButton color="error" onClick={() => handleDelete(params.row.id)}>
           <DeleteIcon />
         </IconButton>
       ),
@@ -67,11 +72,8 @@ const Mentees = () => {
 
   return (
     <Box m="20px" sx={{ backgroundColor: "#E8F0FA", color: "black", minHeight: "100vh", p: 2 }}>
-      {/* Custom Header with icons */}
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Box>
-          <Header title="Mentees" color="black" subtitle="Ummah Professional Mentees" />
-        </Box>
+        <Header title="Mentees" color="black" subtitle="Ummah Professional Mentees" />
       </Box>
 
       <Box
