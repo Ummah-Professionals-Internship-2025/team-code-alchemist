@@ -1,13 +1,13 @@
 import { Box, Typography, useTheme, IconButton } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import { tokens } from "./theme";
-import Header from "./Header";
+import { tokens } from "../theme";
+import Header from "../components/Header";
 import {
   getFirestore,
   collection,
   onSnapshot,
   doc,
-  deleteDoc,
+  deleteDoc
 } from "firebase/firestore";
 import app from "../firebase";
 import { useEffect, useState } from "react";
@@ -53,49 +53,12 @@ const Mentors = () => {
   };
 
   const columns = [
-    {
-      field: "name",
-      headerName: "Name",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-    },
-    {
-      field: "email",
-      headerName: "Email",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-    },
-    {
-      field: "university",
-      headerName: "University",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-    },
-    {
-      field: "industry",
-      headerName: "Industry",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-    },
-    {
-      field: "major",
-      headerName: "Major",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-    },
-    {
-      field: "skills",
-      headerName: "Skills",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-    },
-
+    { field: "name", headerName: "Name", flex: 1, headerAlign: "center", align: "center" },
+    { field: "email", headerName: "Email", flex: 1, headerAlign: "center", align: "center" },
+    { field: "university", headerName: "University", flex: 1, headerAlign: "center", align: "center" },
+    { field: "industry", headerName: "Industry", flex: 1, headerAlign: "center", align: "center" },
+    { field: "major", headerName: "Major", flex: 1, headerAlign: "center", align: "center" },
+    { field: "skills", headerName: "Skills", flex: 1, headerAlign: "center", align: "center" },
     {
       field: "actions",
       headerName: "Actions",
@@ -111,44 +74,48 @@ const Mentors = () => {
   ];
 
   return (
-    <Box m="20px">
-      <Header
-        title="Mentors"
-        color="black"
-        subtitle="Ummah Professional Mentors"
-      />
-      <Box
-        m="40px 0 0 0"
-        height="75vh"
-        sx={{
+    <Box
+      sx={{
+        minHeight: "100vh",
+        backgroundColor: "#E8F0FA",
+        color: "black",
+        px: 4,
+        py: 4,
+        "& .MuiDataGrid-root": {
+          border: "none",
           backgroundColor: "#E8F0FA",
-          "& .MuiDataGrid-root": {
-            border: "none",
-            backgroundColor: "#E8F0FA",
-            color: "black",
-          },
-          "& .MuiDataGrid-cell": {
-            borderBottom: "none",
-            fontWeight: "bold",
-            color: "black",
-          },
-          "& .MuiDataGrid-columnHeaders": {
-            borderBottom: "none",
-            backgroundColor: "#E8F0FA",
-            color: "black",
-            fontWeight: "bold",
-          },
-          "& .MuiDataGrid-columnHeaderTitle": {
-            fontWeight: "bold",
-            color: "black",
-          },
-          "& .MuiDataGrid-footerContainer": {
-            borderTop: "none",
-            backgroundColor: "#E8F0FA",
-            color: "black",
-          },
-        }}
-      >
+          color: "black"
+        },
+        "& .MuiDataGrid-cell": {
+          borderBottom: "none",
+          fontWeight: "bold",
+          color: "black"
+        },
+        "& .MuiDataGrid-columnHeaders": {
+          borderBottom: "none",
+          backgroundColor: "#E8F0FA",
+          color: "black",
+          fontWeight: "bold"
+        },
+        "& .MuiDataGrid-columnHeaderTitle": {
+          fontWeight: "bold",
+          color: "black"
+        },
+        "& .MuiDataGrid-footerContainer": {
+          borderTop: "none",
+          backgroundColor: "#E8F0FA",
+          color: "black"
+        },
+        "& .fc": { 
+          backgroundColor: "#E8F0FA",
+          "--fc-page-bg-color": "#E8F0FA",
+        },
+      }}
+    >
+      <Header 
+        title="Mentors"  
+        subtitle={<span style={{ color: "#03527C" }}>Ummah Professionals Mentors</span>}></Header>
+      <Box m="40px 0 0 0" height="75vh">
         <DataGrid rows={mentors} columns={columns} />
       </Box>
     </Box>

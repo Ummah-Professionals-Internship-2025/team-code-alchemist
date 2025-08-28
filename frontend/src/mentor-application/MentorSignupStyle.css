@@ -1,5 +1,6 @@
 /* Mentor Application Form Styles - Scoped to avoid conflicts */
 
+<<<<<<< HEAD
 .mentor-form-container {
   max-width: 1000px;
   margin: 0 auto;
@@ -8,6 +9,14 @@
     -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
   background-color: #f8f9fa;
   min-height: 100vh;
+=======
+body {
+  background: #ffffff !important;
+  min-height: 100vh;
+  display: block !important;
+  margin: 0;
+  padding: 0;
+>>>>>>> aa0688470b0db8c6963013fda003eb4a7a3bd91d
 }
 
 .mentor-form-title {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Typography, useTheme } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import {
   getFirestore,
   collection,
@@ -12,7 +12,6 @@ import {
 import app from "../firebase";
 import emailjs from "emailjs-com";
 import { formatDate } from "@fullcalendar/core";
-import { tokens } from "./theme";
 
 const db = getFirestore(app);
 
@@ -21,9 +20,6 @@ emailjs.init(process.env.REACT_APP_EMAILJS_PUBLIC_KEY);
 const AdminDashboard = () => {
   const [pendingMentors, setPendingMentors] = useState([]);
   const [confirmedMeeting, setConfirmedMeeting] = useState([]);
-
-  const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
 
   useEffect(() => {
     const fixMissingStatusFields = async () => {
@@ -92,15 +88,6 @@ const AdminDashboard = () => {
       signup_link: signupLink,
     };
 
-    console.log(
-      "SERVICE:",
-      process.env.ADMIN_REACT_APP_EMAILJS_SERVICE_ID,
-      "TEMPLATE:",
-      process.env.ADMIN_REACT_APP_EMAILJS_TEMPLATE_ID,
-      "KEY:",
-      process.env.ADMIN_REACT_APP_EMAILJS_PUBLIC_KEY
-    );
-
     try {
       await emailjs.send(
         process.env.REACT_APP_EMAILJS_SERVICE_ID,
@@ -130,7 +117,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <Box sx={{ px: 4, py: 4 }}>
+    <Box sx={{ px: 4, py: 4, backgroundColor: "#E8F0FA", minHeight: "100vh" }}>
       <Box sx={{ mt: 4, mx: "auto", maxWidth: 600 }}>
         <Typography variant="h4" gutterBottom sx={{ color: "black" }}>
           Pending Mentor Approvals
@@ -156,8 +143,7 @@ const AdminDashboard = () => {
             <Typography>Name: {user.name}</Typography>
             <Typography>Email: {user.email}</Typography>
             <Typography>
-              University: {user.university}, Years of Experience:{" "}
-              {user.yearsOfExperience}
+              University: {user.university}, Years of Experience: {user.yearsOfExperience}
             </Typography>
             <Typography>Industry: {user.industry}</Typography>
             <Typography>Skills: {user.skills}</Typography>
@@ -203,16 +189,11 @@ const AdminDashboard = () => {
             overflowY: "auto",
           }}
         >
-          <Typography
-            variant="h5"
-            sx={{ fontWeight: "bold", mb: 2, color: "black" }}
-          >
+          <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, color: "black" }}>
             Meetings
           </Typography>
           {confirmedMeeting.length === 0 && (
-            <Typography sx={{ color: "black" }}>
-              No upcoming meetings.
-            </Typography>
+            <Typography sx={{ color: "black" }}>No upcoming meetings.</Typography>
           )}
           {confirmedMeeting.map((event) => (
             <Box

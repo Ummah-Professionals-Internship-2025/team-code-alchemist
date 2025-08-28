@@ -1,9 +1,18 @@
+/* Ensure body has white background and no flex display */
+body {
+  background: #ffffff !important;
+  margin: 0;
+  padding: 0;
+  display: block !important;
+}
+
+/* Remove the blue background gradient */
 .login-bg {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #057a9b 0%, #05495e 100%);
+  background: #ffffff;
 }
 
 .login-card {
@@ -31,10 +40,14 @@
   border-radius: 8px;
   border: 1.5px solid #cfd8dc;
   font-size: 1.1rem;
-  background: #2d3742;
-  color: #fff;
+  background: #ffffff;
+  color: #333333;
   outline: none;
   transition: border 0.2s;
+}
+
+.login-input::placeholder {
+  color: #666666;
 }
 
 .login-input:focus {

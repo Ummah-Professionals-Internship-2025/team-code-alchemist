@@ -660,21 +660,26 @@ function MenteeForm() {
 
   const handleMeetingSubmit = async (meetingData) => {
     try {
+      console.log("Submitting meeting data:", meetingData);
+      
       const response = await axios.post(
-        "http://localhost:3001/api/mentee",
+        "http://localhost:3001/api/meetings",
         meetingData
       );
 
-      const data = await response.json();
-      if (data.success) {
+      console.log("Meeting submission response:", response.data);
+      
+      if (response.data.success) {
+        console.log("Meeting successfully saved to database");
         setSubmitted(true);
         setTimeout(() => navigate("/mentee-dashboard"), 10000);
       } else {
         setPasswordError(
-          "Error scheduling meeting: " + (data.error || "Unknown error")
+          "Error scheduling meeting: " + (response.data.error || "Unknown error")
         );
       }
     } catch (error) {
+      console.error("Meeting submission error:", error);
       setPasswordError("Network error scheduling meeting: " + error.message);
     }
   };

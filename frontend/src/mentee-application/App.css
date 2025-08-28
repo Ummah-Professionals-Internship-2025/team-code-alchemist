@@ -1,7 +1,11 @@
 body {
-  background-color: #fff;
-  margin: 0;
-  padding: 0;
+  background-color: #fff !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  height: 100vh;
 }
 
 .App {
@@ -60,13 +64,24 @@ body {
   letter-spacing: 1px;
   z-index: 100;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  margin: 0;
 }
 
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 110px;
+  margin-top: 0;
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+  height: calc(100vh - 90px);
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  position: fixed;
+  top: 90px;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .main-title {
@@ -109,7 +124,8 @@ body {
   align-items: stretch;
   font-size: 1.45rem;
   overflow-y: auto;
-  max-height: 85vh;
+  max-height: calc(100vh - 200px);
+  height: fit-content;
 }
 
 .form-card h2 {

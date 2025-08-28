@@ -29,7 +29,7 @@ function MenteeView() {
       {/* Top Header Bar */}
       <div
         style={{
-          height: "140px",
+          height: "90px",
           background: "#E7E8EE",
           borderBottom: "1px solid #e0e0e0",
           display: "flex",
@@ -38,18 +38,20 @@ function MenteeView() {
           padding: "0 48px",
           boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
           zIndex: 100,
-          position: "sticky",
+          position: "fixed",
           top: 0,
+          left: 0,
+          right: 0,
           "@media (max-width: 1024px)": {
-            height: "120px",
+            height: "90px",
             padding: "0 32px",
           },
           "@media (max-width: 768px)": {
-            height: "100px",
+            height: "90px",
             padding: "0 24px",
           },
           "@media (max-width: 480px)": {
-            height: "80px",
+            height: "90px",
             padding: "0 16px",
           },
         }}

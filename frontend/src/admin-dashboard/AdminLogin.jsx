@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import LoginStyle from "../LoginStyle";
+import UPLogo from "../UPLogo.svg";
 
 function AdminLogin({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -15,11 +17,7 @@ function AdminLogin({ onLogin }) {
     setError("");
 
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
       const userDoc = await getDoc(doc(db, "adminUsers", user.uid));
@@ -30,7 +28,7 @@ function AdminLogin({ onLogin }) {
           email,
           role: "admin",
         });
-      } else if (userDoc.exists() && userDoc.data().role !== "admin") {
+      } else if (userDoc.data().role !== "admin") {
         setError("Access denied: Not an admin.");
         return;
       }
@@ -42,40 +40,110 @@ function AdminLogin({ onLogin }) {
   };
 
   return (
-    <div className="form-container">
-      <h2>Admin Login</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          placeholder="First Name"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          required
+    <div
+      style={{
+      width: "100vw",
+      height: "100vh",
+      display: "flex",
+      justifyContent: "center", 
+      alignItems: "flex-start",     
+      paddingTop: "100px",           
+      background: "#f0f2f5",
+    }}
+    >
+      <div style={LoginStyle.base}>
+        <img
+          alt="logo"
+          src={UPLogo}
+          width="200px"
+          style={{
+            display: "block",
+            margin: "80px auto 20px",
+            cursor: "pointer",
+          }}
         />
-        <input
-          type="text"
-          placeholder="Last Name"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          required
-        />
-        <input
-          type="email"
-          placeholder="Admin Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Login</button>
-      </form>
+
+        <h2 style={{ marginBottom: "20px", textAlign: "center" }}>Admin Login</h2>
+
+        {error && <p style={{ color: "red", marginBottom: "15px", textAlign: "center" }}>{error}</p>}
+
+        <form
+          onSubmit={handleLogin}
+          style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+        >
+          <input
+            type="text"
+            placeholder="First Name"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            required
+            style={{
+              ...LoginStyle.emailBarLayout,
+              ...LoginStyle.emailBarStyle,
+              marginBottom: "15px",
+              color: "#007CA6",
+              fontFamily: "Poppins, sans-serif",
+              textAlign: "center",
+            }}
+          />
+
+          <input
+            type="text"
+            placeholder="Last Name"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+            style={{
+              ...LoginStyle.emailBarLayout,
+              ...LoginStyle.emailBarStyle,
+              marginBottom: "15px",
+              color: "#007CA6",
+              fontFamily: "Poppins, sans-serif",
+              textAlign: "center",
+            }}
+          />
+
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={{
+              ...LoginStyle.emailBarLayout,
+              ...LoginStyle.emailBarStyle,
+              marginBottom: "15px",
+              ...LoginStyle.emailTextLayer,
+            }}
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={{
+              ...LoginStyle.passwordBarLayout,
+              ...LoginStyle.passwordBarStyle,
+              marginBottom: "15px",
+              ...LoginStyle.passwordTextLayer,
+            }}
+          />
+
+          <button
+            type="submit"
+            style={{
+              ...LoginStyle.loginButtonLayout,
+              ...LoginStyle.loginButtonStyle,
+              ...LoginStyle.loginButtonTextLayer,
+              cursor: "pointer",
+            }}
+          >
+            Login
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
