@@ -16,10 +16,68 @@ const DEFAULT_AVATAR = "https://www.gravatar.com/avatar/?d=mp&f=y";
 
 function Dashboard() {
   const [pendingMeetings, setPendingMeetings] = useState([]);
+  const [allMeetings, setAllMeetings] = useState([]);
   const [mentorDetails, setMentorDetails] = useState({});
   const [loading, setLoading] = useState(true);
   const [showReschedule, setShowReschedule] = useState(false);
   const [activeMeeting, setActiveMeeting] = useState(null);
+
+  // Format date for display
+  const formatMeetingDate = (meetingDate, meetingTime) => {
+    try {
+      // Handle different date formats
+      let date;
+      if (typeof meetingDate === 'string') {
+        // If it's already in YYYY-MM-DD format, create date in local timezone
+        if (/^\d{4}-\d{2}-\d{2}$/.test(meetingDate)) {
+          const [year, month, day] = meetingDate.split('-').map(Number);
+          date = new Date(year, month - 1, day); // month is 0-indexed
+        } else {
+          date = new Date(meetingDate);
+        }
+      } else {
+        date = new Date(meetingDate);
+      }
+      
+      const options = { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      };
+      const formattedDate = date.toLocaleDateString('en-US', options);
+      
+      // Format time
+      let formattedTime = meetingTime;
+      if (meetingTime && !meetingTime.includes('PM') && !meetingTime.includes('AM')) {
+        // If time is in 24-hour format, convert to 12-hour
+        const timeParts = meetingTime.split(':');
+        if (timeParts.length === 2) {
+          const hour = parseInt(timeParts[0]);
+          const minute = timeParts[1];
+          const period = hour >= 12 ? 'PM' : 'AM';
+          const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+          formattedTime = `${displayHour}:${minute} ${period}`;
+        }
+      }
+      
+      return `${formattedDate} at ${formattedTime}`;
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return `${meetingDate} ${meetingTime}`;
+    }
+  };
+
+  // Get user-friendly status
+  const getStatusDisplay = (meeting) => {
+    if (meeting.status === 'done') return 'Completed';
+    if (meeting.status === 'confirmed') return 'Confirmed';
+    if (meeting.status === 'pending') {
+      if (meeting.menteeApproved && !meeting.mentorApproved) return 'Waiting for Mentor Approval';
+      if (!meeting.menteeApproved && meeting.mentorApproved) return 'Waiting for Your Approval';
+      return 'Pending';
+    }
+    return meeting.status || 'Unknown';
+  };
 
   const fetchPendingMeetings = async () => {
     try {
@@ -30,7 +88,11 @@ function Dashboard() {
       const data = await response.json();
       
       if (data.success) {
-        setPendingMeetings(data.meetings);
+        // Store all meetings
+        setAllMeetings(data.meetings);
+        // Filter out 'done' meetings from current meetings display
+        const currentMeetings = data.meetings.filter(meeting => meeting.status !== 'done');
+        setPendingMeetings(currentMeetings);
         
         // Fetch mentor details from mentors collection
         const mentorIds = [...new Set(data.meetings.map(meeting => meeting.mentorId).filter(Boolean))];
@@ -212,15 +274,7 @@ function Dashboard() {
                       <strong style={{ color: '#007CA6' }}>With:</strong> {meeting.mentorName}
                     </div>
                     <div style={{ marginBottom: 8 }}>
-                      <strong style={{ color: '#007CA6' }}>When:</strong> {(() => {
-                        // meetingDate might already be a human-readable string; if not, try to format ISO
-                        const dateVal = meeting.meetingDate;
-                        const looksLikeISO = typeof dateVal === 'string' && /\d{4}-\d{2}-\d{2}T/.test(dateVal);
-                        const dateStr = typeof dateVal === 'string'
-                          ? (looksLikeISO ? new Date(dateVal).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : dateVal)
-                          : '';
-                        return `${dateStr ? dateStr + ' ' : ''}${meeting.meetingTime || ''}`.trim();
-                      })()}
+                      <strong style={{ color: '#007CA6' }}>When:</strong> {formatMeetingDate(meeting.meetingDate, meeting.meetingTime)}
                     </div>
                     {isConfirmed && meeting.meetLink && (
                       <div style={{ marginBottom: 8 }}>
@@ -270,11 +324,13 @@ function Dashboard() {
           <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 8 }}>Information</h2>
           {loading ? (
             <div style={{ color: '#666', fontSize: 16 }}>Loading...</div>
-          ) : pendingMeetings.length === 0 ? (
-            <div style={{ color: '#666', fontSize: 16 }}>No meetings scheduled</div>
           ) : (
             <div style={{ width: '100%' }}>
-              {pendingMeetings.map((meeting, index) => {
+              {/* Current Meetings */}
+              {pendingMeetings.length > 0 && (
+                <>
+                  <h3 style={{ color: '#007CA6', fontWeight: 600, fontSize: 20, marginBottom: 16, marginTop: 0 }}>Current Meetings</h3>
+                  {pendingMeetings.map((meeting, index) => {
                 const mentorDetail = mentorDetails[meeting.mentorId];
                 console.log(`Meeting ${meeting.id}: mentorId=${meeting.mentorId}, mentorDetail=`, mentorDetail);
                 console.log('Skills type:', typeof mentorDetail?.skills, 'Skills value:', mentorDetail?.skills);
@@ -391,6 +447,41 @@ function Dashboard() {
                   </div>
                 );
               })}
+                </>
+              )}
+              
+              {/* Past Meetings */}
+              {allMeetings.filter(meeting => meeting.status === 'done').length > 0 && (
+                <>
+                  <h3 style={{ color: '#007CA6', fontWeight: 600, fontSize: 20, marginBottom: 16, marginTop: 24 }}>Past Meetings</h3>
+                  {allMeetings.filter(meeting => meeting.status === 'done').map((meeting, index) => {
+                    const mentorDetail = mentorDetails[meeting.mentorId];
+                    return (
+                      <div key={meeting.id} style={{ 
+                        border: '1px solid #e0e0e0', 
+                        borderRadius: 8, 
+                        padding: 16, 
+                        marginBottom: index < allMeetings.filter(meeting => meeting.status === 'done').length - 1 ? 12 : 0,
+                        background: '#f0f0f0'
+                      }}>
+                        <div style={{ marginBottom: 8 }}>
+                          <strong style={{ color: '#007CA6' }}>Mentor:</strong> {meeting.mentorName}
+                        </div>
+                        <div style={{ marginBottom: 8 }}>
+                          <strong style={{ color: '#007CA6' }}>When:</strong> {formatMeetingDate(meeting.meetingDate, meeting.meetingTime)}
+                        </div>
+                        <div style={{ marginBottom: 8 }}>
+                          <strong style={{ color: '#007CA6' }}>Status:</strong> <span style={{ color: '#666' }}>Completed</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
+              
+              {pendingMeetings.length === 0 && allMeetings.filter(meeting => meeting.status === 'done').length === 0 && (
+                <div style={{ color: '#666', fontSize: 16 }}>No meetings scheduled</div>
+              )}
             </div>
           )}
         </div>
@@ -638,9 +729,11 @@ function RequestMentor() {
         mentorId: selectedMentor.mentor.id,
         mentorName: selectedMentor.mentor.name,
         mentorEmail: selectedMentor.mentor.email,
-        meetingDate: selectedDate.toISOString().split('T')[0],
+        meetingDate: selectedDate.toLocaleDateString('en-CA'), // YYYY-MM-DD format in local timezone
         meetingTime: selectedTime,
         status: 'pending',
+        menteeApproved: true,
+        mentorApproved: false,
         createdAt: new Date()
       };
 

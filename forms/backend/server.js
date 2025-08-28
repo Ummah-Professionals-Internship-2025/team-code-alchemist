@@ -40,6 +40,7 @@ const bucketName = process.env.AWS_BUCKET_NAME;
 // Accept JSON and multipart/form-data
 app.use(express.json());
 
+
 // Google OAuth Configuration
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -85,7 +86,9 @@ async function getOAuthToken(userId) {
 
 async function refreshOAuthToken(userId, refreshToken) {
   try {
-    oauth2Client.setCredentials({ refresh_token: refreshToken });
+    oauth2Client.setCredentials({ 
+      refresh_token: refreshToken
+    });
     const { credentials } = await oauth2Client.refreshAccessToken();
     await storeOAuthToken(userId, credentials);
     return credentials;
@@ -352,6 +355,7 @@ app.post('/api/mentee', upload.single('resume'), async (req, res) => {
     menteeData.resumeUrl = resumeUrl;
     menteeData.uid = userRecord.uid;
     menteeData.createdAt = new Date();
+
     
     // Check if there are existing OAuth tokens for this user (using email as key)
     try {
@@ -451,6 +455,7 @@ app.get('/api/mentors', async (req, res) => {
   }
 });
 
+
 // Get individual mentor by ID
 app.get('/api/mentors/:mentorId', async (req, res) => {
   try {
@@ -487,6 +492,7 @@ app.get('/api/mentors/:mentorId', async (req, res) => {
 app.post('/api/meetings', async (req, res) => {
   try {
     const meetingData = req.body;
+
     
     // Ensure mentorId is included for OAuth token lookup
     if (!meetingData.mentorId) {
@@ -517,10 +523,12 @@ app.post('/api/meetings', async (req, res) => {
   }
 });
 
+
 // Get all meetings (pending and confirmed) for a mentee
 app.get('/api/meetings/mentee/:menteeId', async (req, res) => {
   try {
     const { menteeId } = req.params;
+
     const meetings = [];
     
     // Fetch pending meetings
@@ -529,6 +537,7 @@ app.get('/api/meetings/mentee/:menteeId', async (req, res) => {
       .orderBy('createdAt', 'desc')
       .get();
     
+
     pendingSnapshot.forEach(doc => {
       meetings.push({ 
         id: doc.id, 
@@ -595,12 +604,14 @@ app.post('/api/meetings/:id/accept', async (req, res) => {
       
       // Send confirmation emails with meet link
       try {
+
         console.log('Attempting to send confirmation emails...');
         console.log('Meeting data:', updatedMeeting);
         console.log('Meet link:', meetLink);
         await sendConfirmedMeetingEmails(updatedMeeting, meetLink);
         console.log('Confirmation emails sent with meet link for meeting:', id);
       } catch (e) {
+
         console.error('Failed to send confirmation emails:', e.message);
         console.error('Full error:', e);
       }
@@ -675,12 +686,14 @@ app.post('/api/meetings/:id/mentor-approve', async (req, res) => {
       
       // Send confirmation emails with meet link
       try {
+
         console.log('Attempting to send confirmation emails...');
         console.log('Meeting data:', updatedMeeting);
         console.log('Meet link:', meetLink);
         await sendConfirmedMeetingEmails(updatedMeeting, meetLink);
         console.log('Confirmation emails sent with meet link for meeting:', id);
       } catch (e) {
+
         console.error('Failed to send confirmation emails:', e.message);
         console.error('Full error:', e);
       }
@@ -722,6 +735,7 @@ async function sendEmailJS(templateId, templateParams) {
     throw new Error(`EmailJS request failed: ${resp.status} ${txt}`);
   }
 }
+
 
 // ---------------- EmailJS V2 (server-side) -----------------
 async function sendEmailJSV2(templateId, templateParams) {
@@ -767,6 +781,7 @@ async function sendEmailJSV2(templateId, templateParams) {
 
 // Generate a Google Meet link using Google Calendar API with OAuth
 async function generateGoogleMeetLink(meetingData) {
+
   console.log('generateGoogleMeetLink called with:', meetingData);
   console.log('Meeting data keys:', Object.keys(meetingData));
   console.log('Mentor ID:', meetingData.mentorId);
@@ -967,6 +982,7 @@ async function generateGoogleMeetLink(meetingData) {
 async function createCalendarEvent(calendar, meetingData, includeMeetLink = true) {
     // Parse meeting date and time
     const meetingDate = new Date(meetingData.meetingDate);
+
   
   // Safety check for meeting time
   if (!meetingData.meetingTime) {
@@ -977,11 +993,32 @@ async function createCalendarEvent(calendar, meetingData, includeMeetLink = true
   
   // Check if it's a time range (contains dash) or single time
   if (meetingData.meetingTime.includes('-')) {
-    // Time range format: "1:00 PM - 2:00 PM"
+    // Time range format: "1:00 PM - 2:00 PM" or "3pm-4pm"
     [startTime, endTime] = meetingData.meetingTime.split('-').map(t => t.trim());
+    
+    // Handle "3pm-4pm" format by converting to "3:00 PM - 4:00 PM"
+    if (!startTime.includes(':')) {
+      // Format like "3pm" - convert to "3:00 PM"
+      const startMatch = startTime.match(/(\d+)(am|pm)/i);
+      const endMatch = endTime.match(/(\d+)(am|pm)/i);
+      
+      if (startMatch && endMatch) {
+        startTime = `${startMatch[1]}:00 ${startMatch[2].toUpperCase()}`;
+        endTime = `${endMatch[1]}:00 ${endMatch[2].toUpperCase()}`;
+      }
+    }
   } else {
-    // Single time format: "1:00 PM" - create 1 hour duration
+    // Single time format: "1:00 PM" or "3pm" - create 1 hour duration
     startTime = meetingData.meetingTime.trim();
+    
+    // Handle "3pm" format
+    if (!startTime.includes(':')) {
+      const timeMatch = startTime.match(/(\d+)(am|pm)/i);
+      if (timeMatch) {
+        startTime = `${timeMatch[1]}:00 ${timeMatch[2].toUpperCase()}`;
+      }
+    }
+    
     // Calculate end time (1 hour later)
     const timeMatch = startTime.match(/(\d+):(\d+)\s*(am|pm)/i);
     if (timeMatch) {
@@ -998,7 +1035,7 @@ async function createCalendarEvent(calendar, meetingData, includeMeetLink = true
       
       endTime = `${hour}:${minute.toString().padStart(2, '0')} ${period}`;
     } else {
-      throw new Error('Invalid time format. Expected format: "1:00 PM" or "1:00 PM - 2:00 PM"');
+      throw new Error('Invalid time format. Expected format: "1:00 PM", "3pm", "1:00 PM - 2:00 PM", or "3pm-4pm"');
     }
   }
   
@@ -1006,23 +1043,44 @@ async function createCalendarEvent(calendar, meetingData, includeMeetLink = true
   
   // Helper function to parse time to 24-hour format
   function parseTimeTo24Hour(timeStr) {
-    const timeMatch = timeStr.match(/(\d+):(\d+)\s*(am|pm)/i);
-    if (!timeMatch) {
-      throw new Error(`Invalid time format: ${timeStr}`);
+    console.log('Parsing time to 24-hour format:', timeStr);
+    
+    // Handle "3pm" format (no minutes)
+    let timeMatch = timeStr.match(/(\d+)(am|pm)/i);
+    if (timeMatch) {
+      let hour = parseInt(timeMatch[1]);
+      const period = timeMatch[2].toLowerCase();
+      
+      // Convert to 24-hour format
+      if (period === 'pm' && hour !== 12) {
+        hour += 12;
+      } else if (period === 'am' && hour === 12) {
+        hour = 0;
+      }
+      
+      console.log(`Converted ${timeStr} to ${hour}:00`);
+      return { hour, minute: 0 };
     }
     
-    let hour = parseInt(timeMatch[1]);
-    const minute = parseInt(timeMatch[2]);
-    const period = timeMatch[3].toLowerCase();
-    
-    // Convert to 24-hour format
-    if (period === 'pm' && hour !== 12) {
-      hour += 12;
-    } else if (period === 'am' && hour === 12) {
-      hour = 0;
+    // Handle "3:00 PM" format (with minutes)
+    timeMatch = timeStr.match(/(\d+):(\d+)\s*(am|pm)/i);
+    if (timeMatch) {
+      let hour = parseInt(timeMatch[1]);
+      const minute = parseInt(timeMatch[2]);
+      const period = timeMatch[3].toLowerCase();
+      
+      // Convert to 24-hour format
+      if (period === 'pm' && hour !== 12) {
+        hour += 12;
+      } else if (period === 'am' && hour === 12) {
+        hour = 0;
+      }
+      
+      console.log(`Converted ${timeStr} to ${hour}:${minute}`);
+      return { hour, minute };
     }
     
-    return { hour, minute };
+    throw new Error(`Invalid time format: ${timeStr}`);
   }
     
     // Create start and end times
@@ -1055,6 +1113,7 @@ async function createCalendarEvent(calendar, meetingData, includeMeetLink = true
         { email: meetingData.menteeEmail },
         { email: meetingData.mentorEmail },
       ],
+
   };
 
   // Only add Meet link to the primary event (mentor's calendar)
@@ -1067,11 +1126,13 @@ async function createCalendarEvent(calendar, meetingData, includeMeetLink = true
         },
       },
     };
+
   }
 
     const response = await calendar.events.insert({
       calendarId: 'primary',
       resource: event,
+
     conferenceDataVersion: includeMeetLink ? 1 : 0,
   });
 
@@ -1080,20 +1141,24 @@ async function createCalendarEvent(calendar, meetingData, includeMeetLink = true
 
 // Send confirmation emails with Google Meet link
 async function sendConfirmedMeetingEmails(meetingData, meetLink) {
+
   console.log('sendConfirmedMeetingEmails called with:', { meetingData, meetLink });
   
   const common = {
     meeting_date: meetingData.meetingDate,
     meeting_time: meetingData.meetingTime,
+
     meet_link: meetLink,
     mentor_name: meetingData.mentorName,
     mentee_name: meetingData.menteeName
   };
+
   
   console.log('Common template params:', common);
   console.log('Template ID:', process.env.EMAILJSV2_TEMPLATE_MEETING_CONFIRMED);
   
   // Send email to mentee
+
   console.log('Sending email to mentee:', meetingData.menteeEmail);
   await sendEmailJSV2(process.env.EMAILJSV2_TEMPLATE_MEETING_CONFIRMED, {
     to_email: meetingData.menteeEmail,
@@ -1102,6 +1167,7 @@ async function sendConfirmedMeetingEmails(meetingData, meetLink) {
   });
   
   // Send email to mentor
+
   console.log('Sending email to mentor:', meetingData.mentorEmail);
   await sendEmailJSV2(process.env.EMAILJSV2_TEMPLATE_MEETING_CONFIRMED, {
     to_email: meetingData.mentorEmail,
@@ -1113,9 +1179,11 @@ async function sendConfirmedMeetingEmails(meetingData, meetLink) {
 async function sendMeetingEmailsServer(meetingData) {
   const common = {
     meeting_date: meetingData.meetingDate,
+
     meeting_time: meetingData.meetingTime,
     mentor_name: meetingData.mentorName,
     mentee_name: meetingData.menteeName,
+
     accept_link: `${process.env.FRONTEND_URL}/meeting/${meetingData.id}/accept`,
     propose_link: `${process.env.FRONTEND_URL}/meeting/${meetingData.id}/propose`
   };
@@ -1145,6 +1213,7 @@ app.post('/api/notify/meeting', async (req, res) => {
     console.error('Notify meeting email failed:', err);
     res.status(500).json({ success: false, error: err.message });
   }
+
 });
 
 // Test endpoint to verify OAuth setup

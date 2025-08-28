@@ -113,30 +113,44 @@ export const sendMeetingConfirmationEmails = async (meetingData, meetLink) => {
   let mentorEmail = null;
 
   try {
+    // Send email to mentee
     menteeEmail = await emailjs.send(
       EMAILJS_V2_CONFIG.serviceId,
       EMAILJS_V2_CONFIG.meetingConfirmedTemplateId,
       {
+        to_email: meetingData.menteeEmail,
+        to_name: meetingData.menteeName,
         mentee_email: meetingData.menteeEmail,
         mentee_name: meetingData.menteeName,
-        ...common
-      }
-    );
-  } catch (e) {
-    errors.push(`mentee: ${e?.text || e?.message || 'unknown error'}`);
-  }
-
-  try {
-    mentorEmail = await emailjs.send(
-      EMAILJS_V2_CONFIG.serviceId,
-      EMAILJS_V2_CONFIG.meetingConfirmedTemplateId,
-      {
         mentor_email: meetingData.mentorEmail,
         mentor_name: meetingData.mentorName,
         ...common
       }
     );
+    console.log('Email sent to mentee:', meetingData.menteeEmail);
   } catch (e) {
+    console.error('Error sending email to mentee:', e);
+    errors.push(`mentee: ${e?.text || e?.message || 'unknown error'}`);
+  }
+
+  try {
+    // Send email to mentor
+    mentorEmail = await emailjs.send(
+      EMAILJS_V2_CONFIG.serviceId,
+      EMAILJS_V2_CONFIG.meetingConfirmedTemplateId,
+      {
+        to_email: meetingData.mentorEmail,
+        to_name: meetingData.mentorName,
+        mentee_email: meetingData.menteeEmail,
+        mentee_name: meetingData.menteeName,
+        mentor_email: meetingData.mentorEmail,
+        mentor_name: meetingData.mentorName,
+        ...common
+      }
+    );
+    console.log('Email sent to mentor:', meetingData.mentorEmail);
+  } catch (e) {
+    console.error('Error sending email to mentor:', e);
     errors.push(`mentor: ${e?.text || e?.message || 'unknown error'}`);
   }
 
@@ -170,30 +184,44 @@ export const sendNewTimeProposalEmails = async (meetingData) => {
   let mentorEmail = null;
 
   try {
+    // Send email to mentee
     menteeEmail = await emailjs.send(
       EMAILJS_V2_CONFIG.serviceId,
       EMAILJS_V2_CONFIG.newTimeProposedTemplateId,
       {
+        to_email: meetingData.menteeEmail,
+        to_name: meetingData.menteeName,
         mentee_email: meetingData.menteeEmail,
         mentee_name: meetingData.menteeName,
-        ...common
-      }
-    );
-  } catch (e) {
-    errors.push(`mentee: ${e?.text || e?.message || 'unknown error'}`);
-  }
-
-  try {
-    mentorEmail = await emailjs.send(
-      EMAILJS_V2_CONFIG.serviceId,
-      EMAILJS_V2_CONFIG.newTimeProposedTemplateId,
-      {
         mentor_email: meetingData.mentorEmail,
         mentor_name: meetingData.mentorName,
         ...common
       }
     );
+    console.log('Email sent to mentee:', meetingData.menteeEmail);
   } catch (e) {
+    console.error('Error sending email to mentee:', e);
+    errors.push(`mentee: ${e?.text || e?.message || 'unknown error'}`);
+  }
+
+  try {
+    // Send email to mentor
+    mentorEmail = await emailjs.send(
+      EMAILJS_V2_CONFIG.serviceId,
+      EMAILJS_V2_CONFIG.newTimeProposedTemplateId,
+      {
+        to_email: meetingData.mentorEmail,
+        to_name: meetingData.mentorName,
+        mentee_email: meetingData.menteeEmail,
+        mentee_name: meetingData.menteeName,
+        mentor_email: meetingData.mentorEmail,
+        mentor_name: meetingData.mentorName,
+        ...common
+      }
+    );
+    console.log('Email sent to mentor:', meetingData.mentorEmail);
+  } catch (e) {
+    console.error('Error sending email to mentor:', e);
     errors.push(`mentor: ${e?.text || e?.message || 'unknown error'}`);
   }
 

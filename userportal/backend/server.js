@@ -337,6 +337,12 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3001/auth/google/callback'
 );
 
+// Debug OAuth client initialization
+console.log('OAuth Client initialized with:');
+console.log('Client ID:', process.env.GOOGLE_CLIENT_ID ? 'Set' : 'NOT SET');
+console.log('Client Secret:', process.env.GOOGLE_CLIENT_SECRET ? 'Set' : 'NOT SET');
+console.log('Redirect URI:', process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3001/auth/google/callback');
+
 // Function to get OAuth token for a user
 async function getOAuthToken(userId) {
   try {
@@ -380,8 +386,16 @@ async function getOAuthToken(userId) {
 // Function to refresh OAuth token
 async function refreshOAuthToken(userId, refreshToken) {
   try {
-    oauth2Client.setCredentials({ refresh_token: refreshToken });
+    console.log('Refreshing OAuth token for user:', userId);
+    console.log('Refresh token:', refreshToken ? 'Present' : 'Missing');
+    
+    oauth2Client.setCredentials({ 
+      refresh_token: refreshToken
+    });
+    
+    console.log('Attempting to refresh access token...');
     const { credentials } = await oauth2Client.refreshAccessToken();
+    console.log('Token refresh successful');
     
     // Update the token in the database
     await db.collection('mentees').doc(userId).update({
@@ -392,6 +406,7 @@ async function refreshOAuthToken(userId, refreshToken) {
     return credentials;
   } catch (error) {
     console.error('Error refreshing OAuth token:', error);
+    console.error('Error details:', error.message);
     throw error;
   }
 }
@@ -455,11 +470,32 @@ async function createCalendarEvent(userId, meetingData, includeMeetLink = false)
     
     // Check if it's a time range (contains dash) or single time
     if (meetingData.meetingTime.includes('-')) {
-      // Time range format: "1:00 PM - 2:00 PM"
+      // Time range format: "1:00 PM - 2:00 PM" or "3pm-4pm"
       [startTime, endTime] = meetingData.meetingTime.split('-').map(t => t.trim());
+      
+      // Handle "3pm-4pm" format by converting to "3:00 PM - 4:00 PM"
+      if (!startTime.includes(':')) {
+        // Format like "3pm" - convert to "3:00 PM"
+        const startMatch = startTime.match(/(\d+)(am|pm)/i);
+        const endMatch = endTime.match(/(\d+)(am|pm)/i);
+        
+        if (startMatch && endMatch) {
+          startTime = `${startMatch[1]}:00 ${startMatch[2].toUpperCase()}`;
+          endTime = `${endMatch[1]}:00 ${endMatch[2].toUpperCase()}`;
+        }
+      }
     } else {
-      // Single time format: "1:00 PM" - create 1 hour duration
+      // Single time format: "1:00 PM" or "3pm" - create 1 hour duration
       startTime = meetingData.meetingTime.trim();
+      
+      // Handle "3pm" format
+      if (!startTime.includes(':')) {
+        const timeMatch = startTime.match(/(\d+)(am|pm)/i);
+        if (timeMatch) {
+          startTime = `${timeMatch[1]}:00 ${timeMatch[2].toUpperCase()}`;
+        }
+      }
+      
       // Calculate end time (1 hour later)
       const timeMatch = startTime.match(/(\d+):(\d+)\s*(am|pm)/i);
       if (timeMatch) {
@@ -476,19 +512,36 @@ async function createCalendarEvent(userId, meetingData, includeMeetLink = false)
         
         endTime = `${hour}:${minute.toString().padStart(2, '0')} ${period}`;
       } else {
-        throw new Error('Invalid time format. Expected format: "1:00 PM" or "1:00 PM - 2:00 PM"');
+        throw new Error('Invalid time format. Expected format: "1:00 PM", "3pm", "1:00 PM - 2:00 PM", or "3pm-4pm"');
       }
     }
     
     console.log('Parsed times:', { startTime, endTime });
     
-    // Helper function to parse time to 24-hour format
-    function parseTimeTo24Hour(timeStr) {
-      const timeMatch = timeStr.match(/(\d+):(\d+)\s*(am|pm)/i);
-      if (!timeMatch) {
-        throw new Error(`Invalid time format: ${timeStr}`);
+      // Helper function to parse time to 24-hour format
+  function parseTimeTo24Hour(timeStr) {
+    console.log('Parsing time to 24-hour format:', timeStr);
+    
+    // Handle "3pm" format (no minutes)
+    let timeMatch = timeStr.match(/(\d+)(am|pm)/i);
+    if (timeMatch) {
+      let hour = parseInt(timeMatch[1]);
+      const period = timeMatch[2].toLowerCase();
+      
+      // Convert to 24-hour format
+      if (period === 'pm' && hour !== 12) {
+        hour += 12;
+      } else if (period === 'am' && hour === 12) {
+        hour = 0;
       }
       
+      console.log(`Converted ${timeStr} to ${hour}:00`);
+      return { hour, minute: 0 };
+    }
+    
+    // Handle "3:00 PM" format (with minutes)
+    timeMatch = timeStr.match(/(\d+):(\d+)\s*(am|pm)/i);
+    if (timeMatch) {
       let hour = parseInt(timeMatch[1]);
       const minute = parseInt(timeMatch[2]);
       const period = timeMatch[3].toLowerCase();
@@ -500,8 +553,12 @@ async function createCalendarEvent(userId, meetingData, includeMeetLink = false)
         hour = 0;
       }
       
+      console.log(`Converted ${timeStr} to ${hour}:${minute}`);
       return { hour, minute };
     }
+    
+    throw new Error(`Invalid time format: ${timeStr}`);
+  }
     
     // Create start and end times
     const startDateTime = new Date(meetingDate);

@@ -233,9 +233,9 @@ async function createCalendarEvent(userId, meetingData, includeMeetLink = false)
           requestId: `meeting-${Date.now()}`,
           conferenceSolutionKey: {
             type: 'hangoutsMeet',
-          },
         },
-      };
+      },
+    };
     }
 
     console.log(`Creating calendar event for ${userId}:`, event);
