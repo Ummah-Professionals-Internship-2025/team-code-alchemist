@@ -141,7 +141,7 @@ export const themeSettings = (mode) => {
                         light: colors.grey[100]
                     },
                     background: {
-                        default: "#E8F0FA",  // <---- Your background color for dark mode
+                        default: "#E8F0FA",  
                     }
                 } : {
                     primary: {  // Light mode
@@ -156,7 +156,7 @@ export const themeSettings = (mode) => {
                         light: colors.grey[100]
                     },
                     background: {
-                        default: "#E8F0FA",  // <---- Your background color for light mode
+                        default: "#E8F0FA", 
                     },
                 }
             ),

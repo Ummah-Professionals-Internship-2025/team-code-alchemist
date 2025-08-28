@@ -1,5 +1,4 @@
 const LoginStyle = {
-  // Base container
   base: {
     width: "539px",
     height: "503px",
@@ -9,7 +8,6 @@ const LoginStyle = {
     boxShadow: "0 4px 4px 0 rgba(0, 0, 0, 0.25)",
   },
 
-  // Email bar
   emailBarLayout: {
     width: "380px",
     height: "37px",
@@ -30,7 +28,6 @@ const LoginStyle = {
     lineHeight: "normal",
   },
 
-  // Password bar
   passwordBarLayout: {
     width: "380px",
     height: "37px",
@@ -51,7 +48,6 @@ const LoginStyle = {
     lineHeight: "normal",
   },
 
-  // Forgot password
   forgotPasswordTextLayer: {
     color: "#000",
     textAlign: "center",
@@ -62,7 +58,6 @@ const LoginStyle = {
     lineHeight: "normal",
   },
 
-  // Log in button bar
   loginButtonLayout: {
     display: "flex",
     width: "262px",
@@ -83,7 +78,7 @@ const LoginStyle = {
     fontSize: "18px",
     fontStyle: "normal",
     fontWeight: 600,
-    lineHeight: "100%", // 18px
+    lineHeight: "100%", 
   },
 };
 

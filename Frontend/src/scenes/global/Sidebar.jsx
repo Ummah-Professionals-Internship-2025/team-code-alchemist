@@ -40,14 +40,14 @@ const Sidebar = () => {
         <Box
             sx={{
                 "& .pro-sidebar-inner": {
-                    background: "#f4f8fc !important",  // Lighter background color for a professional look
+                    background: "#f4f8fc !important",  
                 },
                 "& .pro-icon-wrapper": {
                     backgroundColor: "transparent !important",
                     color: "black !important",
                 },
                 "& .pro-inner-item": {
-                    padding: "10px 35px 10px 20px !important",  // Adjusted padding
+                    padding: "10px 35px 10px 20px !important",  
                     color: "black !important",
                 },
                 "& .pro-inner-item:hover": {
@@ -98,7 +98,7 @@ const Sidebar = () => {
                             <Box display="flex" justifyContent="center" alignItems="center">
                                 <img
                                     alt="profile-user"
-                                    width="80px"  // Smaller profile image
+                                    width="80px"  
                                     height="80px"
                                     src={`../../assets/user.jpg`}
                                     style={{
