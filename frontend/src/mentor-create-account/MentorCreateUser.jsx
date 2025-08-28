@@ -115,7 +115,7 @@ export default function MentorCreateUser() {
           </div>
 
           {/* Google Calendar OAuth Integration */}
-          <div style={{ marginTop: 24, marginBottom: 24 }}>
+          {/* <div style={{ marginTop: 24, marginBottom: 24 }}>
             <label>
               Google Calendar Access <span style={{ color: "red" }}>*</span>
             </label>
@@ -139,7 +139,7 @@ export default function MentorCreateUser() {
                 }));
               }}
             />
-          </div>
+          </div> */}
 
           <button type="submit" className="submit-btn">
             Sign Up

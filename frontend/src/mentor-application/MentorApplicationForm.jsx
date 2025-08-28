@@ -12,6 +12,7 @@ import {
   companySizeOptions,
   majorOptions,
 } from "./ListOfSkills";
+import { useNavigate } from "react-router-dom";
 
 // profile builder component
 
@@ -46,6 +47,7 @@ function MentorApplicationForm() {
   const [loading, setLoading] = useState(false);
   const [availability, setAvailability] = useState(new Set());
   const [resumeFile, setResumeFile] = useState(null);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -80,11 +82,15 @@ function MentorApplicationForm() {
     // resume url
     const formData = new FormData();
     formData.append("resume", resumeFile);
-    const resumeResponse = await axios.post("/api/applications", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const resumeResponse = await axios.post(
+      "http://localhost:3001/api/applications",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
     form.resumeURL = resumeResponse.data.resumeUrl;
     console.log(form);
 
@@ -106,15 +112,17 @@ function MentorApplicationForm() {
   }
 
   return (
-    <div className="form-container">
-      <h3 className="title is-3">Ummah Professionals</h3>
-      <div className="form-card scrollable-form">
-        <button className="btn">{"< Back"}</button>
+    <div className="mentor-form-container">
+      <h3 className="mentor-form-title">Ummah Professionals</h3>
+      <div className="mentor-form">
+        <button className="btn" onClick={() => navigate("/")}>
+          {"< Back"}
+        </button>
         <h2>Mentor Application</h2>
 
         <form onSubmit={handleSubmit}>
           {/* Full Name */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label" htmlFor="name">
               Full Name <span className="required">*</span>
             </label>
@@ -133,7 +141,7 @@ function MentorApplicationForm() {
           </div>
 
           {/* Email */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label" htmlFor="email">
               Email <span className="required">*</span>
             </label>
@@ -152,7 +160,7 @@ function MentorApplicationForm() {
           </div>
 
           {/* Years of Experience */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label" htmlFor="yearsOfExperience">
               Years of Experience
             </label>
@@ -171,7 +179,7 @@ function MentorApplicationForm() {
           </div>
 
           {/* Company and Past Companies */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label" htmlFor="companies">
               Company and Past Companies
             </label>
@@ -189,7 +197,7 @@ function MentorApplicationForm() {
           </div>
 
           {/* Company Size */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label">
               Company Size <span className="required">*</span>
             </label>
@@ -215,7 +223,7 @@ function MentorApplicationForm() {
           </div>
 
           {/* Skills */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label" htmlFor="skills">
               Skills (3-5)
             </label>
@@ -240,24 +248,28 @@ function MentorApplicationForm() {
             </div>
           </div>
           {/* Major */}
-          <label className="label">
-            Major <span className="required">*</span>
-          </label>
-          <Select
-            name="major"
-            options={majorOptions}
-            value={majorOptions.find((opt) => opt.value === form.major) || null}
-            onChange={(selected) =>
-              setForm({ ...form, major: selected ? selected.value : "" })
-            }
-            classNamePrefix="react-select"
-            placeholder="Select major..."
-            isClearable
-            required
-          />
+          <div className="mentor-field">
+            <label className="label">
+              Major <span className="required">*</span>
+            </label>
+            <Select
+              name="major"
+              options={majorOptions}
+              value={
+                majorOptions.find((opt) => opt.value === form.major) || null
+              }
+              onChange={(selected) =>
+                setForm({ ...form, major: selected ? selected.value : "" })
+              }
+              classNamePrefix="react-select"
+              placeholder="Select major..."
+              isClearable
+              required
+            />
+          </div>
 
           {/* Industry */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label">
               Industry <span className="required">*</span>
             </label>
@@ -278,7 +290,7 @@ function MentorApplicationForm() {
           </div>
 
           {/* Help In */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label" htmlFor="helpIn">
               What do you want to help in
             </label>
@@ -336,7 +348,7 @@ function MentorApplicationForm() {
           </div>
 
           {/* Calendar */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label" htmlFor="calendar">
               Do you want to put your Google/Outlook calendar?
             </label>
@@ -369,7 +381,7 @@ function MentorApplicationForm() {
           </div>
 
           {/* Region */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label" htmlFor="region">
               Region
             </label>
@@ -401,7 +413,7 @@ function MentorApplicationForm() {
           </div>
 
           {/* Gender */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label" htmlFor="gender">
               Gender
             </label>
@@ -431,7 +443,7 @@ function MentorApplicationForm() {
           </div>
 
           {/* Cross-Gender Teaching */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label" htmlFor="wouldYouMind">
               Would you be alright with teaching the opposite gender, given a
               shortage?
@@ -468,8 +480,9 @@ function MentorApplicationForm() {
           </div>
 
           {/* Availability */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label">General Availability</label>
+            <span>Select all that apply</span>
             <div className="control">
               <AvailabilityForm
                 selectedSlots={availability}
@@ -479,7 +492,7 @@ function MentorApplicationForm() {
           </div>
 
           {/* Phone Number */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label" htmlFor="phone">
               Phone Number
             </label>
@@ -497,7 +510,7 @@ function MentorApplicationForm() {
           </div>
 
           {/* Year of Graduation */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label" htmlFor="yearOfGraduation">
               Year of Graduation
             </label>
@@ -517,7 +530,7 @@ function MentorApplicationForm() {
           </div>
 
           {/* Age Range */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label" htmlFor="ageRange">
               Age Range for Mentee Pairing
             </label>
@@ -535,7 +548,7 @@ function MentorApplicationForm() {
           </div>
 
           {/* University */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label" htmlFor="university">
               University
             </label>
@@ -553,7 +566,7 @@ function MentorApplicationForm() {
           </div>
 
           {/* Resume Upload */}
-          <div className="field">
+          <div className="mentor-field">
             <label className="label" htmlFor="resume">
               Resume
             </label>
@@ -580,7 +593,7 @@ function MentorApplicationForm() {
           {error && <h1 className="Danger">{error}</h1>}
 
           {/* Submit Button */}
-          <div className="field">
+          <div className="mentor-field">
             <div className="control">
               <button className="submit-btn" type="submit" disabled={loading}>
                 {loading ? "Submitting..." : "Submit"}
