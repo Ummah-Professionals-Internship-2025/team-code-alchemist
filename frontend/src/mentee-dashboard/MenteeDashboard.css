@@ -32,7 +32,7 @@
   border: 1.5px solid #cfd8dc;
   font-size: 1.1rem;
   background: #2d3742;
-  color: black;
+  color: #fff;
   outline: none;
   transition: border 0.2s;
 }
@@ -168,5 +168,131 @@
   .top-bar {
     height: 48px;
     padding: 0 10px;
+  }
+}
+
+/* Main content responsive adjustments */
+.main-content {
+  transition: margin-left 0.2s;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 180px !important;
+  }
+  .main-content.sidebar-collapsed {
+    margin-left: 56px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    margin-left: 160px !important;
+  }
+  .main-content.sidebar-collapsed {
+    margin-left: 56px !important;
+  }
+}
+
+/* Responsive input fields for Profile page */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"] {
+    font-size: 14px !important;
+    padding: 8px !important;
+  }
+
+  .react-select__control {
+    min-height: 40px !important;
+  }
+
+  .react-select__value-container {
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"] {
+    font-size: 12px !important;
+    padding: 6px !important;
+  }
+
+  .react-select__control {
+    min-height: 36px !important;
+  }
+
+  .react-select__value-container {
+    font-size: 12px !important;
+  }
+}
+
+/* New responsive styles for the updated layout */
+@media (min-width: 1025px) {
+  .dashboard-container {
+    justify-content: space-between !important;
+    gap: 48px !important;
+  }
+
+  .dashboard-card {
+    flex: 1 !important;
+    max-width: calc(50% - 24px) !important;
+    margin: 0 !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .dashboard-container {
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  .dashboard-card {
+    min-width: 100% !important;
+    margin: 8px 0 !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .dashboard-card {
+    min-width: 100% !important;
+    margin: 4px 0 !important;
+    padding: 16px !important;
+  }
+
+  .dashboard-title {
+    font-size: 24px !important;
+  }
+
+  .dashboard-subtitle {
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-container {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .dashboard-card {
+    min-width: 100% !important;
+    margin: 2px 0 !important;
+    padding: 12px !important;
+  }
+
+  .dashboard-title {
+    font-size: 20px !important;
+  }
+
+  .dashboard-subtitle {
+    font-size: 12px !important;
   }
 }

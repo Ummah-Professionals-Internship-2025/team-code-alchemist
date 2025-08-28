@@ -122,7 +122,7 @@ const AdminSidebar = () => {
                   {(auth.currentUser && auth.currentUser.displayName) || "User"}
                 </Typography>
                 <Typography variant="h6" sx={{ color: "#4a90e2" }}>
-                  {(auth.currentUser && auth.currentUser.email) || "Email"}
+                  UP Admin
                 </Typography>
               </Box>
             </Box>
@@ -131,6 +131,7 @@ const AdminSidebar = () => {
           {/* MENU ITEMS */}
           <Box
             paddingLeft={isCollapsed ? undefined : "10%"}
+            paddingRight={isCollapsed ? undefined : "10%"}
             sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
             <Item

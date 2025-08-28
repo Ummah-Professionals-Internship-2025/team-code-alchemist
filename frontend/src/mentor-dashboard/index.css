@@ -1,6 +1,7 @@
 /* Mentor Dashboard */
 .mentor-dashboard {
   display: flex;
+  color: #fff;
   flex-direction: row;
   background: linear-gradient(135deg, #057a9b 0%, #05495e 100%);
   min-height: 100vh;
@@ -104,9 +105,7 @@
 
 .active-component {
   background-color: #2d3742;
-
   flex: 1;
-  padding: 10px;
 }
 
 .mentor-dashboard-img {
@@ -123,7 +122,6 @@
 
 .page-manager > :last-child {
   margin-top: auto;
-  margin-bottom: 50%;
 }
 
 .logout-btn {
@@ -315,7 +313,6 @@
 
   .side-bar {
     width: 100vw;
-    height: auto;
   }
 
   .mentor-dashboard {

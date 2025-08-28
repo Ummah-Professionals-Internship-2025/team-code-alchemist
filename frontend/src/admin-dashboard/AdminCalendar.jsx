@@ -5,14 +5,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
-import {
-  Box,
-  List,
-  ListItem,
-  ListItemText,
-  Typography,
-  useTheme,
-} from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import Header from "./Header";
 import { tokens } from "./theme";
 
@@ -38,10 +31,8 @@ const Calendar = () => {
           if (data.meetingTime) {
             const [time, modifier] = data.meetingTime.split(" ");
             let [hours, minutes] = time.split(":").map(Number);
-
             if (modifier === "PM" && hours !== 12) hours += 12;
             if (modifier === "AM" && hours === 12) hours = 0;
-
             dateObj.setHours(hours, minutes, 0, 0);
           }
 
@@ -89,55 +80,97 @@ const Calendar = () => {
 
   return (
     <Box m="20px">
-      <Header title="CALENDAR" subtitle="Calendar and Events" />
+      <Header title="Calendar" subtitle="Calendar and Events" />
 
       <Box display="flex" justifyContent="space-between">
-        {/* CALENDAR SIDEBAR */}
+        {/* EVENTS SIDEBAR */}
         <Box
           flex="1 1 20%"
-          backgroundColor={colors.primary[400]}
-          p="15px"
-          borderRadius="4px"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: "#E8F0FA",
+            border: "2px solid #03527C",
+            color: "black",
+            borderRadius: "20px",
+            padding: 2,
+            maxHeight: "75vh",
+            overflowY: "auto",
+          }}
         >
-          <Typography variant="h5" sx={{ color: "white" }}>
-            Events
+          <Typography
+            variant="h5"
+            sx={{ fontWeight: "bold", mb: 2, color: "black" }}
+          >
+            Meetings
           </Typography>
-          <List>
-            {currentEvents.map((event) => (
-              <ListItem
-                key={event.id}
-                sx={{
-                  backgroundColor: "#03527C",
-                  margin: "10px 0",
-                  borderRadius: "2px",
-                  color: "white",
-                }}
-              >
-                <ListItemText
-                  primary={event.title}
-                  primaryTypographyProps={{
-                    color: "white",
-                    fontWeight: "bold",
-                  }}
-                  secondary={
-                    <Typography sx={{ color: "white" }}>
-                      {formatDate(event.start, {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: event.allDay ? undefined : "2-digit",
-                        minute: event.allDay ? undefined : "2-digit",
-                      })}
-                    </Typography>
-                  }
-                />
-              </ListItem>
-            ))}
-          </List>
+          {currentEvents.length === 0 && (
+            <Typography sx={{ color: "black" }}>
+              No upcoming meetings.
+            </Typography>
+          )}
+          {currentEvents.map((event) => (
+            <Box
+              key={event.id}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                padding: 1,
+                mb: 1,
+                borderBottom: "1px solid #03527C",
+              }}
+            >
+              <Typography sx={{ fontWeight: "bold" }}>{event.title}</Typography>
+              <Typography>
+                {formatDate(event.start, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: event.allDay ? undefined : "2-digit",
+                  minute: event.allDay ? undefined : "2-digit",
+                })}
+              </Typography>
+            </Box>
+          ))}
         </Box>
 
-        {/* CALENDAR */}
-        <Box flex="1 1 100%" ml="15px">
+        {/* FULL CALENDAR */}
+        <Box
+          flex="1 1 100%"
+          ml="15px"
+          sx={{
+            "& .fc-toolbar-title": { color: "black" },
+            "& .fc-col-header-cell-cushion": { color: "black" },
+            "& .fc-event": { color: "black" },
+
+            "& .fc .fc-button": {
+              backgroundColor: "#E8F0FA",
+              color: "#03527C",
+              border: "2px solid #03527C",
+              borderRadius: "20px",
+              fontWeight: "bold",
+              "&:hover": {
+                backgroundColor: "#03527C",
+                color: "#E8F0FA",
+              },
+            },
+
+            "& .fc .fc-button.fc-button-active": {
+              backgroundColor: "#03527C",
+              color: "#E8F0FA",
+              border: "2px solid #03527C",
+              "&:hover": {
+                backgroundColor: "#03527C",
+                color: "#E8F0FA",
+              },
+            },
+
+            "& .fc-scrollgrid": {
+              border: "2px solid #03527C",
+              borderRadius: "20px",
+            },
+          }}
+        >
           <FullCalendar
             height="75vh"
             plugins={[
@@ -159,9 +192,9 @@ const Calendar = () => {
             select={handleDateClick}
             eventClick={handleEventClick}
             events={currentEvents}
-            eventTextColor="black"
             eventBackgroundColor="#FFD700"
             eventBorderColor="#000000"
+            eventTextColor="black"
             dayCellContent={(cellInfo) => (
               <span style={{ color: "black" }}>{cellInfo.dayNumberText}</span>
             )}

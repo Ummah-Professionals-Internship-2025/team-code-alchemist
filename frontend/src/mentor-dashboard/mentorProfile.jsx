@@ -37,7 +37,7 @@ function MentorProfile() {
             {profile ? profile.name : "Profile Loading ..."}
             <span className="advisor-badge">Mentor</span>
           </h1>
-          <p className="subtitle">Open to help in:</p>
+          <p className="mentor-dashboard-subtitle">Open to help in:</p>
           <div className="help-tags">
             {profile &&
               profile.helpIn.map((tag, index) => (
@@ -133,7 +133,7 @@ function MentorProfile() {
 
       {/* Skills Section */}
       <div className="section">
-        <h2>Skills</h2>
+        <h2>Skills</h2>``
         <div className="skills-card">
           <div className="skills-list">
             {profile &&

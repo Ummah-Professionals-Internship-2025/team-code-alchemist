@@ -107,9 +107,6 @@ function MentorHome() {
                         <p className="mentee-info">
                           Meeting Time: {request.meetingTime}
                         </p>
-                        <p className="mentee-info">
-                          looking for: {request.service}
-                        </p>
                         <div className="card-actions">
                           <button className="accept-btn">Accept</button>
                           <button
@@ -172,7 +169,6 @@ function MentorHome() {
                           <p className="mentee-info">
                             Meeting Time: {request.meetingTime}
                           </p>
-                          <p>looking for: {request.service}</p>
                         </div>
                       </div>
                     )}
@@ -203,7 +199,6 @@ function MentorHome() {
                     <p className="mentee-info">
                       Meeting Time: {meeting.meetingTime}
                     </p>
-                    <p>looking for: {meeting.service}</p>
                   </div>
                 </div>
               ))}

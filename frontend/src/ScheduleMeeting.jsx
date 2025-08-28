@@ -104,7 +104,6 @@ function ScheduleMeeting({
   };
 
   const handleAvailability = async () => {
-    console.log(targetID);
     if (senderIsMentor === false && targetID) {
       await getDoc(doc(db, "mentors", targetID)).then((docSnap) => {
         if (docSnap.exists()) {
@@ -120,7 +119,6 @@ function ScheduleMeeting({
     } else {
       alert("Error: No user found");
     }
-    console.log(availability);
   };
 
   useEffect(() => {
@@ -132,6 +130,19 @@ function ScheduleMeeting({
     setSelectedTime(null);
   };
 
+  function formatTimeSlot(timeSlot) {
+    const [startTime, endTime] = timeSlot.split("-");
+
+    const formatTime = (time) => {
+      const hour = parseInt(time);
+      const period = time.toLowerCase().includes("pm") ? "PM" : "AM";
+      const formattedHour = hour === 12 ? 12 : hour % 12;
+      return `${formattedHour}:00 ${period}`;
+    };
+
+    return `${formatTime(startTime)} - ${formatTime(endTime)}`;
+  }
+
   const handleSendMeetingRequest = async () => {
     if (!updateCounter) {
       updateCounter = 0;
@@ -142,11 +153,12 @@ function ScheduleMeeting({
     }
     const menteeApproved = senderIsMentor ? false : true;
     const mentorApproved = senderIsMentor ? true : false;
+    const formattedTime = formatTimeSlot(selectedTime);
     if (isRescheduling) {
       await updateDoc(doc(db, "pendingMeetings", meetingID), {
         menteeApproved: menteeApproved,
         mentorApproved: mentorApproved,
-        meetingTime: selectedTime,
+        meetingTime: formattedTime,
         meetingDate: selectedDay,
         updateCounter: updateCounter + 1,
       });
@@ -154,7 +166,7 @@ function ScheduleMeeting({
     } else {
       await addDoc(collection(db, "pendingMeetings"), {
         createdAt: serverTimestamp(),
-        meetingTime: selectedTime,
+        meetingTime: formattedTime,
         meetingDate: selectedDay,
         menteeApproved: true,
         mentorApproved: false,
@@ -191,8 +203,6 @@ function ScheduleMeeting({
 
   return (
     <div>
-      <button onClick={handleAvailability}>Get availability</button>
-
       <div className="schedule-meeting">
         <div className="control-week">
           {weekTracker > 0 && (
@@ -215,10 +225,13 @@ function ScheduleMeeting({
             <tr>
               {weekDates.map((date, index) => {
                 const dayName = days[date.getDay()];
+                const isSelected =
+                  selectedDay === date.toString().substring(4, 11);
+
                 return (
                   <td key={index}>
                     <button
-                      className="date-button"
+                      className={`date-button ${isSelected ? "selected" : ""}`}
                       disabled={isDayDisabled(date, dayName)}
                       onClick={() => handleDayClick(date, dayName)}
                     >
@@ -254,9 +267,13 @@ function ScheduleMeeting({
       {/* After time is selected */}
       {selectedTime && (
         <div className="selected-time">
-          <span>Selected day: {selectedDay}</span>
-          <span> at {selectedTime} </span>
-          <button onClick={handleSendMeetingRequest}>
+          <span>
+            Selected day: {selectedDay} at: {selectedTime}
+          </span>
+          <button
+            className="send-meeting-btn"
+            onClick={handleSendMeetingRequest}
+          >
             Send meeting request
           </button>
         </div>

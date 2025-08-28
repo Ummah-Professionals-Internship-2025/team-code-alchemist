@@ -1,11 +1,29 @@
-import React from 'react';
+import React from "react";
 
-function DisplayAvailabilityGrid ({ availabilityArray }){
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+function DisplayAvailabilityGrid({ availabilityArray }) {
+  const days = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
   const timeSlots = [
-    '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
-    '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', 
-    '6:00 PM',   '7:00 PM', '8:00 PM','9:00 PM'
+    "9:00 AM",
+    "10:00 AM",
+    "11:00 AM",
+    "12:00 PM",
+    "1:00 PM",
+    "2:00 PM",
+    "3:00 PM",
+    "4:00 PM",
+    "5:00 PM",
+    "6:00 PM",
+    "7:00 PM",
+    "8:00 PM",
+    "9:00 PM",
   ];
 
   const availabilitySet = new Set(availabilityArray);
@@ -15,7 +33,7 @@ function DisplayAvailabilityGrid ({ availabilityArray }){
   };
 
   return (
-    <div >
+    <div>
       <style>{`
         .availability-display {
           border: 1px solid #ddd;
@@ -46,28 +64,43 @@ function DisplayAvailabilityGrid ({ availabilityArray }){
           color: #6c757d;
         }
       `}</style>
-      <p>Mentees will be only be able to request an appointment if you are available.
-         You can always propose a time that works for you, without affecting your general availability.</p>
+      <p>
+        Mentees will be only be able to request an appointment if you are
+        available. You can always propose a time that works for you, without
+        affecting your general availability.
+      </p>
       <div className="availability-display">
         <table className="availability-table">
           <thead>
             <tr>
               <th>Time</th>
-              {days.map(day => (
+              {days.map((day) => (
                 <th key={day}>{day.substring(0, 3)}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {timeSlots.map(time => (
+            {timeSlots.map((time) => (
               <tr key={time}>
-                <td style={{ fontWeight: '600' }}>{time}</td>
-                {days.map(day => (
-                  <td 
+                <td
+                  style={{
+                    fontWeight: "600",
+                    backgroundColor: "#f5f5f5",
+                    color: "#6c757d",
+                  }}
+                >
+                  {time}
+                </td>
+                {days.map((day) => (
+                  <td
                     key={`${day}-${time}`}
-                    className={isAvailable(day, time) ? 'available-slot' : 'unavailable-slot'}
+                    className={
+                      isAvailable(day, time)
+                        ? "available-slot"
+                        : "unavailable-slot"
+                    }
                   >
-                    {isAvailable(day, time) ? '✓' : '—'}
+                    {isAvailable(day, time) ? "✓" : "—"}
                   </td>
                 ))}
               </tr>
@@ -77,6 +110,6 @@ function DisplayAvailabilityGrid ({ availabilityArray }){
       </div>
     </div>
   );
-};
+}
 
-export default DisplayAvailabilityGrid
+export default DisplayAvailabilityGrid;

@@ -3,128 +3,9 @@ import { auth, db, storage } from "../firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import Select from "react-select";
+import AvailabilityForm from "./AvailabilityForm";
+
 const DEFAULT_AVATAR = "https://www.gravatar.com/avatar/?d=mp&f=y";
-
-const daysOfWeek = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-];
-
-const FIELD_LABELS = [
-  { key: "firstName", label: "First Name", disabled: true },
-  { key: "middleName", label: "Middle Name", disabled: true },
-  { key: "lastName", label: "Last Name", disabled: true },
-  { key: "email", label: "Email", disabled: true },
-  { key: "phone", label: "Phone Number" },
-  { key: "industry", label: "Industry" },
-  { key: "major", label: "Major" },
-  { key: "currentGrade", label: "Current Grade" },
-  { key: "serviceLookingFor", label: "Service Looking For" },
-  { key: "generalAvailability", label: "General Availability" },
-  { key: "github", label: "GitHub" },
-  { key: "linkedin", label: "LinkedIn" },
-  { key: "timeZone", label: "Time Zone" },
-  { key: "country", label: "Country" },
-  { key: "university", label: "University" },
-  { key: "description", label: "Description", textarea: true },
-];
-
-const timeIntervals = [
-  "8am-9am",
-  "9am-10am",
-  "10am-11am",
-  "11am-12pm",
-  "12pm-1pm",
-  "1pm-2pm",
-  "2pm-3pm",
-  "3pm-4pm",
-  "4pm-5pm",
-  "5pm-6pm",
-  "6pm-7pm",
-  "7pm-8pm",
-].map((t) => ({ value: t, label: t }));
-
-function GeneralAvailabilityEditor({ value, onChange, disabled }) {
-  const availability = value && typeof value === "object" ? value : {};
-  return (
-    <div
-      style={{
-        background: "#ededed",
-        border: "1.5px solid #bbb",
-        borderRadius: 8,
-        padding: 16,
-        marginTop: 4,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-between",
-          marginBottom: 8,
-        }}
-      >
-        {daysOfWeek.map((day) => (
-          <div key={day} style={{ flex: 1, textAlign: "center" }}>
-            <div
-              style={{
-                fontWeight: "bold",
-                color: "#222",
-                fontSize: "1em",
-                marginBottom: 2,
-                lineHeight: 1.1,
-              }}
-            >
-              {day}
-            </div>
-            <input
-              type="checkbox"
-              checked={Array.isArray(availability[day])}
-              onChange={(e) => {
-                let newAvailability = { ...availability };
-                if (e.target.checked) {
-                  newAvailability[day] = Array.isArray(availability[day])
-                    ? availability[day]
-                    : [];
-                } else {
-                  delete newAvailability[day];
-                }
-                onChange(newAvailability);
-              }}
-              style={{ margin: 0 }}
-              disabled={disabled}
-            />
-            {Array.isArray(availability[day]) && (
-              <Select
-                isMulti
-                isDisabled={disabled}
-                options={timeIntervals}
-                value={availability[day]
-                  .map((val) => timeIntervals.find((opt) => opt.value === val))
-                  .filter(Boolean)}
-                onChange={(selected) => {
-                  const newAvailability = {
-                    ...availability,
-                    [day]: selected ? selected.map((opt) => opt.value) : [],
-                  };
-                  onChange(newAvailability);
-                }}
-                classNamePrefix="react-select"
-                placeholder="Select times..."
-                styles={{ menu: (base) => ({ ...base, zIndex: 9999 }) }}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 const industryOptions = [
   { value: "Business", label: "Business" },
@@ -139,6 +20,7 @@ const industryOptions = [
   { value: "Arts", label: "Arts" },
   { value: "Other", label: "Other" },
 ];
+
 const majorOptions = [
   { value: "Accounting", label: "Accounting" },
   { value: "Actuarial Science", label: "Actuarial Science" },
@@ -556,27 +438,33 @@ const majorOptions = [
   { value: "Zoology", label: "Zoology" },
   { value: "Other", label: "Other" },
 ];
+
 const gradeOptions = [
-  { value: "Highschooler", label: "Highschooler" },
-  { value: "Freshman in college", label: "Freshman in college" },
-  { value: "Sophomore in college", label: "Sophomore in college" },
-  { value: "Junior in college", label: "Junior in college" },
-  { value: "Senior in college", label: "Senior in college" },
+  { value: "High School", label: "High School" },
+  { value: "Freshman", label: "Freshman" },
+  { value: "Sophomore", label: "Sophomore" },
+  { value: "Junior", label: "Junior" },
+  { value: "Senior", label: "Senior" },
+  { value: "Graduate Student", label: "Graduate Student" },
   { value: "Graduated", label: "Graduated" },
 ];
+
 const serviceOptions = [
   { value: "Career advice", label: "Career advice" },
   { value: "Resume review", label: "Resume review" },
   { value: "Interview prep", label: "Interview prep" },
+  { value: "Networking", label: "Networking" },
+  { value: "Skill development", label: "Skill development" },
+  { value: "Project guidance", label: "Project guidance" },
 ];
 
 export default function ProfilePage({ onBack, user }) {
   const [profile, setProfile] = useState({});
   const [loading, setLoading] = useState(true);
   const [dirty, setDirty] = useState(false);
-  const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showResumeModal, setShowResumeModal] = useState(false);
+  const [selectedSlots, setSelectedSlots] = useState(new Set());
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -588,608 +476,825 @@ export default function ProfilePage({ onBack, user }) {
       }
       const docRef = doc(db, "mentees", user.uid);
       const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) setProfile(docSnap.data());
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setProfile(data);
+        // Convert availability to selected slots format
+        if (data.generalAvailability) {
+          const slots = new Set();
+          Object.entries(data.generalAvailability).forEach(
+            ([day, timeSlots]) => {
+              if (Array.isArray(timeSlots)) {
+                timeSlots.forEach((timeSlot) => {
+                  // Convert "9am-10am" format to "9:00 AM" format
+                  const timeMatch = timeSlot.match(/(\d+)(am|pm)/);
+                  if (timeMatch) {
+                    const hour = parseInt(timeMatch[1]);
+                    const period = timeMatch[2].toUpperCase();
+                    const timeString = `${hour}:00 ${period}`;
+                    slots.add(`${day}-${timeString}`);
+                  }
+                });
+              }
+            }
+          );
+          setSelectedSlots(slots);
+        }
+      }
       setLoading(false);
     };
     fetchProfile();
   }, []);
+
+  // Communicate unsaved changes to parent component
+  useEffect(() => {
+    window.profileHasUnsavedChanges = dirty;
+  }, [dirty]);
 
   const handleChange = (e) => {
     setDirty(true);
     setProfile({ ...profile, [e.target.name]: e.target.value });
   };
 
+  const handleAvailabilityChange = (newSelectedSlots) => {
+    setSelectedSlots(newSelectedSlots);
+    setDirty(true);
+
+    // Convert back to generalAvailability format (convert "9:00 AM" to "9am-10am")
+    const availability = {};
+    newSelectedSlots.forEach((slot) => {
+      const [day, time] = slot.split("-");
+      if (!availability[day]) {
+        availability[day] = [];
+      }
+
+      // Convert "9:00 AM" format to "9am-10am" format
+      const timeMatch = time.match(/(\d+):00 (AM|PM)/);
+      if (timeMatch) {
+        const hour = parseInt(timeMatch[1]);
+        const period = timeMatch[2].toLowerCase();
+        const timeString = `${hour}${period}-${hour + 1}${period}`;
+        availability[day].push(timeString);
+      }
+    });
+
+    setProfile({ ...profile, generalAvailability: availability });
+  };
+
   const handleSave = async () => {
     setSaving(true);
-    const user = auth.currentUser;
-    if (!user) return;
-    const docRef = doc(db, "mentees", user.uid);
-    await updateDoc(docRef, profile);
-    setDirty(false);
-    setSaving(false);
-    alert("Update saved!");
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+      const docRef = doc(db, "mentees", user.uid);
+      await updateDoc(docRef, profile);
+      setDirty(false);
+      window.profileHasUnsavedChanges = false;
+      alert("Profile updated successfully!");
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      alert("Error saving profile. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleProfilePicChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const user = auth.currentUser;
-    const storageRef = ref(storage, `profilePics/${user.uid}`);
-    await uploadBytes(storageRef, file);
-    const url = await getDownloadURL(storageRef);
-    setProfile({ ...profile, profilePic: url });
-    setDirty(true);
+
+    try {
+      const user = auth.currentUser;
+      const storageRef = ref(storage, `profilePics/${user.uid}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      setProfile({ ...profile, profilePic: url });
+      setDirty(true);
+    } catch (error) {
+      console.error("Error uploading profile picture:", error);
+      alert("Error uploading profile picture. Please try again.");
+    }
   };
 
   const handleResumeChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const user = auth.currentUser;
-    const storageRef = ref(storage, `resumes/${user.uid}`);
-    await uploadBytes(storageRef, file);
-    const url = await getDownloadURL(storageRef);
-    setProfile({ ...profile, resumeUrl: url });
-    setDirty(true);
+
+    try {
+      const user = auth.currentUser;
+      const storageRef = ref(storage, `resumes/${user.uid}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      setProfile({ ...profile, resumeUrl: url });
+      setDirty(true);
+      alert("Resume uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading resume:", error);
+      alert("Error uploading resume. Please try again.");
+    }
   };
 
-  const tryBack = () => {
-    if (dirty) setShowModal(true);
-    else onBack();
-  };
-
-  if (loading)
+  if (loading) {
     return (
-      <div style={{ color: "#E7E8EE", fontSize: 24, padding: 40 }}>
-        Loading...
+      <div
+        style={{
+          padding: "20px",
+          color: "#00212C",
+          background: "#ffffff",
+          minHeight: "100vh",
+        }}
+      >
+        <div style={{ color: "#007CA6", fontSize: 24 }}>Loading profile...</div>
       </div>
     );
-  if (!profile)
-    return (
-      <div style={{ color: "#E7E8EE", fontSize: 24, padding: 40 }}>
-        No profile found.
-      </div>
-    );
+  }
 
   return (
     <div
       style={{
-        width: "100%",
+        padding: "20px",
+        color: "#00212C",
+        background: "#ffffff",
         minHeight: "100vh",
-        background: "#E7E8EE",
-        padding: "48px 0",
-        boxSizing: "border-box",
       }}
     >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 1400,
-          margin: "0 auto",
-          display: "flex",
-          gap: 20,
-          alignItems: "flex-start",
-          flexWrap: "wrap",
-        }}
-      >
-        {/* Profile Picture and Upload */}
-        <div
-          style={{
-            flex: "0 0 260px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 32,
-            minWidth: 220,
-          }}
-        >
-          <img
-            src={profile.profilePic || DEFAULT_AVATAR}
-            alt="Profile"
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        {/* Header */}
+        <div style={{ marginBottom: 32 }}>
+          <h1
             style={{
-              width: 180,
-              height: 180,
-              borderRadius: "50%",
-              objectFit: "cover",
-              border: "4px solid #8ACBDB",
-              marginBottom: 16,
+              color: "#007CA6",
+              fontSize: 38,
+              fontWeight: 800,
+              marginBottom: 8,
             }}
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleProfilePicChange}
-            style={{ fontSize: 18 }}
-          />
+          >
+            PROFILE
+          </h1>
+          <div style={{ color: "#007CA6", fontSize: 20, marginBottom: 16 }}>
+            Manage your personal information
+          </div>
         </div>
-        {/* Main Profile Info */}
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            gap: 40,
-            minWidth: 400,
-          }}
-        >
-          <div>
-            <h1
-              style={{
-                fontSize: 38,
-                fontWeight: 800,
-                marginBottom: 8,
-                color: "#007CA6",
-              }}
-            >
-              Profile
-            </h1>
-            <div style={{ color: "#8ACBDB", fontSize: 22, marginBottom: 32 }}>
-              View and update your information
-            </div>
+
+        <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
+          {/* Left Column - Personal Info */}
+          <div style={{ flex: "1", minWidth: 300 }}>
+            {/* Personal Information */}
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-                gap: 32,
-                width: "100%",
+                background: "#FFFFFF",
+                borderRadius: 20,
+                boxShadow: "0 4px 24px rgba(138,203,219,0.18)",
+                border: "2px solid #8ACBDB",
+                padding: 32,
+                marginBottom: 24,
               }}
             >
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>
-                  First Name
-                </div>
-                <input
-                  value={profile.firstName || ""}
-                  disabled
-                  style={{
-                    width: "100%",
-                    fontSize: 20,
-                    borderRadius: 8,
-                    border: "1.5px solid #bbb",
-                    padding: 10,
-                    background: "#f7f7f7",
-                  }}
-                />
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>
-                  Middle Name
-                </div>
-                <input
-                  value={profile.middleName || ""}
-                  disabled
-                  style={{
-                    width: "100%",
-                    fontSize: 20,
-                    borderRadius: 8,
-                    border: "1.5px solid #bbb",
-                    padding: 10,
-                    background: "#f7f7f7",
-                  }}
-                />
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>
-                  Last Name
-                </div>
-                <input
-                  value={profile.lastName || ""}
-                  disabled
-                  style={{
-                    width: "100%",
-                    fontSize: 20,
-                    borderRadius: 8,
-                    border: "1.5px solid #bbb",
-                    padding: 10,
-                    background: "#f7f7f7",
-                  }}
-                />
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>
-                  Email
-                </div>
-                <input
-                  value={profile.email || ""}
-                  disabled
-                  style={{
-                    width: "100%",
-                    fontSize: 20,
-                    borderRadius: 8,
-                    border: "1.5px solid #bbb",
-                    padding: 10,
-                    background: "#f7f7f7",
-                  }}
-                />
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>
-                  Phone Number
-                </div>
-                <input
-                  name="phone"
-                  value={profile.phone || ""}
-                  onChange={handleChange}
-                  style={{
-                    width: "100%",
-                    fontSize: 20,
-                    borderRadius: 8,
-                    border: "1.5px solid #bbb",
-                    padding: 10,
-                  }}
-                />
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>
-                  Industry
-                </div>
-                <Select
-                  isMulti
-                  name="industry"
-                  options={industryOptions}
-                  value={industryOptions.filter((opt) =>
-                    (profile.industry || []).includes(opt.value)
-                  )}
-                  onChange={(selected) => {
-                    setDirty(true);
-                    setProfile({
-                      ...profile,
-                      industry: selected
-                        ? selected.map((opt) => opt.value)
-                        : [],
-                    });
-                  }}
-                  classNamePrefix="react-select"
-                  placeholder="Select industry..."
-                />
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>
-                  Major
-                </div>
-                <Select
-                  name="major"
-                  options={majorOptions}
-                  value={
-                    majorOptions.find((opt) => opt.value === profile.major) ||
-                    null
-                  }
-                  onChange={(selected) => {
-                    setDirty(true);
-                    setProfile({
-                      ...profile,
-                      major: selected ? selected.value : "",
-                    });
-                  }}
-                  classNamePrefix="react-select"
-                  placeholder="Select major..."
-                  isClearable
-                />
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>
-                  Current Grade
-                </div>
-                <Select
-                  name="currentGrade"
-                  options={gradeOptions}
-                  value={
-                    gradeOptions.find(
-                      (opt) => opt.value === profile.currentGrade
-                    ) || null
-                  }
-                  onChange={(selected) => {
-                    setDirty(true);
-                    setProfile({
-                      ...profile,
-                      currentGrade: selected ? selected.value : "",
-                    });
-                  }}
-                  classNamePrefix="react-select"
-                  placeholder="Select grade..."
-                  isClearable
-                />
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>
-                  Service Looking For
-                </div>
-                <Select
-                  name="serviceLookingFor"
-                  options={serviceOptions}
-                  value={
-                    serviceOptions.find(
-                      (opt) => opt.value === profile.serviceLookingFor
-                    ) || null
-                  }
-                  onChange={(selected) => {
-                    setDirty(true);
-                    setProfile({
-                      ...profile,
-                      serviceLookingFor: selected ? selected.value : "",
-                    });
-                  }}
-                  classNamePrefix="react-select"
-                  placeholder="Select service..."
-                  isClearable
-                />
-              </div>
-              <div style={{ gridColumn: "1 / -1" }}>
-                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>
-                  General Availability
-                </div>
-                <div
-                  style={{
-                    width: "100%",
-                    background: "#ededed",
-                    border: "1.5px solid #bbb",
-                    borderRadius: 8,
-                    padding: 24,
-                    marginTop: 4,
-                  }}
-                >
-                  <GeneralAvailabilityEditor
-                    value={profile.generalAvailability}
-                    onChange={(val) => {
-                      setDirty(true);
-                      setProfile({ ...profile, generalAvailability: val });
+              <h2
+                style={{
+                  color: "#007CA6",
+                  fontWeight: 800,
+                  fontSize: 24,
+                  marginBottom: 24,
+                }}
+              >
+                Personal Information
+              </h2>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                  gap: 24,
+                }}
+              >
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: 8,
+                      fontWeight: 600,
+                      color: "#007CA6",
                     }}
-                    disabled={false}
-                    dropdownWidth={500}
+                  >
+                    First Name
+                  </label>
+                  <input
+                    value={profile.firstName || ""}
+                    disabled
+                    style={{
+                      width: "100%",
+                      fontSize: 16,
+                      borderRadius: 8,
+                      border: "1px solid #ddd",
+                      padding: 12,
+                      background: "#f5f5f5",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: 8,
+                      fontWeight: 600,
+                      color: "#007CA6",
+                    }}
+                  >
+                    Middle Name
+                  </label>
+                  <input
+                    value={profile.middleName || ""}
+                    disabled
+                    style={{
+                      width: "100%",
+                      fontSize: 16,
+                      borderRadius: 8,
+                      border: "1px solid #ddd",
+                      padding: 12,
+                      background: "#f5f5f5",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: 8,
+                      fontWeight: 600,
+                      color: "#007CA6",
+                    }}
+                  >
+                    Last Name
+                  </label>
+                  <input
+                    value={profile.lastName || ""}
+                    disabled
+                    style={{
+                      width: "100%",
+                      fontSize: 16,
+                      borderRadius: 8,
+                      border: "1px solid #ddd",
+                      padding: 12,
+                      background: "#f5f5f5",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: 8,
+                      fontWeight: 600,
+                      color: "#007CA6",
+                    }}
+                  >
+                    Email
+                  </label>
+                  <input
+                    value={profile.email || ""}
+                    disabled
+                    style={{
+                      width: "100%",
+                      fontSize: 16,
+                      borderRadius: 8,
+                      border: "1px solid #ddd",
+                      padding: 12,
+                      background: "#f5f5f5",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: 8,
+                      fontWeight: 600,
+                      color: "#007CA6",
+                    }}
+                  >
+                    Phone Number
+                  </label>
+                  <input
+                    name="phone"
+                    value={profile.phone || ""}
+                    onChange={handleChange}
+                    style={{
+                      width: "100%",
+                      fontSize: 16,
+                      borderRadius: 8,
+                      border: "1px solid #ddd",
+                      padding: 12,
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: 8,
+                      fontWeight: 600,
+                      color: "#007CA6",
+                    }}
+                  >
+                    Country
+                  </label>
+                  <input
+                    name="country"
+                    value={profile.country || ""}
+                    onChange={handleChange}
+                    style={{
+                      width: "100%",
+                      fontSize: 16,
+                      borderRadius: 8,
+                      border: "1px solid #ddd",
+                      padding: 12,
+                    }}
                   />
                 </div>
               </div>
-              <div style={{ gridColumn: "1 / span 2" }}>
-                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>
-                  GitHub
-                </div>
-                <input
-                  name="github"
-                  value={profile.github || ""}
-                  onChange={handleChange}
-                  style={{
-                    width: "100%",
-                    fontSize: 20,
-                    borderRadius: 8,
-                    border: "1.5px solid #bbb",
-                    padding: 10,
-                  }}
-                />
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>
-                  LinkedIn
-                </div>
-                <input
-                  name="linkedin"
-                  value={profile.linkedin || ""}
-                  onChange={handleChange}
-                  style={{
-                    width: "100%",
-                    fontSize: 20,
-                    borderRadius: 8,
-                    border: "1.5px solid #bbb",
-                    padding: 10,
-                  }}
-                />
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>
-                  Time Zone
-                </div>
-                <input
-                  name="timeZone"
-                  value={profile.timeZone || ""}
-                  onChange={handleChange}
-                  style={{
-                    width: "100%",
-                    fontSize: 20,
-                    borderRadius: 8,
-                    border: "1.5px solid #bbb",
-                    padding: 10,
-                  }}
-                />
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>
-                  Country
-                </div>
-                <input
-                  name="country"
-                  value={profile.country || ""}
-                  onChange={handleChange}
-                  style={{
-                    width: "100%",
-                    fontSize: 20,
-                    borderRadius: 8,
-                    border: "1.5px solid #bbb",
-                    padding: 10,
-                  }}
-                />
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>
-                  University
-                </div>
-                <input
-                  name="university"
-                  value={profile.university || ""}
-                  onChange={handleChange}
-                  style={{
-                    width: "100%",
-                    fontSize: 20,
-                    borderRadius: 8,
-                    border: "1.5px solid #bbb",
-                    padding: 10,
-                  }}
-                />
-              </div>
-              <div style={{ gridColumn: "1 / span 2" }}>
-                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>
-                  Description
-                </div>
-                <textarea
-                  name="description"
-                  value={profile.description || ""}
-                  onChange={handleChange}
-                  style={{
-                    width: "100%",
-                    fontSize: 20,
-                    minHeight: 80,
-                    borderRadius: 8,
-                    border: "1.5px solid #bbb",
-                    padding: 10,
-                  }}
-                  placeholder="Description"
-                />
-              </div>
             </div>
-          </div>
-          <div style={{ marginTop: 24, fontSize: 22 }}>
-            <label style={{ fontWeight: 700, marginRight: 16 }}>Resume</label>
-            {profile.resumeUrl && (
-              <button
-                style={{
-                  marginRight: 18,
-                  color: "#1976d2",
-                  fontWeight: 600,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                }}
-                onClick={() => setShowResumeModal(true)}
-              >
-                View Current
-              </button>
-            )}
-            <input
-              type="file"
-              accept=".pdf,.doc,.docx"
-              onChange={handleResumeChange}
-              style={{ fontSize: 18 }}
-            />
-          </div>
-          {dirty && (
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              style={{
-                marginTop: 32,
-                fontSize: 22,
-                padding: "12px 40px",
-                borderRadius: 10,
-                background: "#1976d2",
-                color: "#fff",
-                fontWeight: 700,
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              {saving ? "Saving..." : "Save"}
-            </button>
-          )}
-          {showModal && (
+
+            {/* Academic Information */}
             <div
               style={{
-                background: "#fff",
-                border: "1.5px solid #bbb",
-                borderRadius: 12,
+                background: "#FFFFFF",
+                borderRadius: 20,
+                boxShadow: "0 4px 24px rgba(138,203,219,0.18)",
+                border: "2px solid #8ACBDB",
                 padding: 32,
-                position: "fixed",
-                top: "40%",
-                left: "50%",
-                transform: "translate(-50%,-50%)",
-                zIndex: 1000,
-                fontSize: 22,
+                marginBottom: 24,
               }}
             >
-              <p>Are you sure you want to go back without saving?</p>
-              <button
-                onClick={() => {
-                  setShowModal(false);
-                  onBack();
-                }}
+              <h2
                 style={{
-                  marginRight: 18,
-                  fontSize: 20,
-                  padding: "8px 24px",
-                  borderRadius: 8,
-                  background: "#d32f2f",
-                  color: "#fff",
-                  border: "none",
-                  fontWeight: 600,
+                  color: "#007CA6",
+                  fontWeight: 800,
+                  fontSize: 24,
+                  marginBottom: 24,
                 }}
               >
-                Yes
-              </button>
-              <button
-                onClick={() => setShowModal(false)}
-                style={{
-                  fontSize: 20,
-                  padding: "8px 24px",
-                  borderRadius: 8,
-                  background: "#1976d2",
-                  color: "#fff",
-                  border: "none",
-                  fontWeight: 600,
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          )}
-          {/* Resume Modal */}
-          {showResumeModal && profile.resumeUrl && (
-            <div
-              style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                width: "100vw",
-                height: "100vh",
-                background: "rgba(0,0,0,0.7)",
-                zIndex: 2000,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
+                Academic Information
+              </h2>
+
               <div
                 style={{
-                  background: "#fff",
-                  borderRadius: 12,
-                  padding: 24,
-                  maxWidth: "90vw",
-                  maxHeight: "90vh",
-                  boxShadow: "0 2px 32px rgba(0,0,0,0.20)",
-                  position: "relative",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                  gap: 24,
+                }}
+              >
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: 8,
+                      fontWeight: 600,
+                      color: "#007CA6",
+                    }}
+                  >
+                    University
+                  </label>
+                  <input
+                    name="university"
+                    value={profile.university || ""}
+                    onChange={handleChange}
+                    style={{
+                      width: "100%",
+                      fontSize: 16,
+                      borderRadius: 8,
+                      border: "1px solid #ddd",
+                      padding: 12,
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: 8,
+                      fontWeight: 600,
+                      color: "#007CA6",
+                    }}
+                  >
+                    Major
+                  </label>
+                  <Select
+                    name="major"
+                    options={majorOptions}
+                    value={
+                      majorOptions.find((opt) => opt.value === profile.major) ||
+                      null
+                    }
+                    onChange={(selected) => {
+                      setDirty(true);
+                      setProfile({
+                        ...profile,
+                        major: selected ? selected.value : "",
+                      });
+                    }}
+                    classNamePrefix="react-select"
+                    placeholder="Select major..."
+                    isClearable
+                    styles={{
+                      control: (provided) => ({
+                        ...provided,
+                        borderRadius: 8,
+                        border: "1px solid #ddd",
+                        fontSize: 16,
+                        minHeight: "48px",
+                      }),
+                      menu: (provided) => ({
+                        ...provided,
+                        zIndex: 9999,
+                      }),
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: 8,
+                      fontWeight: 600,
+                      color: "#007CA6",
+                    }}
+                  >
+                    Current Grade
+                  </label>
+                  <Select
+                    name="currentGrade"
+                    options={gradeOptions}
+                    value={
+                      gradeOptions.find(
+                        (opt) => opt.value === profile.currentGrade
+                      ) || null
+                    }
+                    onChange={(selected) => {
+                      setDirty(true);
+                      setProfile({
+                        ...profile,
+                        currentGrade: selected ? selected.value : "",
+                      });
+                    }}
+                    classNamePrefix="react-select"
+                    placeholder="Select grade..."
+                    isClearable
+                    styles={{
+                      control: (provided) => ({
+                        ...provided,
+                        borderRadius: 8,
+                        border: "1px solid #ddd",
+                        fontSize: 16,
+                        minHeight: "48px",
+                      }),
+                      menu: (provided) => ({
+                        ...provided,
+                        zIndex: 9999,
+                      }),
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: 8,
+                      fontWeight: 600,
+                      color: "#007CA6",
+                    }}
+                  >
+                    Industry
+                  </label>
+                  <Select
+                    isMulti
+                    name="industry"
+                    options={industryOptions}
+                    value={industryOptions.filter((opt) =>
+                      (profile.industry || []).includes(opt.value)
+                    )}
+                    onChange={(selected) => {
+                      setDirty(true);
+                      setProfile({
+                        ...profile,
+                        industry: selected
+                          ? selected.map((opt) => opt.value)
+                          : [],
+                      });
+                    }}
+                    classNamePrefix="react-select"
+                    placeholder="Select industry..."
+                    styles={{
+                      control: (provided) => ({
+                        ...provided,
+                        borderRadius: 8,
+                        border: "1px solid #ddd",
+                        fontSize: 16,
+                        minHeight: "48px",
+                      }),
+                      menu: (provided) => ({
+                        ...provided,
+                        zIndex: 9999,
+                      }),
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: 8,
+                      fontWeight: 600,
+                      color: "#007CA6",
+                    }}
+                  >
+                    Service Looking For
+                  </label>
+                  <Select
+                    isMulti
+                    name="serviceLookingFor"
+                    options={serviceOptions}
+                    value={serviceOptions.filter((opt) =>
+                      (profile.serviceLookingFor || []).includes(opt.value)
+                    )}
+                    onChange={(selected) => {
+                      setDirty(true);
+                      setProfile({
+                        ...profile,
+                        serviceLookingFor: selected
+                          ? selected.map((opt) => opt.value)
+                          : [],
+                      });
+                    }}
+                    classNamePrefix="react-select"
+                    placeholder="Select services..."
+                    styles={{
+                      control: (provided) => ({
+                        ...provided,
+                        borderRadius: 8,
+                        border: "1px solid #ddd",
+                        fontSize: 16,
+                        minHeight: "48px",
+                      }),
+                      menu: (provided) => ({
+                        ...provided,
+                        zIndex: 9999,
+                      }),
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Social Links */}
+            <div
+              style={{
+                background: "#FFFFFF",
+                borderRadius: 20,
+                boxShadow: "0 4px 24px rgba(138,203,219,0.18)",
+                border: "2px solid #8ACBDB",
+                padding: 32,
+                marginBottom: 24,
+              }}
+            >
+              <h2
+                style={{
+                  color: "#007CA6",
+                  fontWeight: 800,
+                  fontSize: 24,
+                  marginBottom: 24,
+                }}
+              >
+                Social Links
+              </h2>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                  gap: 24,
+                }}
+              >
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: 8,
+                      fontWeight: 600,
+                      color: "#007CA6",
+                    }}
+                  >
+                    GitHub
+                  </label>
+                  <input
+                    name="github"
+                    value={profile.github || ""}
+                    onChange={handleChange}
+                    placeholder="https://github.com/username"
+                    style={{
+                      width: "100%",
+                      fontSize: 16,
+                      borderRadius: 8,
+                      border: "1px solid #ddd",
+                      padding: 12,
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: 8,
+                      fontWeight: 600,
+                      color: "#007CA6",
+                    }}
+                  >
+                    LinkedIn
+                  </label>
+                  <input
+                    name="linkedin"
+                    value={profile.linkedin || ""}
+                    onChange={handleChange}
+                    placeholder="https://linkedin.com/in/username"
+                    style={{
+                      width: "100%",
+                      fontSize: 16,
+                      borderRadius: 8,
+                      border: "1px solid #ddd",
+                      padding: 12,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Availability and Resume */}
+          <div style={{ flex: "1", minWidth: 300 }}>
+            {/* Availability */}
+            <div
+              style={{
+                background: "#FFFFFF",
+                borderRadius: 20,
+                boxShadow: "0 4px 24px rgba(138,203,219,0.18)",
+                border: "2px solid #8ACBDB",
+                padding: 24,
+                marginBottom: 24,
+              }}
+            >
+              <h2
+                style={{
+                  color: "#007CA6",
+                  fontWeight: 800,
+                  fontSize: 20,
+                  marginBottom: 16,
+                }}
+              >
+                General Availability
+              </h2>
+              <AvailabilityForm
+                selectedSlots={selectedSlots}
+                onAvailabilityChange={handleAvailabilityChange}
+              />
+            </div>
+
+            {/* Resume Section */}
+            <div
+              style={{
+                background: "#FFFFFF",
+                borderRadius: 20,
+                boxShadow: "0 4px 24px rgba(138,203,219,0.18)",
+                border: "2px solid #8ACBDB",
+                padding: 32,
+                marginBottom: 24,
+              }}
+            >
+              <h2
+                style={{
+                  color: "#007CA6",
+                  fontWeight: 800,
+                  fontSize: 24,
+                  marginBottom: 24,
+                }}
+              >
+                Resume
+              </h2>
+
+              {profile.resumeUrl && (
+                <div>
+                  <button
+                    style={{
+                      color: "#007CA6",
+                      fontWeight: 600,
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      textDecoration: "underline",
+                      fontSize: 16,
+                    }}
+                    onClick={() => setShowResumeModal(true)}
+                  >
+                    View Current Resume
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Save Button */}
+            {dirty && (
+              <div
+                style={{
+                  background: "#FFFFFF",
+                  borderRadius: 20,
+                  boxShadow: "0 4px 24px rgba(138,203,219,0.18)",
+                  border: "2px solid #8ACBDB",
+                  padding: 32,
                 }}
               >
                 <button
-                  onClick={() => setShowResumeModal(false)}
+                  onClick={handleSave}
+                  disabled={saving}
                   style={{
-                    position: "absolute",
-                    top: 12,
-                    right: 18,
-                    fontSize: 24,
-                    background: "none",
+                    width: "100%",
+                    fontSize: 18,
+                    padding: "16px 32px",
+                    borderRadius: 10,
+                    background: saving ? "#ccc" : "#007CA6",
+                    color: "#fff",
+                    fontWeight: 700,
                     border: "none",
-                    cursor: "pointer",
-                    color: "#d32f2f",
+                    cursor: saving ? "not-allowed" : "pointer",
                   }}
-                  aria-label="Close"
                 >
-                  ×
+                  {saving ? "Saving..." : "Save Changes"}
                 </button>
-                <iframe
-                  src={profile.resumeUrl}
-                  title="Resume"
-                  style={{ width: "70vw", height: "80vh", border: "none" }}
-                />
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
+
+        {/* Resume Modal */}
+        {showResumeModal && profile.resumeUrl && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              background: "rgba(0,0,0,0.7)",
+              zIndex: 2000,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 12,
+                padding: 24,
+                maxWidth: "90vw",
+                maxHeight: "90vh",
+                boxShadow: "0 2px 32px rgba(0,0,0,0.20)",
+                position: "relative",
+              }}
+            >
+              <button
+                onClick={() => setShowResumeModal(false)}
+                style={{
+                  position: "absolute",
+                  top: 12,
+                  right: 18,
+                  fontSize: 24,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#d32f2f",
+                  zIndex: 2001,
+                }}
+                aria-label="Close"
+              >
+                ×
+              </button>
+              <iframe
+                src={profile.resumeUrl}
+                title="Resume"
+                style={{ width: "70vw", height: "80vh", border: "none" }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
