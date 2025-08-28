@@ -197,7 +197,7 @@ const AdminDashboard = () => {
           }}
         >
           <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, color: "black" }}>
-            Events
+            Meetings
           </Typography>
           {confirmedMeeting.length === 0 && (
             <Typography sx={{ color: "black" }}>No upcoming meetings.</Typography>
