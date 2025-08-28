@@ -5,6 +5,7 @@ import MentorSettings from "./MentorSettings";
 import UP_fullLogo from "../Images/UP_fullLogo.png";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 
 function MentorDashboard() {
   const [activeComponent, setActiveComponent] = React.useState("Home");
