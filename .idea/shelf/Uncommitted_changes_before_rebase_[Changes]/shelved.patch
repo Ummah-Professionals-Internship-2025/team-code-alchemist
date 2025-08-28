@@ -1,0 +1,19 @@
+Index: frontend/src/App.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import logo from './logo.svg';\nimport './App.css';\n\nfunction App() {\n  return (\n    <div className=\"App\">\n      <header className=\"App-header\">\n       Hello World\n      </header>\n    </div>\n  );\n}\n\nexport default App;\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/frontend/src/App.js b/frontend/src/App.js
+--- a/frontend/src/App.js	(revision ee71a5e42431507a8dab52d5c47c5f3880df4cc1)
++++ b/frontend/src/App.js	(date 1752345527116)
+@@ -5,7 +5,7 @@
+   return (
+     <div className="App">
+       <header className="App-header">
+-       Hello World
++       Found match:
+       </header>
+     </div>
+   );
