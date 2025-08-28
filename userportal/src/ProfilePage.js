@@ -408,6 +408,11 @@ export default function ProfilePage({ onBack, user }) {
     fetchProfile();
   }, []);
 
+  // Communicate unsaved changes to parent component
+  useEffect(() => {
+    window.profileHasUnsavedChanges = dirty;
+  }, [dirty]);
+
   const handleChange = (e) => {
     setDirty(true);
     setProfile({ ...profile, [e.target.name]: e.target.value });
@@ -446,6 +451,7 @@ export default function ProfilePage({ onBack, user }) {
       const docRef = doc(db, "mentees", user.uid);
       await updateDoc(docRef, profile);
       setDirty(false);
+      window.profileHasUnsavedChanges = false;
       alert("Profile updated successfully!");
     } catch (error) {
       console.error('Error saving profile:', error);
@@ -492,14 +498,14 @@ export default function ProfilePage({ onBack, user }) {
 
   if (loading) {
     return (
-      <div style={{ padding: '20px', color: '#00212C', background: '#E7E8EE', minHeight: '100vh' }}>
+      <div style={{ padding: '20px', color: '#00212C', background: '#ffffff', minHeight: '100vh' }}>
         <div style={{ color: '#007CA6', fontSize: 24 }}>Loading profile...</div>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '20px', color: '#00212C', background: '#E7E8EE', minHeight: '100vh' }}>
+    <div style={{ padding: '20px', color: '#00212C', background: '#ffffff', minHeight: '100vh' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         {/* Header */}
         <div style={{ marginBottom: 32 }}>

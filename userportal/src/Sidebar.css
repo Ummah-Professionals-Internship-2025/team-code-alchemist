@@ -1,5 +1,5 @@
 .sidebar {
-  width: 300px;
+  width: 280px;
   background: #00212C;
   color: #E7E8EE;
   height: 100vh;
@@ -19,12 +19,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 18px 16px 18px;
-  font-size: 1.1rem;
+  padding: 18px 16px 14px 16px;
+  font-size: 1rem;
   font-weight: 700;
   letter-spacing: 1px;
   border-bottom: 1px solid #003F55;
-  min-height: 80px;
+  min-height: 70px;
 }
 .sidebar-logo-section {
   display: flex;
@@ -34,8 +34,8 @@
 }
 
 .sidebar-logo {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
 }
 
@@ -44,7 +44,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   color: #007CA6;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 0.3px;
 }
@@ -52,7 +52,7 @@
   background: none;
   border: none;
   color: #E7E8EE;
-  font-size: 1.4em;
+  font-size: 1.2em;
   cursor: pointer;
   margin-left: 8px;
 }
@@ -60,38 +60,38 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 32px 0 24px 0;
+  margin: 24px 0 20px 0;
 }
 .sidebar-avatar {
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   border: 3px solid #8ACBDB;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   background: #E7E8EE;
 }
 .sidebar-user-name {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 700;
   margin-bottom: 2px;
   color: #E7E8EE;
 }
 .sidebar-user-role {
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: #8ACBDB;
   margin-bottom: 8px;
 }
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 6px;
+  margin-top: 10px;
 }
 .sidebar-nav-link {
   display: flex;
   align-items: center;
-  padding: 12px 24px;
-  font-size: 1.08rem;
+  padding: 10px 20px;
+  font-size: 1rem;
   color: #E7E8EE;
   cursor: pointer;
   border-radius: 8px;
@@ -102,8 +102,8 @@
   color: #FDBB37;
 }
 .sidebar-nav-icon {
-  font-size: 1.2em;
-  margin-right: 16px;
+  font-size: 1.1em;
+  margin-right: 14px;
 }
 .sidebar.collapsed .sidebar-logo-section,
 .sidebar.collapsed .sidebar-avatar-section,
@@ -117,14 +117,14 @@
   width: 100%;
 }
 .sidebar-logout-btn {
-  margin: 32px 24px 0 24px;
-  padding: 12px 0;
-  width: calc(100% - 48px);
+  margin: 24px 20px 0 20px;
+  padding: 10px 0;
+  width: calc(100% - 40px);
   background: #FDBB37;
   color: #00212C;
   border: none;
   border-radius: 8px;
-  font-size: 1.08rem;
+  font-size: 1rem;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -141,7 +141,7 @@
     width: 64px;
   }
   .sidebar:not(.collapsed) {
-    width: 240px;
+    width: 200px;
   }
 }
 
@@ -150,7 +150,7 @@
     width: 64px;
   }
   .sidebar:not(.collapsed) {
-    width: 220px;
+    width: 180px;
   }
   .sidebar-header {
     padding: 16px 12px 12px 12px;

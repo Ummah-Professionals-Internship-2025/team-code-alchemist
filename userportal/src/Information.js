@@ -119,7 +119,7 @@ const Information = () => {
 
   if (loading) {
     return (
-      <div style={{ padding: 40, color: '#00212C', background: '#f5f7fa', minHeight: '100vh' }}>
+      <div style={{ padding: '24px', color: '#00212C', background: '#ffffff', minHeight: '100vh', width: '100%', boxSizing: 'border-box' }}>
         <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 24 }}>Past Information</h2>
         <div style={{ color: '#666', fontSize: 16 }}>Loading...</div>
       </div>
@@ -127,7 +127,7 @@ const Information = () => {
   }
 
   return (
-    <div style={{ padding: 40, color: '#00212C', background: '#f5f7fa', minHeight: '100vh' }}>
+    <div style={{ padding: '24px', color: '#00212C', background: '#ffffff', minHeight: '100vh', width: '100%', boxSizing: 'border-box' }}>
       <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 24 }}>Past Information</h2>
       
       {/* Past Meetings */}

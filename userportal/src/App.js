@@ -262,13 +262,13 @@ function Dashboard() {
   // Status logic is centralized in Rescheduling.getMeetingStatus
 
   return (
-    <div style={{ padding: 40, minHeight: '100vh', background: '#E7E8EE' }}>
-      <h1 style={{ color: '#007CA6', fontSize: 38, fontWeight: 800, marginBottom: 8 }}>DASHBOARD</h1>
-      <div style={{ color: '#007CA6', fontSize: 20, marginBottom: 32 }}>Current requests</div>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 32, marginBottom: 32 }}>
+    <div style={{ padding: '24px', minHeight: '100vh', background: '#ffffff', width: '100%', boxSizing: 'border-box' }}>
+              <h1 style={{ color: '#007CA6', fontSize: '38px', fontWeight: '800', marginBottom: '8px' }}>DASHBOARD</h1>
+        <div style={{ color: '#007CA6', fontSize: '20px', marginBottom: '16px' }}>Current requests</div>
+             <div className="dashboard-container" style={{ display: 'flex', justifyContent: 'space-between', gap: 32, marginBottom: 32, flexWrap: 'wrap' }}>
         {/* Current Appointment Box */}
-        <div style={{ background: '#FFFFFF', borderRadius: 20, boxShadow: '0 4px 24px rgba(138,203,219,0.18)', border: '2px solid #8ACBDB', padding: 32, minWidth: 320, color: '#00212C', margin: 16, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-          <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 8 }}>Current Meetings</h2>
+        <div className="dashboard-card" style={{ background: '#ffffff', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0', padding: '24px', minWidth: '320px', color: '#00212C', margin: '16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+          <h2 style={{ color: '#00212C', fontWeight: '600', fontSize: '20px', marginBottom: '16px' }}>Current Meetings</h2>
           {loading ? (
             <div style={{ color: '#666', fontSize: 16 }}>Loading...</div>
           ) : pendingMeetings.length === 0 ? (
@@ -288,14 +288,14 @@ function Dashboard() {
                     background: isConfirmed ? '#e8f5e8' : '#f9f9f9'
                   }}>
                     <div style={{ marginBottom: 8 }}>
-                      <strong style={{ color: '#007CA6' }}>With:</strong> {meeting.mentorName}
+                      <strong style={{ color: '#00212C' }}>With:</strong> {meeting.mentorName}
                     </div>
                     <div style={{ marginBottom: 8 }}>
-                      <strong style={{ color: '#007CA6' }}>When:</strong> {formatMeetingDate(meeting.meetingDate, meeting.meetingTime)}
+                      <strong style={{ color: '#00212C' }}>When:</strong> {formatMeetingDate(meeting.meetingDate, meeting.meetingTime)}
                     </div>
                     {isConfirmed && meeting.meetLink && (
                       <div style={{ marginBottom: 8 }}>
-                        <strong style={{ color: '#007CA6' }}>Google Meet:</strong>
+                        <strong style={{ color: '#00212C' }}>Google Meet:</strong>
                         <a 
                           href={meeting.meetLink} 
                           target="_blank" 
@@ -337,8 +337,8 @@ function Dashboard() {
           meeting={activeMeeting}
         />
         {/* Information Box */}
-        <div style={{ background: '#FFFFFF', borderRadius: 20, boxShadow: '0 4px 24px rgba(138,203,219,0.18)', border: '2px solid #8ACBDB', padding: 32, minWidth: 320, color: '#00212C', margin: 16, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-          <h2 style={{ color: '#007CA6', fontWeight: 800, fontSize: 28, marginBottom: 8 }}>Information</h2>
+        <div className="dashboard-card" style={{ background: '#ffffff', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0', padding: '24px', minWidth: '320px', color: '#00212C', margin: '16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+          <h2 style={{ color: '#00212C', fontWeight: '600', fontSize: '20px', marginBottom: '16px' }}>Information</h2>
           {loading ? (
             <div style={{ color: '#666', fontSize: 16 }}>Loading...</div>
           ) : (
@@ -346,7 +346,7 @@ function Dashboard() {
               {/* Current Meetings */}
               {pendingMeetings.length > 0 && (
                 <>
-                  <h3 style={{ color: '#007CA6', fontWeight: 600, fontSize: 20, marginBottom: 16, marginTop: 0 }}>Current Meetings</h3>
+                  <h3 style={{ color: '#00212C', fontWeight: 600, fontSize: 20, marginBottom: 16, marginTop: 0 }}>Current Meetings</h3>
                   {pendingMeetings.map((meeting, index) => {
                 const mentorDetail = mentorDetails[meeting.mentorId];
                 console.log(`Meeting ${meeting.id}: mentorId=${meeting.mentorId}, mentorDetail=`, mentorDetail);
@@ -361,7 +361,7 @@ function Dashboard() {
                     background: '#f9f9f9'
                   }}>
                                       <div style={{ marginBottom: 8 }}>
-                    <strong style={{ color: '#007CA6' }}>Mentor:</strong> {meeting.mentorName}
+                    <strong style={{ color: '#00212C' }}>Mentor:</strong> {meeting.mentorName}
         </div>
 
                   {/* Show mentor details from API or fallback to meeting data */}
@@ -1851,6 +1851,8 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activePage, setActivePage] = useState('dashboard');
   const [user, setUser] = useState(null);
+  const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -1881,6 +1883,34 @@ function App() {
     setActivePage('dashboard');
   };
 
+  const handleNavigation = (newPage, newShowProfile = false) => {
+    // Check if we're currently on profile page and there are unsaved changes
+    if ((showProfile || activePage === 'profile') && window.profileHasUnsavedChanges) {
+      setPendingNavigation({ page: newPage, showProfile: newShowProfile });
+      setShowUnsavedChangesModal(true);
+    } else {
+      // No unsaved changes, proceed with navigation
+      setShowProfile(newShowProfile);
+      setActivePage(newPage);
+    }
+  };
+
+  const handleContinueNavigation = () => {
+    if (pendingNavigation) {
+      setShowProfile(pendingNavigation.showProfile);
+      setActivePage(pendingNavigation.page);
+      setPendingNavigation(null);
+    }
+    setShowUnsavedChangesModal(false);
+    // Reset the unsaved changes flag
+    window.profileHasUnsavedChanges = false;
+  };
+
+  const handleCancelNavigation = () => {
+    setPendingNavigation(null);
+    setShowUnsavedChangesModal(false);
+  };
+
   if (!loggedIn) {
     return <LoginScreen onLogin={() => setLoggedIn(true)} />;
   }
@@ -1889,38 +1919,277 @@ function App() {
   if (showProfile || activePage === 'profile') mainContent = <ProfilePage onBack={handleProfileBack} user={user} />;
   else if (activePage === 'dashboard') mainContent = <Dashboard />;
   else if (activePage === 'request') mainContent = <RequestMentor />;
-  else if (activePage === 'feedback') mainContent = <Feedback />;
   else if (activePage === 'information') mainContent = <Information />;
   else mainContent = <Dashboard />;
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#00212C' }}>
-      <Sidebar
-        collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed(c => !c)}
-        onNavigate={key => {
-          if (key === 'profile') setShowProfile(true);
-          else {
-            setShowProfile(false);
-            setActivePage(key);
-          }
-        }}
-        activeKey={showProfile ? 'profile' : activePage}
-        user={user}
-        onLogout={handleLogout}
-      />
-      <div 
-        className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}
-        style={{ 
-          marginLeft: sidebarCollapsed ? 64 : 280, 
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#f5f5f5' }}>
+      {/* Top Header Bar */}
+      <div style={{
+        height: '70px',
+        background: '#E7E8EE',
+        borderBottom: '1px solid #e0e0e0',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 24px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        zIndex: 100
+      }}>
+        {/* Left side - Logo and Title */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+          <span style={{ 
+            fontSize: '1.2rem', 
+            fontWeight: '600', 
+            color: '#333333',
+            letterSpacing: '0.5px'
+          }}>
+            ummah professionals
+          </span>
+        </div>
+        
+        {/* Right side - Navigation and Logout */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <a href="#" style={{ color: '#666666', textDecoration: 'none', fontSize: '0.9rem' }}>home</a>
+            <a href="#" style={{ color: '#666666', textDecoration: 'none', fontSize: '0.9rem' }}>about</a>
+            <a href="#" style={{ color: '#666666', textDecoration: 'none', fontSize: '0.9rem' }}>get involved ▼</a>
+            <a href="#" style={{ color: '#666666', textDecoration: 'none', fontSize: '0.9rem' }}>events</a>
+            <a href="#" style={{ color: '#666666', textDecoration: 'none', fontSize: '0.9rem' }}>contact us</a>
+          </div>
+          <button 
+            onClick={handleLogout}
+            style={{
+              background: '#FDBB37',
+              color: '#ffffff',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'background 0.2s'
+            }}
+            onMouseOver={(e) => e.target.style.background = '#e6a800'}
+            onMouseOut={(e) => e.target.style.background = '#FDBB37'}
+          >
+            Log out
+          </button>
+        </div>
+      </div>
+      
+      {/* Main Content Area with Sidebar */}
+      <div style={{ display: 'flex', flex: 1 }}>
+        {/* Small Sidebar */}
+        <div style={{
+          width: sidebarCollapsed ? '60px' : '200px',
+          background: '#E7E8EE',
+          borderRight: '1px solid #e0e0e0',
+          transition: 'width 0.2s',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '20px 0'
+        }}>
+          {/* Sidebar Toggle */}
+          <div style={{ padding: '0 16px', marginBottom: '20px' }}>
+            <button 
+              onClick={() => setSidebarCollapsed(c => !c)}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '1.2rem',
+                cursor: 'pointer',
+                color: '#666666',
+                padding: '8px',
+                borderRadius: '4px',
+                width: '100%',
+                textAlign: 'left'
+              }}
+            >
+              ☰
+            </button>
+          </div>
+          
+          {/* Navigation Links */}
+          {!sidebarCollapsed && (
+            <>
+              <div style={{ padding: '0 16px', marginBottom: '20px' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '12px',
+                  padding: '12px',
+                  borderRadius: '6px',
+                  background: activePage === 'dashboard' ? '#007CA6' : 'transparent',
+                  color: activePage === 'dashboard' ? '#ffffff' : '#00212C',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: activePage === 'dashboard' ? '600' : '400'
+                                  }} onClick={() => handleNavigation('dashboard', false)}>
+                    Dashboard
+                </div>
+              </div>
+              
+                              <div style={{ padding: '0 16px', marginBottom: '20px' }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '12px',
+                    padding: '12px',
+                    borderRadius: '6px',
+                    background: (showProfile || activePage === 'profile') ? '#007CA6' : 'transparent',
+                    color: (showProfile || activePage === 'profile') ? '#ffffff' : '#00212C',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: (showProfile || activePage === 'profile') ? '600' : '400'
+                  }} onClick={() => handleNavigation('profile', true)}>
+                    Profile
+                  </div>
+                </div>
+              
+              <div style={{ padding: '0 16px', marginBottom: '20px' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '12px',
+                  padding: '12px',
+                  borderRadius: '6px',
+                  background: activePage === 'request' ? '#007CA6' : 'transparent',
+                  color: activePage === 'request' ? '#ffffff' : '#00212C',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: activePage === 'request' ? '600' : '400'
+                                  }} onClick={() => handleNavigation('request', false)}>
+                    Request a Mentor
+                </div>
+              </div>
+              
+              <div style={{ padding: '0 16px', marginBottom: '20px' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '12px',
+                  padding: '12px',
+                  borderRadius: '6px',
+                  background: activePage === 'information' ? '#007CA6' : 'transparent',
+                  color: activePage === 'information' ? '#ffffff' : '#00212C',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: activePage === 'information' ? '600' : '400'
+                                  }} onClick={() => handleNavigation('information', false)}>
+                    Past Meetings
+                </div>
+              </div>
+            </>
+          )}
+          
+          {/* Collapsed State - Show nothing, just empty space */}
+          {sidebarCollapsed && (
+            <div style={{ padding: '0 8px', marginBottom: '16px' }}>
+            </div>
+          )}
+        </div>
+        
+        {/* Main Content */}
+        <div style={{ 
           flex: 1, 
-          transition: 'margin-left 0.2s', 
-          background: '#00212C', 
-          minHeight: '100vh'
-        }}
-      >
+          background: '#ffffff',
+          padding: '24px',
+          overflowY: 'auto',
+          minWidth: '0',
+          marginLeft: '0',
+          width: '100%',
+          boxSizing: 'border-box'
+        }}>
         {mainContent}
       </div>
+      </div>
+
+      {/* Unsaved Changes Modal */}
+      {showUnsavedChangesModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '12px',
+            padding: '32px',
+            maxWidth: '400px',
+            width: '90%',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)'
+          }}>
+            <h3 style={{
+              color: '#00212C',
+              fontSize: '20px',
+              fontWeight: '600',
+              marginBottom: '16px',
+              marginTop: 0
+            }}>
+              Unsaved Changes
+            </h3>
+            <p style={{
+              color: '#666666',
+              fontSize: '16px',
+              marginBottom: '24px',
+              lineHeight: '1.5'
+            }}>
+              You have unsaved changes in your profile. Do you want to continue without saving?
+            </p>
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end'
+            }}>
+              <button
+                onClick={handleCancelNavigation}
+                style={{
+                  background: '#f5f5f5',
+                  color: '#666666',
+                  border: '1px solid #e0e0e0',
+                  padding: '10px 20px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.background = '#e8e8e8'}
+                onMouseOut={(e) => e.target.style.background = '#f5f5f5'}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleContinueNavigation}
+                style={{
+                  background: '#007CA6',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '10px 20px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.background = '#006b8f'}
+                onMouseOut={(e) => e.target.style.background = '#007CA6'}
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
