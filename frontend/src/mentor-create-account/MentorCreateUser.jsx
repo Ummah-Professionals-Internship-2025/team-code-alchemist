@@ -4,12 +4,12 @@ import { db } from "../firebase";
 import { deleteDoc, doc } from "firebase/firestore";
 import { getDoc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
+import GoogleOAuth from "../mentee-application/GoogleOAuth";
 
 export default function MentorCreateUser() {
   const urlParams = new URLSearchParams(window.location.search);
   const emailFromUrl = urlParams.get("email") || "";
   const dbIdFromUrl = urlParams.get("dbId") || "";
-  const [name, setName] = useState("");
   const email = emailFromUrl;
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -42,13 +42,10 @@ export default function MentorCreateUser() {
     }
 
     try {
-      await doCreateUserWithEmailAndPassword(email, password, name).then(
+      await doCreateUserWithEmailAndPassword(email, password).then(
         (userCredential) => {
           const user = userCredential.user;
           uid = user.uid;
-          user.updateProfile({
-            displayName: name,
-          });
         }
       );
       await setDoc(doc(db, "mentors", uid), mentorData);
@@ -71,22 +68,6 @@ export default function MentorCreateUser() {
         <h1 className="form-title">Mentor Sign Up</h1>
         {error && <p className="error-text">{error}</p>}
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label" htmlFor="name">
-              Name:
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              className="form-input"
-              placeholder="John Doe"
-              autoComplete="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-
           <div className="form-group">
             <label className="form-label" htmlFor="email">
               Email:
@@ -130,6 +111,33 @@ export default function MentorCreateUser() {
               placeholder="Confirm Password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </div>
+
+          {/* Google Calendar OAuth Integration */}
+          <div style={{ marginTop: 24, marginBottom: 24 }}>
+            <label>
+              Google Calendar Access <span style={{ color: "red" }}>*</span>
+            </label>
+            <p style={{ fontSize: "0.95rem", color: "#666", marginBottom: 16 }}>
+              We need access to your Google Calendar to automatically add
+              mentoring sessions when meetings are confirmed. This ensures you
+              never miss a session.
+            </p>
+            <GoogleOAuth
+              userId={email} // Use email as the identifier for OAuth
+              userEmail={email}
+              onAuthSuccess={(userId) => {
+                console.log("Mentee calendar access granted for user:", userId);
+                setMentorData((prev) => ({ ...prev, hasCalendarAccess: true }));
+              }}
+              onAuthError={(error) => {
+                console.log("Mentee calendar access failed:", error);
+                setMentorData((prev) => ({
+                  ...prev,
+                  hasCalendarAccess: false,
+                }));
+              }}
             />
           </div>
 

@@ -96,7 +96,7 @@ function Dashboard() {
       if (!user) return;
 
       const response = await fetch(
-        `http://localhost:3003/api/meetings/mentee/${user.uid}`
+        `http://localhost:4000/api/meetings/mentee/${user.uid}`
       );
       const data = await response.json();
 
@@ -199,7 +199,7 @@ function Dashboard() {
   const acceptMeeting = async (meetingId) => {
     try {
       let res = await fetch(
-        `http://localhost:3003/api/meetings/${meetingId}/accept`,
+        `http://localhost:4000/api/meetings/${meetingId}/accept`,
         { method: "POST" }
       );
       if (res.status === 404) {
@@ -264,7 +264,7 @@ function Dashboard() {
     if (!activeMeeting) return;
     try {
       let res = await fetch(
-        `http://localhost:3003/api/meetings/${activeMeeting.id}/propose`,
+        `http://localhost:4000/api/meetings/${activeMeeting.id}/propose`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -864,7 +864,7 @@ function RequestMentor() {
       if (!user) return;
 
       const response = await fetch(
-        `http://localhost:3003/api/meetings/mentee/${user.uid}`
+        `http://localhost:4000/api/meetings/mentee/${user.uid}`
       );
       const data = await response.json();
 

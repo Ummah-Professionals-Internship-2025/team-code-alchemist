@@ -615,7 +615,10 @@ function MenteeForm() {
         }
       });
 
-      const response = await axios.post("/api/mentee", formData);
+      const response = await axios.post(
+        "http://localhost:3001/api/mentee",
+        formData
+      );
       const data = response.data;
 
       if (data.success) {
@@ -627,7 +630,9 @@ function MenteeForm() {
         });
 
         // Fetch mentors for pairing
-        const mentorsResponse = await axios.get("/api/mentors");
+        const mentorsResponse = await axios.get(
+          "http://localhost:3001/api/mentee"
+        );
         const mentorsData = mentorsResponse.data;
 
         if (mentorsData.success) {
@@ -655,7 +660,10 @@ function MenteeForm() {
 
   const handleMeetingSubmit = async (meetingData) => {
     try {
-      const response = await axios.post("/api/meetings", meetingData);
+      const response = await axios.post(
+        "http://localhost:3001/api/mentee",
+        meetingData
+      );
 
       const data = await response.json();
       if (data.success) {

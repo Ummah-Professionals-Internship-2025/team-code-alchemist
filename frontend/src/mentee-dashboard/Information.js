@@ -13,7 +13,7 @@ const Information = () => {
 
       // Fetch only from endMeeting collection
       const response = await fetch(
-        `http://localhost:3003/api/meetings/mentee/${user.uid}/past`
+        `http://localhost:4000/api/meetings/mentee/${user.uid}/past`
       );
       const data = await response.json();
 
