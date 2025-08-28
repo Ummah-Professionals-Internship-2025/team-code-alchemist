@@ -118,7 +118,7 @@ export const sendMeetingConfirmationEmails = async (meetingData, meetLink) => {
       EMAILJS_V2_CONFIG.serviceId,
       EMAILJS_V2_CONFIG.meetingConfirmedTemplateId,
       {
-        to_email: meetingData.menteeEmail,
+        email: meetingData.menteeEmail,  // Changed to match template variable {{email}}
         to_name: meetingData.menteeName,
         mentee_email: meetingData.menteeEmail,
         mentee_name: meetingData.menteeName,
@@ -139,7 +139,7 @@ export const sendMeetingConfirmationEmails = async (meetingData, meetLink) => {
       EMAILJS_V2_CONFIG.serviceId,
       EMAILJS_V2_CONFIG.meetingConfirmedTemplateId,
       {
-        to_email: meetingData.mentorEmail,
+        email: meetingData.mentorEmail,  // Changed to match template variable {{email}}
         to_name: meetingData.mentorName,
         mentee_email: meetingData.menteeEmail,
         mentee_name: meetingData.menteeName,
@@ -189,7 +189,7 @@ export const sendNewTimeProposalEmails = async (meetingData) => {
       EMAILJS_V2_CONFIG.serviceId,
       EMAILJS_V2_CONFIG.newTimeProposedTemplateId,
       {
-        to_email: meetingData.menteeEmail,
+        email: meetingData.menteeEmail,  // Changed to match template variable {{email}}
         to_name: meetingData.menteeName,
         mentee_email: meetingData.menteeEmail,
         mentee_name: meetingData.menteeName,
@@ -210,7 +210,7 @@ export const sendNewTimeProposalEmails = async (meetingData) => {
       EMAILJS_V2_CONFIG.serviceId,
       EMAILJS_V2_CONFIG.newTimeProposedTemplateId,
       {
-        to_email: meetingData.mentorEmail,
+        email: meetingData.mentorEmail,  // Changed to match template variable {{email}}
         to_name: meetingData.mentorName,
         mentee_email: meetingData.menteeEmail,
         mentee_name: meetingData.menteeName,

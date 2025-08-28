@@ -35,13 +35,12 @@ const db = admin.firestore();
 const { moveExpiredMeetings, getMeetingsWithStatus } = require('./meetingStatusManager');
 
 // Import meeting approval handler functions
-const { 
-  handleMenteeApproval, 
-  handleMentorApproval, 
-  handleMeetingProposal, 
-  finalizeMeeting, 
-  generateGoogleMeetLink, 
-  sendConfirmedMeetingEmails 
+const {
+  handleMenteeApproval,
+  handleMentorApproval,
+  handleMeetingProposal,
+  finalizeMeeting,
+  generateGoogleMeetLink
 } = require('./meetingApprovalHandler');
 
 // Accept JSON
