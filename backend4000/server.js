@@ -33,7 +33,6 @@ const {
   handleMeetingProposal,
   finalizeMeeting,
   generateGoogleMeetLink,
-  sendConfirmedMeetingEmails,
 } = require("./meetingApprovalHandler");
 
 // Accept JSON

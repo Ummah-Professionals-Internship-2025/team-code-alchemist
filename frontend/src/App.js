@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import MentorLogin from "./mentor-login/MentorLogin";
 import MentorCreateUser from "./mentor-create-account/MentorCreateUser";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import NavigationButtons from "./NavigateButtons";
+
 import MentorDashboard from "./mentor-dashboard/MentorDashboard";
 import { onAuthStateChanged } from "firebase/auth";
 import LandingPage from "./mentor-langing-page/LandingPage";
@@ -17,7 +17,6 @@ function App() {
 
   return (
     <BrowserRouter>
-      {/* <NavigationButtons></NavigationButtons> */}
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/mentee-view/*" element={<MenteeView />} />

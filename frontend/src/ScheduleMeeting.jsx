@@ -126,7 +126,8 @@ function ScheduleMeeting({
   }, [targetID]);
   const handleDayClick = (date, dayName) => {
     setAvailableTimes(availability[dayName]);
-    setSelectedDay(date.toString().substring(4, 11));
+    setSelectedDay(date.toString().substring(4, 15));
+    console.log("Selected day:", selectedDay);
     setSelectedTime(null);
   };
 

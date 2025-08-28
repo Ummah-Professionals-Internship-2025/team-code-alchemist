@@ -1,5 +1,6 @@
 const { google } = require("googleapis");
 const admin = require("firebase-admin");
+// Use node-fetch v2 for CommonJS compatibility
 const fetch = require("node-fetch");
 
 // Initialize Google Calendar API with OAuth
@@ -206,12 +207,46 @@ async function createCalendarEvent(
       return { hour, minute };
     }
 
-    // Create start and end times
-    const startDateTime = new Date(meetingDate);
+    // Create start and end times with robust date parsing
+    let startDateTime, endDateTime;
+
+    // Handle different date formats
+    if (typeof meetingDate === "string") {
+      // Try to parse the date string more robustly
+      if (/^\d{4}-\d{2}-\d{2}$/.test(meetingDate)) {
+        // Format: "2025-08-29"
+        const [year, month, day] = meetingDate.split("-").map(Number);
+        startDateTime = new Date(year, month - 1, day); // month is 0-indexed
+        endDateTime = new Date(year, month - 1, day);
+      } else {
+        // Format: "Friday, August 29, 2025" or other formats
+        startDateTime = new Date(meetingDate);
+        endDateTime = new Date(meetingDate);
+      }
+    } else {
+      // If it's already a Date object
+      startDateTime = new Date(meetingDate);
+      endDateTime = new Date(meetingDate);
+    }
+
+    // Validate that the date was parsed correctly
+    if (isNaN(startDateTime.getTime())) {
+      throw new Error(
+        `Invalid date format: ${meetingDate}. Please use format like "2025-08-29" or "Friday, August 29, 2025"`
+      );
+    }
+
+    console.log("Parsed meeting date:", {
+      original: meetingDate,
+      parsed: startDateTime.toISOString(),
+      year: startDateTime.getFullYear(),
+      month: startDateTime.getMonth() + 1,
+      day: startDateTime.getDate(),
+    });
+
     const startTime24 = parseTimeTo24Hour(startTime);
     startDateTime.setHours(startTime24.hour, startTime24.minute, 0, 0);
 
-    const endDateTime = new Date(meetingDate);
     const endTime24 = parseTimeTo24Hour(endTime);
     endDateTime.setHours(endTime24.hour, endTime24.minute, 0, 0);
 
@@ -287,81 +322,82 @@ async function generateGoogleMeetLink(meetingData) {
   try {
     let meetLink = null;
 
-    // First try to create event in mentor's calendar with Meet link (mentor as host)
+    // Create ONE calendar event with Meet link - both parties will see it automatically
+    // Try mentee first (since they have OAuth tokens), then mentor as fallback
     try {
-      console.log("Creating event in mentor calendar with Meet link...");
-      const mentorResult = await createCalendarEvent(
-        meetingData.mentorId,
+      console.log("Creating single event in mentee calendar with Meet link...");
+      const menteeResult = await createCalendarEvent(
+        meetingData.menteeId,
         meetingData,
         true
       );
-      console.log("Meet link from mentor calendar:", mentorResult.meetLink);
-      meetLink = mentorResult.meetLink;
-    } catch (mentorError) {
+      console.log("Meet link from mentee calendar:", menteeResult.meetLink);
+      meetLink = menteeResult.meetLink;
+    } catch (menteeError) {
       console.error(
-        "Failed to create event in mentor calendar by ID:",
-        mentorError
+        "Failed to create event in mentee calendar by ID:",
+        menteeError
       );
-      console.error("Error details:", mentorError.message);
+      console.error("Error details:", menteeError.message);
 
       // Try by email if ID failed
       try {
-        console.log("Trying mentor by email...");
-        const mentorResult = await createCalendarEvent(
-          meetingData.mentorEmail,
+        console.log("Trying mentee by email...");
+        const menteeResult = await createCalendarEvent(
+          meetingData.menteeEmail,
           meetingData,
           true
         );
         console.log(
-          "Meet link from mentor calendar (by email):",
-          mentorResult.meetLink
+          "Meet link from mentee calendar (by email):",
+          menteeResult.meetLink
         );
-        meetLink = mentorResult.meetLink;
+        meetLink = menteeResult.meetLink;
       } catch (emailError) {
         console.error(
-          "Failed to create event in mentor calendar by email:",
+          "Failed to create event in mentee calendar by email:",
           emailError
         );
         console.error("Email error details:", emailError.message);
       }
     }
 
-    // If mentor OAuth failed, try mentee's OAuth as fallback
+    // If mentee OAuth failed, try mentor's OAuth as fallback
     if (!meetLink) {
       try {
         console.log(
-          "Creating event in mentee calendar with Meet link (fallback)..."
+          "Creating single event in mentor calendar with Meet link (fallback)..."
         );
-        const menteeResult = await createCalendarEvent(
-          meetingData.menteeId,
+        const mentorResult = await createCalendarEvent(
+          meetingData.mentorId,
           meetingData,
           true
         );
-        console.log("Meet link from mentee calendar:", menteeResult.meetLink);
-        meetLink = menteeResult.meetLink;
-      } catch (menteeError) {
+        console.log("Meet link from mentor calendar:", mentorResult.meetLink);
+        meetLink = mentorResult.meetLink;
+      } catch (mentorError) {
         console.error(
-          "Failed to create event in mentee calendar by ID:",
-          menteeError
+          "Failed to create event in mentor calendar by ID:",
+          mentorError
         );
-        console.error("Error details:", menteeError.message);
+        console.error("Error details:", mentorError.message);
 
         // Try by email if ID failed
         try {
-          console.log("Trying mentee by email...");
-          const menteeResult = await createCalendarEvent(
-            meetingData.menteeEmail,
+          console.log("Trying mentor by email...");
+          const mentorResult = await createCalendarEvent(
+            meetingData.mentorEmail,
             meetingData,
             true
           );
           console.log(
-            "Meet link from mentee calendar (by email):",
-            menteeResult.meetLink
+            "Meet link from mentor calendar (by email):",
+            mentorResult.meetLink
           );
-          meetLink = menteeResult.meetLink;
+          meetLink = mentorResult.meetLink;
         } catch (emailError) {
           console.error(
-            "Failed to create event in mentee calendar by email:",
+            "Failed to create event in mentor calendar by email:",
             emailError
           );
           console.error("Email error details:", emailError.message);
@@ -369,34 +405,9 @@ async function generateGoogleMeetLink(meetingData) {
       }
     }
 
-    // If we got a meet link, also try to create calendar events for both parties
-    if (meetLink) {
-      // Try to create calendar event for mentee (without Meet link to avoid conflicts)
-      try {
-        console.log("Creating calendar event for mentee...");
-        await createCalendarEvent(meetingData.menteeId, meetingData, false);
-        console.log("Calendar event created for mentee");
-      } catch (menteeError) {
-        console.error(
-          "Failed to create calendar event for mentee:",
-          menteeError
-        );
-        // Try by email
-        try {
-          await createCalendarEvent(
-            meetingData.menteeEmail,
-            meetingData,
-            false
-          );
-          console.log("Calendar event created for mentee (by email)");
-        } catch (emailError) {
-          console.error(
-            "Failed to create calendar event for mentee by email:",
-            emailError
-          );
-        }
-      }
-    }
+    // IMPORTANT: Only ONE calendar event is created
+    // Both mentee and mentor will see this event because they're both attendees
+    // No need to create separate events for each party
 
     if (meetLink) {
       return meetLink;
@@ -422,87 +433,7 @@ async function generateGoogleMeetLink(meetingData) {
   }
 }
 
-// Send confirmation emails with Google Meet link
-async function sendConfirmedMeetingEmails(meetingData, meetLink) {
-  console.log("sendConfirmedMeetingEmails called with:", {
-    meetingData,
-    meetLink,
-  });
-
-  const common = {
-    meeting_date: meetingData.meetingDate,
-    meeting_time: meetingData.meetingTime,
-    meet_link: meetLink,
-    mentor_name: meetingData.mentorName,
-    mentee_name: meetingData.menteeName,
-  };
-
-  console.log("Common template params:", common);
-  console.log("Template ID:", process.env.EMAILJSV2_TEMPLATE_MEETING_CONFIRMED);
-
-  // Send email to mentee
-  console.log("Sending email to mentee:", meetingData.menteeEmail);
-  await sendEmailJSV2(process.env.EMAILJSV2_TEMPLATE_MEETING_CONFIRMED, {
-    to_email: meetingData.menteeEmail,
-    to_name: meetingData.menteeName,
-    ...common,
-  });
-
-  // Send email to mentor
-  console.log("Sending email to mentor:", meetingData.mentorEmail);
-  await sendEmailJSV2(process.env.EMAILJSV2_TEMPLATE_MEETING_CONFIRMED, {
-    to_email: meetingData.mentorEmail,
-    to_name: meetingData.mentorName,
-    ...common,
-  });
-}
-
-// ---------------- EmailJS V2 (server-side) -----------------
-async function sendEmailJSV2(templateId, templateParams) {
-  console.log("sendEmailJSV2 called with:", { templateId, templateParams });
-
-  const payload = {
-    service_id: process.env.EMAILJSV2_SERVICE_ID,
-    template_id: templateId,
-    user_id: process.env.EMAILJSV2_PUBLIC_KEY, // public key
-    accessToken: process.env.EMAILJSV2_PRIVATE_KEY, // private key
-    template_params: templateParams,
-  };
-
-  console.log("EmailJS V2 payload:", payload);
-
-  if (
-    !payload.service_id ||
-    !payload.template_id ||
-    !payload.user_id ||
-    !payload.accessToken
-  ) {
-    console.error("Missing EmailJS V2 env configuration:", {
-      service_id: !!payload.service_id,
-      template_id: !!payload.template_id,
-      user_id: !!payload.user_id,
-      accessToken: !!payload.accessToken,
-    });
-    throw new Error("Missing EmailJS V2 env configuration");
-  }
-
-  console.log("Making EmailJS V2 API request...");
-  const resp = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  console.log("EmailJS V2 response status:", resp.status);
-
-  if (!resp.ok) {
-    const txt = await resp.text();
-    console.error("EmailJS V2 error response:", txt);
-    throw new Error(`EmailJS V2 request failed: ${resp.status} ${txt}`);
-  }
-
-  console.log("EmailJS V2 request successful");
-}
+// Note: Email sending has been moved to the frontend to avoid EmailJS server-side API restrictions
 
 // Handle mentee approval
 async function handleMenteeApproval(meetingId) {
@@ -570,16 +501,8 @@ async function finalizeMeeting(meetingData, meetingId) {
       meetLink: meetLink,
     });
 
-    // Send confirmation emails with meet link
-    try {
-      await sendConfirmedMeetingEmails(meetingData, meetLink);
-      console.log(
-        "Confirmation emails sent with meet link for meeting:",
-        meetingId
-      );
-    } catch (e) {
-      console.warn("Failed to send confirmation emails:", e.message);
-    }
+    // Note: Emails will be sent from the frontend after successful meeting confirmation
+    // This avoids EmailJS server-side API restrictions
 
     // Delete from pending meetings
     await db.collection("pendingMeetings").doc(meetingId).delete();
@@ -628,5 +551,4 @@ module.exports = {
   handleMeetingProposal,
   finalizeMeeting,
   generateGoogleMeetLink,
-  sendConfirmedMeetingEmails,
 };

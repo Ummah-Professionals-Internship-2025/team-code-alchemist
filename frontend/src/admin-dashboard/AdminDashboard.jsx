@@ -94,11 +94,11 @@ const AdminDashboard = () => {
 
     console.log(
       "SERVICE:",
-      process.env.REACT_APP_EMAILJS_SERVICE_ID,
+      process.env.ADMIN_REACT_APP_EMAILJS_SERVICE_ID,
       "TEMPLATE:",
-      process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
+      process.env.ADMIN_REACT_APP_EMAILJS_TEMPLATE_ID,
       "KEY:",
-      process.env.REACT_APP_EMAILJS_PUBLIC_KEY
+      process.env.ADMIN_REACT_APP_EMAILJS_PUBLIC_KEY
     );
 
     try {

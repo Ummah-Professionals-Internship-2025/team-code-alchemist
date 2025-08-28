@@ -5,3 +5,4 @@ backend4000/.env
 frontend/.env
 backend4000/ummahprof-55270-firebase-adminsdk-fbsvc-472c1e3eca.json
 node_modules/
+frontend/.env

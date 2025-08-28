@@ -3,3 +3,4 @@
 - Fix meeting update limitations
 - Highlight selected date on reschedule feature
 - Mentor dashboard does not show upcoming meetings yet
+- Setup accept feature on mentor

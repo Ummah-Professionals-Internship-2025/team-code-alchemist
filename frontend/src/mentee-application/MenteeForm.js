@@ -631,7 +631,7 @@ function MenteeForm() {
 
         // Fetch mentors for pairing
         const mentorsResponse = await axios.get(
-          "http://localhost:3001/api/mentee"
+          "http://localhost:3001/api/mentors"
         );
         const mentorsData = mentorsResponse.data;
 
