@@ -18,14 +18,15 @@ function MentorDashboard() {
     <div className="mentor-dashboard">
       <div className="side-bar">
         {/* UP Logo */}
-        <img className="mentor-dashboard-img" src={UP_fullLogo} alt="UP Logo" />
+        <img src="https://www.ummahprofessionals.com/assets/blue-horizontal-CZMgC7yv.svg" alt="ummah-professionals-logo" class="sidelogo"/>
         {/* Nav Bar */}
         <div className="page-manager">
-          <button onClick={() => handleComponentChange("Home")}>Home</button>
-          <button onClick={() => handleComponentChange("Profile")}>
+          
+          <button className="sidebtns" onClick={() => handleComponentChange("Home")}>Home</button>
+          <button className="sidebtns" onClick={() => handleComponentChange("Profile")}>
             Profile
           </button>
-          <button onClick={() => handleComponentChange("Settings")}>
+          <button className="sidebtns" onClick={() => handleComponentChange("Settings")}>
             Settings
           </button>
           <button

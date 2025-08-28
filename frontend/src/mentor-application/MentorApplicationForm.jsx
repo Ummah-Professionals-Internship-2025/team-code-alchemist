@@ -4,6 +4,7 @@ import "./MentorSignupStyle.css";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import AvailabilityForm from "./AvailibilityForm";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   mentorSkills,
@@ -98,17 +99,19 @@ function MentorApplicationForm() {
       console.error("Error writing document: ", error);
     }
   }
-
+  const navigate = useNavigate();
   return (
+    
     <div className="form-container">
+      <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'></link>
       <div>
-        <h3 className="title is-3">Ummah Professionals</h3>
+      <a href= "https://www.ummahprofessionals.com/"><img src="https://www.ummahprofessionals.com/assets/blue-horizontal-CZMgC7yv.svg" alt="ummah-professionals-logo" class="logo"/></a>
       </div>
       {error && <h1 className="Danger">{error}</h1>}
 
       <div className="form-card scrollable-form">
-        <button className="btn">{"< Back"}</button>
-        <h2>Mentor Application</h2>
+        <button className="btn" onClick={() => navigate("/")} >{"❮"}</button>
+        <h2 className="form-title"><strong>Mentor Application</strong></h2>
 
         <form onSubmit={handleSubmit}>
           {/* Full Name */}
@@ -121,7 +124,7 @@ function MentorApplicationForm() {
                 id="name"
                 className="input"
                 type="text"
-                placeholder="Enter name"
+                placeholder="Enter Name"
                 name="name"
                 value={form.name}
                 onChange={handleChange}
@@ -168,11 +171,14 @@ function MentorApplicationForm() {
             </div>
           </div>
 
-          {/* Company and Past Companies */}
+          {/* Present and Previous Employers */}
           <div className="field">
             <label className="label" htmlFor="companies">
-              Company and Past Companies
+              Present and Previous Employers
             </label>
+            <p className="explanation" htmlFor="companies">
+              This information will not be shared to mentees.
+            </p>
             <div className="control">
               <input
                 id="companies"
@@ -217,6 +223,9 @@ function MentorApplicationForm() {
             <label className="label" htmlFor="skills">
               Skills (3-5)
             </label>
+            <p className="explanation" htmlFor="skills">
+              Please list your top industry skills.
+            </p>
             <div className="control">
               <Select
                 name="skills"
@@ -241,6 +250,9 @@ function MentorApplicationForm() {
           <label className="label">
             Major <span className="required">*</span>
           </label>
+          <p className="explanation">
+          Undergraduate or graduate major.
+          </p>
           <Select
             name="major"
             options={majorOptions}
@@ -278,7 +290,7 @@ function MentorApplicationForm() {
           {/* Help In */}
           <div className="field">
             <label className="label" htmlFor="helpIn">
-              What do you want to help in
+              What do you want to help in?
             </label>
             <div className="control">
               <Select
@@ -338,6 +350,9 @@ function MentorApplicationForm() {
             <label className="label" htmlFor="calendar">
               Do you want to put your Google/Outlook calendar?
             </label>
+            <p className="explanation" htmlFor="calendar">
+              To be used to quicken the pairing process.
+            </p>
             <div className="control">
               <Select
                 name="calendar"
@@ -431,9 +446,11 @@ function MentorApplicationForm() {
           {/* Cross-Gender Teaching */}
           <div className="field">
             <label className="label" htmlFor="wouldYouMind">
-              Would you be alright with teaching the opposite gender, given a
-              shortage?
+              Are you open to mentoring the opposite gender?
             </label>
+            <p className="explanation" htmlFor="wouldYouMind">
+              We have a shortage of mentees.
+            </p>
             <div className="control">
               <Select
                 name="wouldYouMind"
@@ -468,6 +485,8 @@ function MentorApplicationForm() {
           {/* Availability */}
           <div className="field">
             <label className="label">General Availability</label>
+            <p className="explanation" htmlFor="field">
+            Select your available time slots for each day of the week.</p>
             <div className="control">
               <AvailabilityForm
                 selectedSlots={availability}
@@ -481,6 +500,9 @@ function MentorApplicationForm() {
             <label className="label" htmlFor="phone">
               Phone Number
             </label>
+            <p className="explanation" htmlFor="phone">
+              This information will not be shared to mentees.
+            </p>
             <div className="control">
               <input
                 id="phone"
@@ -499,6 +521,9 @@ function MentorApplicationForm() {
             <label className="label" htmlFor="yearOfGraduation">
               Year of Graduation
             </label>
+            <p className="explanation" htmlFor="yearOfGraduation">
+              Tell us which year you received your highest degree.
+            </p>
             <div className="control">
               <input
                 id="yearOfGraduation"
@@ -517,8 +542,11 @@ function MentorApplicationForm() {
           {/* Age Range */}
           <div className="field">
             <label className="label" htmlFor="ageRange">
-              Age Range for Mentee Pairing
+              Age Range
             </label>
+            <p className="explanation" htmlFor="ageRange">
+              To be used to assist mentees in the pairing process.
+            </p>
             <div className="control">
               <input
                 id="ageRange"
@@ -535,8 +563,11 @@ function MentorApplicationForm() {
           {/* University */}
           <div className="field">
             <label className="label" htmlFor="university">
-              University
+              Alma Mater
             </label>
+            <p className="explanation" htmlFor="univeresity">
+            Please list all universities for both undergraduate and graduate studies.
+            </p>
             <div className="control">
               <input
                 id="university"

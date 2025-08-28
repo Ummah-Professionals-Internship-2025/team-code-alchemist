@@ -43,6 +43,9 @@ function MentorLogin() {
   return (
     <div className="form-container">
       <div className="form-content">
+      <div>
+      <a href= "https://www.ummahprofessionals.com/"><img src="https://www.ummahprofessionals.com/assets/blue-horizontal-CZMgC7yv.svg" alt="ummah-professionals-logo" class="logo"/></a>
+      </div>
         <h1 className="form-title">Mentor Log In</h1>
 
         <div>
