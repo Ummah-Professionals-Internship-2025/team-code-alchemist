@@ -48,55 +48,8 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3001/auth/google/callback'
 );
 
-// Store OAuth tokens in mentee collection
-async function storeOAuthToken(userId, tokens) {
-  await db.collection('mentees').doc(userId).set({
-    googleOAuth: {
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-      scope: tokens.scope,
-      token_type: tokens.token_type,
-      expiry_date: tokens.expiry_date,
-      updatedAt: new Date()
-    }
-  }, { merge: true }); // merge: true creates the document if it doesn't exist
-}
-
-async function getOAuthToken(userId) {
-  // userId can be either email (for OAuth check) or Firebase UID (for existing users)
-  let userDoc = await db.collection('mentees').doc(userId).get();
-  
-  // If not found and it looks like an email, try searching by email
-  if (!userDoc.exists && userId.includes('@')) {
-    const emailQuery = await db.collection('mentees').where('email', '==', userId).get();
-    if (!emailQuery.empty) {
-      userDoc = emailQuery.docs[0];
-    }
-  }
-  
-  if (!userDoc.exists) {
-    throw new Error('No user found');
-  }
-  const userData = userDoc.data();
-  if (!userData.googleOAuth) {
-    throw new Error('No OAuth token found for user');
-  }
-  return userData.googleOAuth;
-}
-
-async function refreshOAuthToken(userId, refreshToken) {
-  try {
-    oauth2Client.setCredentials({ 
-      refresh_token: refreshToken
-    });
-    const { credentials } = await oauth2Client.refreshAccessToken();
-    await storeOAuthToken(userId, credentials);
-    return credentials;
-  } catch (error) {
-    console.error('Error refreshing OAuth token:', error);
-    throw error;
-  }
-}
+// Import OAuth functions from meetingApprovalHandler
+const { getOAuthToken, refreshOAuthToken, storeOAuthToken } = require('./meetingApprovalHandler');
 
 // OAuth endpoints
 app.get('/auth/google', (req, res) => {

@@ -161,10 +161,7 @@ function Dashboard() {
 
   const acceptMeeting = async (meetingId) => {
     try {
-      let res = await fetch(`http://localhost:3003/api/meetings/${meetingId}/accept`, { method: 'POST' });
-      if (res.status === 404) {
-        res = await fetch(`http://localhost:3001/api/meetings/${meetingId}/accept`, { method: 'POST' });
-      }
+      const res = await fetch(`http://localhost:3003/api/meetings/${meetingId}/accept`, { method: 'POST' });
       
       const data = await res.json();
       
@@ -211,22 +208,14 @@ function Dashboard() {
   const handleRescheduleSubmit = async ({ meetingDate, meetingTime }) => {
     if (!activeMeeting) return;
     try {
-      let res = await fetch(`http://localhost:3003/api/meetings/${activeMeeting.id}/propose`, {
+      const res = await fetch(`http://localhost:3003/api/meetings/${activeMeeting.id}/propose`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ meetingDate, meetingTime })
       });
-      let data = {};
-      try { data = await res.json(); } catch {}
-      if (res.status === 404) {
-        // Fallback to forms backend if userportal backend route not found
-        res = await fetch(`http://localhost:3001/api/meetings/${activeMeeting.id}/propose`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ meetingDate, meetingTime })
-        });
-        try { data = await res.json(); } catch { data = {}; }
-      }
+      
+      const data = await res.json();
+      
       if (!res.ok) {
         const text = typeof data.error === 'string' ? data.error : `${res.status} ${res.statusText}`;
         window.alert(`Could not schedule new time. ${text}`);
