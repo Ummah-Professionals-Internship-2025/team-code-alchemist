@@ -193,12 +193,44 @@ async function createCalendarEvent(userId, meetingData, includeMeetLink = false)
       return { hour, minute };
     }
     
-    // Create start and end times
-    const startDateTime = new Date(meetingDate);
+    // Create start and end times with robust date parsing
+    let startDateTime, endDateTime;
+    
+    // Handle different date formats
+    if (typeof meetingDate === 'string') {
+      // Try to parse the date string more robustly
+      if (/^\d{4}-\d{2}-\d{2}$/.test(meetingDate)) {
+        // Format: "2025-08-29"
+        const [year, month, day] = meetingDate.split('-').map(Number);
+        startDateTime = new Date(year, month - 1, day); // month is 0-indexed
+        endDateTime = new Date(year, month - 1, day);
+      } else {
+        // Format: "Friday, August 29, 2025" or other formats
+        startDateTime = new Date(meetingDate);
+        endDateTime = new Date(meetingDate);
+      }
+    } else {
+      // If it's already a Date object
+      startDateTime = new Date(meetingDate);
+      endDateTime = new Date(meetingDate);
+    }
+    
+    // Validate that the date was parsed correctly
+    if (isNaN(startDateTime.getTime())) {
+      throw new Error(`Invalid date format: ${meetingDate}. Please use format like "2025-08-29" or "Friday, August 29, 2025"`);
+    }
+    
+    console.log('Parsed meeting date:', {
+      original: meetingDate,
+      parsed: startDateTime.toISOString(),
+      year: startDateTime.getFullYear(),
+      month: startDateTime.getMonth() + 1,
+      day: startDateTime.getDate()
+    });
+    
     const startTime24 = parseTimeTo24Hour(startTime);
     startDateTime.setHours(startTime24.hour, startTime24.minute, 0, 0);
     
-    const endDateTime = new Date(meetingDate);
     const endTime24 = parseTimeTo24Hour(endTime);
     endDateTime.setHours(endTime24.hour, endTime24.minute, 0, 0);
     
