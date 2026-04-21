@@ -1,0 +1,51 @@
+/* Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process - USE THIS AS A TEMPORARY PASS 
+RUN cd up-admin, THEN cd Frontend RIGHT AFTER, THEN npm start
+FOR PUSHING TO GITHUB:
+git add .
+git commit -am "your message here"
+git push
+*/
+html,
+body,
+#root,
+.app,
+.content {
+  height: 100%;
+  width: 100%;
+  font-family: Kollektif, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.app {
+  display: flex;
+  position: relative;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #E8F0FA;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #E8F0FA;
+}
+
+/* Handle on Hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #E8F0FA;
+}
+
+code {
+  font-family: Kollektif, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
